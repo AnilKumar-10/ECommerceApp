@@ -28,6 +28,7 @@ public class CartService {
                     Cart newCart = new Cart();
                     newCart.setBuyerId(buyerId);
                     newCart.setItems(new ArrayList<>());
+                    newCart.setTotalAmount(0.0);
                     newCart.setUpdatedAt(new Date());
                     return cartRepository.save(newCart);
                 });
@@ -48,9 +49,15 @@ public class CartService {
             }
         }
         if (!updated) {
+            item.setItemId(cart.getItems().size());
             item.setAddedAt(new Date());
             cart.getItems().add(item);
         }
+        double totalAmount=0;
+        for(CartItem itm :cart.getItems()){
+            totalAmount+= itm.getPrice();
+        }
+        cart.setTotalAmount(totalAmount);
         cart.setUpdatedAt(new Date());
         return cartRepository.save(cart);
     }
@@ -71,16 +78,22 @@ public class CartService {
     }
 
 
-
-    public List<OrderItem> checkOutForOrder(List<String> productIds,String userId){
+    // moving the cart items to orderItems
+    public List<OrderItem> checkOutForOrder(List<Integer> itemIds,String userId){
+//        System.out.println("inside cartService with : "+itemIds+"  "+userId);
         List<OrderItem> items = new ArrayList<>();
         for(CartItem item : cartRepository.findByBuyerId(userId).get().getItems()){
-            if(productIds.contains(item.getProductId())){
+//            System.out.println(itemIds+" ==> "+item.getItemId()+"  ==>  "+itemIds.contains(item.getItemId()));
+            if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
-                BeanUtils.copyProperties(orderItem,item);
+                BeanUtils.copyProperties(item,orderItem);
+//              BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
                 items.add(orderItem);
+//                System.out.println("cartItem: "+item);
+//                System.out.println("matched and placed in list: "+orderItem);
             }
         }
+//        System.out.println(" items list:  "+ items);
         return items;
     }
 

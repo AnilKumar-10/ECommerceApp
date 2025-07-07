@@ -11,6 +11,7 @@ import java.util.Date;
 public class Payment {
     @Id
     private String id;
+    private String transactionId;
     private String userId;
     private String orderId;
     private double amountPaid;

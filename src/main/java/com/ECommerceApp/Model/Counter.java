@@ -4,16 +4,11 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
-import java.util.List;
-
-@Document
 @Data
-public class Cart {
+@Document(collection = "counters")
+public class Counter {
     @Id
     private String id;
-    private String buyerId;
-    private List<CartItem> items;
-    private double totalAmount;
-    private Date updatedAt;
+    private long seq;
 }
+

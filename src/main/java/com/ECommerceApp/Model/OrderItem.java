@@ -8,6 +8,6 @@ public class OrderItem {
     private int quantity;
     private String size;
     private String color;
-    private double priceAtPurchase;
+    private double price;
 }
 

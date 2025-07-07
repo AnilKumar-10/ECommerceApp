@@ -5,9 +5,9 @@ import lombok.Data;
 import java.util.List;
 @Data
 public class OrderDto {
-    List<String > productId;
+    List<Integer > productIds;
     String userId;
-    String Adrstype;
+    String addressType;
     String coupon;
     String payMode;
 }

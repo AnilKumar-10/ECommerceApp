@@ -19,12 +19,16 @@ public class Order {
     private String couponId;
     private double discount;
     private double finalAmount;
-    private String payMode;
-    private String paymentId;
-    private String status; // PLACED, CONFIRMED, PACKED, SHIPPED, IN_TRANSIT,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
+    private String orderStatus;         // PLACED, CONFIRMED, PACKED, SHIPPED, IN_TRANSIT,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
+    private String paymentMethod;       // UPI, CARD, COD
+    private String paymentStatus;       // PENDING, SUCCESS, FAILED
+    private String paymentId;           // Link to Payment if online
     private Date orderDate;
     private boolean isCancelled;
     private String cancelReason;
     private Date cancellationTime;
     private String shippingId;
 }
+
+
+

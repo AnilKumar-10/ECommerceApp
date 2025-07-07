@@ -1,14 +1,14 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.OrderDto;
-import com.ECommerceApp.DTO.ProductRequest;
-import com.ECommerceApp.DTO.UserRequestDTO;
+import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.ReviewRepository;
 import com.ECommerceApp.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +29,12 @@ public class TestController {
     private WishListService wishListService;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private CouponService couponService;
+//    @Autowired
+//    private OrderService orderService;
+    @Autowired
+    private PaymentService paymentService;
 
     @GetMapping("/home")
     public String getHome(){
@@ -107,6 +113,29 @@ public class TestController {
         return null;
     }
 
+    @PostMapping("/insertCoupon")
+    public Coupon insertCoupon(@RequestBody Coupon coupon){
+        return couponService.createCoupon(coupon);
+    }
 
+    @PostMapping("/placeOrder")
+    public Order placeOrder(@RequestBody OrderDto orderDto){
+        return orderService.createOrder(orderDto);
+    }
+
+    @PostMapping("/initpay")
+    public Payment initiatePaymentDto(@RequestBody InitiatePaymentDto initiatePaymentDto){
+        return paymentService.initiatePayment(initiatePaymentDto);
+    }
+
+    @PostMapping("/pay")
+    public Payment pay(@RequestBody PaymentDto paymentDto){
+        return paymentDto.getStatus().equalsIgnoreCase("Success")?paymentService.confirmPayment(paymentDto):paymentService.failPayment(paymentDto);
+    }
+
+    @GetMapping("/getOrder/{id}")
+    public Order getOrder(@PathVariable String id){
+        return orderService.getOrder(id);
+    }
 }
 

@@ -6,7 +6,9 @@ import com.ECommerceApp.Model.Coupon;
 import com.ECommerceApp.Model.CouponUsage;
 import com.ECommerceApp.Repository.CouponRepository;
 import com.ECommerceApp.Repository.CouponUsageRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -28,15 +30,16 @@ public class CouponService {
     public Coupon updateCoupon(String couponId, Coupon updatedCoupon) {
         Coupon existing = couponRepository.findById(couponId)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
+//        existing.setCode(updatedCoupon.getCode());
+//        existing.setDiscountType(updatedCoupon.getDiscountType());
+//        existing.setDiscountValue(updatedCoupon.getDiscountValue());
+//        existing.setMinOrderValue(updatedCoupon.getMinOrderValue());
+//        existing.setMaxUsagePerUser(updatedCoupon.getMaxUsagePerUser());
+//        existing.setValidFrom(updatedCoupon.getValidFrom());
+//        existing.setValidTo(updatedCoupon.getValidTo());
+//        existing.setActive(updatedCoupon.isActive());
 
-        existing.setCode(updatedCoupon.getCode());
-        existing.setDiscountType(updatedCoupon.getDiscountType());
-        existing.setDiscountValue(updatedCoupon.getDiscountValue());
-        existing.setMinOrderValue(updatedCoupon.getMinOrderValue());
-        existing.setMaxUsagePerUser(updatedCoupon.getMaxUsagePerUser());
-        existing.setValidFrom(updatedCoupon.getValidFrom());
-        existing.setValidTo(updatedCoupon.getValidTo());
-        existing.setActive(updatedCoupon.isActive());
+        BeanUtils.copyProperties(updatedCoupon,existing);
 
         return couponRepository.save(existing);
     }
@@ -64,7 +67,7 @@ public class CouponService {
     public Coupon validateCoupon(String code, String userId, double orderAmount) {
         Coupon coupon = couponRepository.findByCodeAndIsActiveTrue(code)
                 .orElseThrow(() -> new InValidCouponException("Invalid or inactive coupon code"));
-
+        System.out.println(coupon.getMinOrderValue()+"  :  "+orderAmount);
         Date now = new Date();
         if (now.before(coupon.getValidFrom()) || now.after(coupon.getValidTo())) {
             throw new InValidCouponException("Coupon is not valid for current date");
@@ -80,6 +83,19 @@ public class CouponService {
         }
         return coupon;
     }
+
+    public double getDiscountAmount(Coupon coupon, double totalAmount) {
+        double discount = 0.0;
+
+        if ("PERCENTAGE".equalsIgnoreCase(coupon.getDiscountType())) {
+            discount = (coupon.getDiscountValue() / 100.0) * totalAmount;
+        } else if ("FLAT".equalsIgnoreCase(coupon.getDiscountType())) {
+            discount = coupon.getDiscountValue();
+        }
+        // Discount doesn't exceed the total amount
+        return Math.min(discount, totalAmount);
+    }
+
 
     public void recordCouponUsage(String code, String userId) {
         CouponUsage usage = new CouponUsage();

@@ -19,6 +19,6 @@ public class Coupon {
     private int maxUsagePerUser;
     private Date validFrom;
     private Date validTo;
-    private boolean isActive;
+    private boolean isActive = true;
 }
 
