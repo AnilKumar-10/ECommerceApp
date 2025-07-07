@@ -1,5 +1,7 @@
 package com.ECommerceApp.Service;
 
+import com.ECommerceApp.Exceptions.PaymentNotFoundException;
+import com.ECommerceApp.Exceptions.ProductNotFoundException;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Model.StockLog;
 import com.ECommerceApp.Model.StockLogModification;
@@ -51,21 +53,16 @@ public class StockLogService {
         // 4. Append log entry
         modification.setModifiedAt(new Date());
         stockLog.getLogModification().add(modification);
-
         StockLog updatedLog = stockLogRepository.save(stockLog);
 
         // 5. Update product stock as well
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
         product.setStock(newQuantity);
         product.setAvailable(newQuantity > 0);
-
         productRepository.save(product);
-
         return updatedLog;
     }
-
 
     public StockLog getByProductId(String productId){
         return stockLogRepository.findByProductId(productId);

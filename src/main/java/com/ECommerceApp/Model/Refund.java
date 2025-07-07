@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Document
 @Data
-public class    Refund {
+public class Refund {
 
     @Id
     private String id;

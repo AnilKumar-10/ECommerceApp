@@ -2,6 +2,7 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.InitiatePaymentDto;
 import com.ECommerceApp.DTO.PaymentDto;
+import com.ECommerceApp.Exceptions.PaymentNotFoundException;
 import com.ECommerceApp.Model.Payment;
 import com.ECommerceApp.Repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ public class PaymentService {
     // 2. Update payment on success
     public Payment confirmPayment(PaymentDto paymentDto) {
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
         payment.setStatus("SUCCESS");
         payment.setTransactionTime(new Date());
@@ -50,7 +51,7 @@ public class PaymentService {
     // 3. Update payment on failure
     public Payment failPayment(PaymentDto paymentDto) {
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
         payment.setStatus("FAILED");
         payment.setTransactionTime(new Date());

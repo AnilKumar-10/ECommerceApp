@@ -1,6 +1,13 @@
 package com.ECommerceApp.Repository;
 
+import com.ECommerceApp.Model.Refund;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface RefundRepository extends MongoRepository<RefundRepository,String >{
+import java.util.List;
+
+public interface RefundRepository extends MongoRepository<Refund,String >{
+    List<Refund> findByUserId(String userId);
+    List<Refund> findByStatus(String status);
+    List<Refund> findByOrderId(String orderId);
+
 }

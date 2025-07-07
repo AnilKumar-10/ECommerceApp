@@ -39,7 +39,7 @@ public class CouponService {
 //        existing.setValidTo(updatedCoupon.getValidTo());
 //        existing.setActive(updatedCoupon.isActive());
 
-        BeanUtils.copyProperties(updatedCoupon,existing);
+        BeanUtils.copyProperties(existing,updatedCoupon);
 
         return couponRepository.save(existing);
     }

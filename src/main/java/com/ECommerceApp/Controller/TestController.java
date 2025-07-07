@@ -5,8 +5,10 @@ import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.ReviewRepository;
 import com.ECommerceApp.Service.*;
+import com.mongodb.annotations.Alpha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.GetExchange;
 
 import java.util.Currency;
 import java.util.List;
@@ -35,6 +37,14 @@ public class TestController {
 //    private OrderService orderService;
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private DeliveryService deliveryService;
+    @Autowired
+    private ShippingService shippingService;
+    @Autowired
+    private RefundService refundService;
+    @Autowired
+    private InvoiceService invoiceService;
 
     @GetMapping("/home")
     public String getHome(){
@@ -78,7 +88,7 @@ public class TestController {
 
     @PostMapping("/insertCart")
     public Cart insertCart(@RequestBody CartItem items){
-        return cartService.addItemToCart("USER1002",items);
+        return cartService.addItemToCart("USER1003",items);
     }
 
     @GetMapping("/getcart/{id}")
@@ -107,12 +117,6 @@ public class TestController {
     }
 
 
-    @PostMapping("/checkout")
-    public Order check(@RequestBody OrderDto orderDto){
-        Order order = orderService.createOrder(orderDto);
-        return null;
-    }
-
     @PostMapping("/insertCoupon")
     public Coupon insertCoupon(@RequestBody Coupon coupon){
         return couponService.createCoupon(coupon);
@@ -137,5 +141,47 @@ public class TestController {
     public Order getOrder(@PathVariable String id){
         return orderService.getOrder(id);
     }
+
+    @PostMapping("/insertDelivery")
+    public DeliveryPerson insertDelivery(@RequestBody DeliveryPerson deliveryPerson){
+        return  deliveryService.register(deliveryPerson);
+    }
+
+    @GetMapping("/getShipping/{id}")
+    public ShippingDetails getShipping(@PathVariable String id){
+        return shippingService.getByOrderId(id);
+    }
+
+    @PostMapping("/updateShipping")
+    public ShippingDetails updateShip(@RequestBody  ShippingUpdateDTO shippingUpdateDTO){
+        return shippingService.updateShippingStatus(shippingUpdateDTO);
+    }
+
+    @PostMapping("/requestRefund")
+    public Refund raiseRefundReq(@RequestBody RefundRequestDto refundRequestDto){
+        return refundService.requestRefund(refundRequestDto);
+    }
+
+    @GetMapping("/genInvoice/{orderid}")
+    public Invoice generateInvoice(@PathVariable String id){
+        return invoiceService.generateInvoice(id);
+    }
+
+
+    @PostMapping("/updatDel")
+    public String updateDelivery(@RequestBody  DeliveryUpdateDTO deliveryUpdateDTO){
+//        orderService.getOrder(deliveryUpdateDTO.getOrderId()).setOrderStatus("DELIVERED");
+        Order order = orderService.getOrder(deliveryUpdateDTO.getOrderId());
+        if(deliveryUpdateDTO.getPaymentStatus().equalsIgnoreCase("success")){
+            order.setOrderStatus("DELIVERED");
+            order.setPaymentStatus("SUCCESS");
+        }
+        orderService.saveOrder(order);
+//        deliveryService.updateOrder(deliveryUpdateDTO);
+        return shippingService.updateDeliveryStatus(deliveryUpdateDTO);
+    }
+
+
+
 }
 

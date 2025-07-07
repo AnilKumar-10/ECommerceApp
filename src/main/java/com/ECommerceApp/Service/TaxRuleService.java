@@ -58,7 +58,7 @@ public class TaxRuleService {
         return rule.getTaxRate();
     }
 
-    // 6. Optional: Get tax rule (for auditing/debuggin g)
+    // 6. Optional: Get tax rule (for auditing/debugging)
     public Optional<TaxRule> getTaxRule(String state, String categoryId) {
         return taxRuleRepository.findByStateAndCategoryIdAndIsActiveTrue(state, categoryId);
     }

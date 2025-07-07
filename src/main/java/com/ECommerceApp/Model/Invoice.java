@@ -14,6 +14,7 @@ public class Invoice {
     private String orderId;
     private String userId;
     private String paymentId;
+    private String paymentMode;
     private double amount;
     private Date issuedAt;
 }

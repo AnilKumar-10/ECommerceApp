@@ -18,6 +18,7 @@ public class Order {
     private double totalAmount;
     private String couponId;
     private double discount;
+    private double tax;
     private double finalAmount;
     private String orderStatus;         // PLACED, CONFIRMED, PACKED, SHIPPED, IN_TRANSIT,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
     private String paymentMethod;       // UPI, CARD, COD
