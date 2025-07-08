@@ -3,10 +3,7 @@ package com.ECommerceApp.Service;
 import com.ECommerceApp.DTO.DeliveryUpdateDTO;
 import com.ECommerceApp.DTO.ShippingUpdateDTO;
 import com.ECommerceApp.Exceptions.DeliveryNotFoundException;
-import com.ECommerceApp.Model.DeliveryPerson;
-import com.ECommerceApp.Model.ModificationLog;
-import com.ECommerceApp.Model.Order;
-import com.ECommerceApp.Model.ShippingDetails;
+import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.DeliveryRepository;
 import com.ECommerceApp.Repository.OrderRepository;
 import com.ECommerceApp.Repository.ShippingRepository;
@@ -48,6 +45,7 @@ public class ShippingService {
         String address  = order.getAddressId();
 
         DeliveryPerson assigned = deliveryService.assignDeliveryPerson(order.getAddressId());
+
         System.out.println("inside the service with: "+assigned);
         if (assigned != null) {
             shipping.setDeliveryPersonId(assigned.getId());
@@ -55,14 +53,14 @@ public class ShippingService {
             deliveryRepo.save(assigned);
         }
         else{
-            throw new DeliveryNotFoundException("There is no delivery for the selection location..!!");
+            throw new DeliveryNotFoundException("There is no delivery available for the selected location..!!");
         }
         // Log creation
         addLog(shipping, "status", null, "PLACED", order.getBuyerId());
         ShippingDetails shippingDetails = shippingRepo.save(shipping);
-//        Order orderd  = orderService.getOrder(order.getId());
         order.setShippingId(shippingDetails.getId()); // updating the order with shipping details
-        orderRepository.save(order);
+        Order ord = orderRepository.save(order);
+        deliveryService.assignProductsToDelivery(assigned.getId(), ord);
         return shippingDetails;
     }
 
@@ -70,10 +68,13 @@ public class ShippingService {
     public ShippingDetails updateShippingStatus(ShippingUpdateDTO shippingUpdateDTO) {
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new RuntimeException("Shipping record not found"));
-
+        Order order = orderRepository.findById(shipping.getOrderId()).get();
         String oldStatus = shipping.getStatus();
-        if (!Objects.equals(oldStatus, shippingUpdateDTO.getNewValue())) {
+        String newValue = shippingUpdateDTO.getNewValue();
+        if (!Objects.equals(oldStatus, newValue) &&
+                (!"REQUESTED_TO_RETURN".equals(oldStatus) || "RETURNED".equals(newValue))) {
             shipping.setStatus(shippingUpdateDTO.getNewValue());
+            order.setOrderStatus(shippingUpdateDTO.getNewValue());
             addLog(shipping, "status", oldStatus, shippingUpdateDTO.getNewValue(), shippingUpdateDTO.getUpdateBy());
         }
 
@@ -90,33 +91,14 @@ public class ShippingService {
             shipping.setCourierName(shippingUpdateDTO.getNewValue());
         }
 
-//        if (trackingId != null && !Objects.equals(trackingId, shipping.getTrackingId())) {
-//            addLog(shipping, "trackingId", shipping.getTrackingId(), trackingId, updatedBy);
-//            shipping.setTrackingId(trackingId);
-//        }
 
         return shippingRepo.save(shipping);
     }
 
-//    // 4. Update expected delivery date
-//    public ShippingDetails updateExpectedDate(ShippingUpdateDTO shippingUpdateDTO) {
-//        ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
-//                .orElseThrow(() -> new RuntimeException("Shipping not found"));
-//
-//        Date oldDate = shipping.getExpectedDate();
-//        if (!Objects.equals(oldDate, shippingUpdateDTO.ge)) {
-//            addLog(shipping, "expectedDate",
-//                    oldDate != null ? oldDate.toString() : null,
-//                    newDate.toString(), updatedBy);
-//
-//            shipping.setExpectedDate(newDate);
-//        }
-//
-//        return shippingRepo.save(shipping);
-//    }
+
 
     // 5. Get shipping by order ID
-    public ShippingDetails getByOrderId(String orderId) {
+    public ShippingDetails getShippingByOrderId(String orderId) {
         return shippingRepo.findByOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Shipping not found for order ID"));
     }
@@ -159,6 +141,17 @@ public class ShippingService {
 
         return "Your order is delivered successfully please rate us..!";
     }
+
+//    public Refund updateReturnStatus(String orderId,String deliveryPersonId){
+//        Order order = orderRepository.findById(orderId).get();
+//        ShippingUpdateDTO shippingUpdateDTO  = new ShippingUpdateDTO();
+//        shippingUpdateDTO.setNewValue("RETURNED");
+//        shippingUpdateDTO.setShippingId(order.getShippingId());
+//        shippingUpdateDTO.setUpdateBy("D");
+//
+//
+//        return null;
+//    }
 
 
     public String generateTrackingId() {

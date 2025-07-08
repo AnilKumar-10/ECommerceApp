@@ -2,15 +2,10 @@ package com.ECommerceApp.Controller;
 
 import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Model.*;
-import com.ECommerceApp.Repository.ProductRepository;
-import com.ECommerceApp.Repository.ReviewRepository;
 import com.ECommerceApp.Service.*;
-import com.mongodb.annotations.Alpha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.service.annotation.GetExchange;
 
-import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +40,9 @@ public class TestController {
     private RefundService refundService;
     @Autowired
     private InvoiceService invoiceService;
+    @Autowired
+    private ReturnService returnService ;
+
 
     @GetMapping("/home")
     public String getHome(){
@@ -88,7 +86,8 @@ public class TestController {
 
     @PostMapping("/insertCart")
     public Cart insertCart(@RequestBody CartItem items){
-        return cartService.addItemToCart("USER1003",items);
+        items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
+        return cartService.addItemToCart("USER1004",items);
     }
 
     @GetMapping("/getcart/{id}")
@@ -149,7 +148,7 @@ public class TestController {
 
     @GetMapping("/getShipping/{id}")
     public ShippingDetails getShipping(@PathVariable String id){
-        return shippingService.getByOrderId(id);
+        return shippingService.getShippingByOrderId(id);
     }
 
     @PostMapping("/updateShipping")
@@ -158,17 +157,17 @@ public class TestController {
     }
 
     @PostMapping("/requestRefund")
-    public Refund raiseRefundReq(@RequestBody RefundRequestDto refundRequestDto){
+    public RefundAndReturnResponseDTO raiseRefundReq(@RequestBody RaiseRefundRequestDto refundRequestDto){
         return refundService.requestRefund(refundRequestDto);
     }
 
     @GetMapping("/genInvoice/{orderid}")
-    public Invoice generateInvoice(@PathVariable String id){
-        return invoiceService.generateInvoice(id);
+    public Invoice generateInvoice(@PathVariable String orderid){
+        return invoiceService.generateInvoice(orderid);
     }
 
 
-    @PostMapping("/updatDel")
+    @PostMapping("/updatDelivery")
     public String updateDelivery(@RequestBody  DeliveryUpdateDTO deliveryUpdateDTO){
 //        orderService.getOrder(deliveryUpdateDTO.getOrderId()).setOrderStatus("DELIVERED");
         Order order = orderService.getOrder(deliveryUpdateDTO.getOrderId());
@@ -180,8 +179,13 @@ public class TestController {
 //        deliveryService.updateOrder(deliveryUpdateDTO);
         return shippingService.updateDeliveryStatus(deliveryUpdateDTO);
     }
-
-
+    @PostMapping("/updateReturn")
+    public Refund updateReturn(@RequestParam boolean picked,@RequestParam String orderId){
+        if(picked){
+            return returnService.updateReturnSuccess(orderId);
+        }
+        return null;
+    }
 
 }
 

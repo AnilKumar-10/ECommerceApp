@@ -8,6 +8,6 @@ import java.util.List;
 public interface RefundRepository extends MongoRepository<Refund,String >{
     List<Refund> findByUserId(String userId);
     List<Refund> findByStatus(String status);
-    List<Refund> findByOrderId(String orderId);
+    Refund findByOrderId(String orderId);
 
 }

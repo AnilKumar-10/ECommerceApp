@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.aggregation.BooleanOperators;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
@@ -42,9 +44,10 @@ public class OrderService {
         order.setAddressId(getAddress(orderDto.getUserId(),orderDto.getAddressType()));
         order.setCouponId(orderDto.getCoupon());
         order.setOrderDate(new Date());
-        double amount = getTotalAmount(orderDto);
+        double value = getTotalAmount(orderDto);
+        double amount = Math.round(value * 100.0) / 100.0;
         order.setTotalAmount(amount);
-        double discountAmount = getCouponDiscount(orderDto,amount);
+        double discountAmount = Math.round(getCouponDiscount(orderDto,amount)*100.0)/100.0;
         order.setDiscount(discountAmount);
         double finalAmount = amount-discountAmount;
         order.setFinalAmount(finalAmount);
