@@ -1,12 +1,13 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Exceptions.PaymentNotFoundException;
+import com.ECommerceApp.DTO.StockLogModificationDTO;
 import com.ECommerceApp.Exceptions.ProductNotFoundException;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Model.StockLog;
 import com.ECommerceApp.Model.StockLogModification;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.StockLogRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,13 +21,13 @@ public class StockLogService {
     @Autowired
     private ProductRepository productRepository;
 
-    public StockLog modifyStock(String productId, String sellerId, StockLogModification modification) {
+    public StockLog modifyStock(StockLogModificationDTO modification) {
         // 1. Find existing stock log or create a new one
-        StockLog stockLog = stockLogRepository.findByProductIdAndSellerId(productId, sellerId)
+        StockLog stockLog = stockLogRepository.findByProductIdAndSellerId(modification.getProductId(), modification.getSellerId())
                 .orElseGet(() -> {
                     StockLog newLog = new StockLog();
-                    newLog.setProductId(productId);
-                    newLog.setSellerId(sellerId);
+                    newLog.setProductId(modification.getProductId());
+                    newLog.setSellerId(modification.getSellerId());
                     newLog.setLogModification(new ArrayList<>());
                     newLog.setCurrentQuantity(0); // default
                     newLog.setTimestamp(new Date());
@@ -52,11 +53,11 @@ public class StockLogService {
 
         // 4. Append log entry
         modification.setModifiedAt(new Date());
-        stockLog.getLogModification().add(modification);
+        stockLog.getLogModification().add(getModificationLog(modification));
         StockLog updatedLog = stockLogRepository.save(stockLog);
 
         // 5. Update product stock as well
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findById(modification.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
         product.setStock(newQuantity);
         product.setAvailable(newQuantity > 0);
@@ -64,7 +65,15 @@ public class StockLogService {
         return updatedLog;
     }
 
+    private StockLogModification getModificationLog(StockLogModificationDTO modification) {
+        StockLogModification modificationLog = new StockLogModification();
+        BeanUtils.copyProperties(modification,modificationLog);
+        return modificationLog;
+    }
+
     public StockLog getByProductId(String productId){
         return stockLogRepository.findByProductId(productId);
     }
+
+
 }

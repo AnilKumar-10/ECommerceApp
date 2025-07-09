@@ -9,5 +9,6 @@ public class OrderItem {
     private String size;
     private String color;
     private double price;
+    private String status;
 }
 

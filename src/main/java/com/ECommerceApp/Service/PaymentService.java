@@ -3,6 +3,7 @@ package com.ECommerceApp.Service;
 import com.ECommerceApp.DTO.InitiatePaymentDto;
 import com.ECommerceApp.DTO.PaymentDto;
 import com.ECommerceApp.Exceptions.PaymentNotFoundException;
+import com.ECommerceApp.Model.Order;
 import com.ECommerceApp.Model.Payment;
 import com.ECommerceApp.Repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,10 @@ public class PaymentService {
     // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
     public Payment initiatePayment(InitiatePaymentDto initiatePaymentDto) {
         Payment payment = new Payment();
+        Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
+        if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
+            throw new RuntimeException("Amount to be paid is not matched");
+        }
         long nextId = sequenceGeneratorService.getNextSequence("paymentId");
         payment.setId(String.valueOf(nextId)); // If id is String
         payment.setOrderId(initiatePaymentDto.getOrderId());

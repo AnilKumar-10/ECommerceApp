@@ -17,7 +17,9 @@ public class Product {
     private String description;
     private double price;
     private int stock;
-    String returnPolicy;
+    private String returnPolicy;
+    private int returnBefore; // no of days like 5,10
+    private boolean isReturnable;
     private String categoryId;       // Reference to Categories collection
     private String sellerId;         // Reference to Users collection (with role = SELLER)
 
@@ -28,4 +30,12 @@ public class Product {
     private double rating; // Average rating (computed from reviews collection)
     private boolean isAvailable;
     private Date addedOn;
+
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+    }
 }

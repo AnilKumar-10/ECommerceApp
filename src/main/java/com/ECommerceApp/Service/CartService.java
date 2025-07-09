@@ -37,7 +37,7 @@ public class CartService {
     public Cart addItemToCart(String buyerId, CartItem item) {
         Cart cart = getCartByBuyerId(buyerId);
         double price = productService.getProductPrice(item.getProductId());
-        item.setPrice(price);
+//        item.setPrice(price);
         boolean updated = false;
         for (CartItem existingItem : cart.getItems()) {
             if (existingItem.getProductId().equals(item.getProductId()) && existingItem.getSize().equals(item.getSize())) {
@@ -87,10 +87,11 @@ public class CartService {
             if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
                 BeanUtils.copyProperties(item,orderItem);
-//              BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
+                // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
                 items.add(orderItem);
 //                System.out.println("cartItem: "+item);
 //                System.out.println("matched and placed in list: "+orderItem);
+//                removeItemFromCart(userId,item.getProductId());
             }
         }
 //        System.out.println(" items list:  "+ items);

@@ -1,18 +1,14 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.OrderDto;
+import com.ECommerceApp.DTO.StockLogModificationDTO;
 import com.ECommerceApp.Exceptions.OrderNotFoundException;
-import com.ECommerceApp.Model.Address;
-import com.ECommerceApp.Model.Coupon;
-import com.ECommerceApp.Model.Order;
-import com.ECommerceApp.Model.OrderItem;
+import com.ECommerceApp.Exceptions.RefundNotFoundException;
+import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.aggregation.BooleanOperators;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
@@ -31,11 +27,21 @@ public class OrderService {
     private SequenceGeneratorService sequenceService;
     @Autowired
     private ShippingService shippingService;
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private StockLogService stockLogService;
 
     public Order createOrder(OrderDto orderDto){
+        List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
+        for(OrderItem item : orderItem){
+            Product product = productService.getProductById(item.getProductId());
+            if(!product.isAvailable()){
+                throw new RuntimeException(product.getName()+" is Out of Stock");
+            }
+        }
         Order order = new Order();
         System.out.println("orderDTO:  "+orderDto);
-        List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
         System.out.println("orderItems:  "+orderItem);
         long nextId = sequenceService.getNextSequence("orderId");
         order.setId(String.valueOf(nextId)); // If id is String
@@ -45,7 +51,9 @@ public class OrderService {
         order.setCouponId(orderDto.getCoupon());
         order.setOrderDate(new Date());
         double value = getTotalAmount(orderDto);
+        System.out.println("valuse: "+value);
         double amount = Math.round(value * 100.0) / 100.0;
+        System.out.println("amount in order servie: "+amount);
         order.setTotalAmount(amount);
         double discountAmount = Math.round(getCouponDiscount(orderDto,amount)*100.0)/100.0;
         order.setDiscount(discountAmount);
@@ -81,10 +89,12 @@ public class OrderService {
 
     public double getTotalAmount(OrderDto orderDto){
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
+        System.out.println(orderItem);
         double amount=0.0;
         for(OrderItem item : orderItem){
             amount += item.getPrice();
         }
+        System.out.println("amount is methos: "+amount);
         return amount;
     }
 
@@ -96,6 +106,20 @@ public class OrderService {
         order.setOrderStatus("CONFIRMED");
         order.setPaymentId(paymentId);
         orderRepository.save(order);
+        updateStockLogAfterOrder(orderId);
+    }
+
+    private void updateStockLogAfterOrder(String orderId) {
+        StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+        Order order = getOrder(orderId);
+        OrderItem orderedProduct = order.getOrderItems().getFirst();
+        stockLogModificationDTO.setAction("SOLD");
+        stockLogModificationDTO.setModifiedAt(new Date());
+        stockLogModificationDTO.setQuantityChanged(orderedProduct.getQuantity());
+        stockLogModificationDTO.setSellerId(productService.getProductById(orderedProduct.getProductId()).getSellerId());
+        stockLogModificationDTO.setProductId(orderedProduct.getProductId());
+        stockLogService.modifyStock(stockLogModificationDTO);
+
     }
 
 

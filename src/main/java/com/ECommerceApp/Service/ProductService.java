@@ -29,7 +29,7 @@ public class ProductService{
     public Product createProduct(ProductRequest request) {
 //        Product product = mapToEntity(request);
         Product product = new Product();
-        BeanUtils.copyProperties(product,request);
+        BeanUtils.copyProperties(request,product);
         product.setAddedOn(new Date());
         product.setAvailable(true);
         product.setRating(0.0);

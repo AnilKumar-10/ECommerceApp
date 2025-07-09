@@ -73,4 +73,9 @@ public class DeliveryService {
 //        return deliveryRepository.findById();
 //    }
 
+
+    public DeliveryPerson updateDeliveryPerson(DeliveryPerson deliveryPerson){
+        return deliveryRepository.save(deliveryPerson);
+    }
+
 }

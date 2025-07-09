@@ -4,8 +4,12 @@ import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +46,8 @@ public class TestController {
     private InvoiceService invoiceService;
     @Autowired
     private ReturnService returnService ;
+    @Autowired
+    private StockLogService stockLogService;
 
 
     @GetMapping("/home")
@@ -87,7 +93,8 @@ public class TestController {
     @PostMapping("/insertCart")
     public Cart insertCart(@RequestBody CartItem items){
         items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
-        return cartService.addItemToCart("USER1004",items);
+        System.out.println(items);
+        return cartService.addItemToCart("USER1005",items);
     }
 
     @GetMapping("/getcart/{id}")
@@ -180,12 +187,23 @@ public class TestController {
         return shippingService.updateDeliveryStatus(deliveryUpdateDTO);
     }
     @PostMapping("/updateReturn")
-    public Refund updateReturn(@RequestParam boolean picked,@RequestParam String orderId){
-        if(picked){
-            return returnService.updateReturnSuccess(orderId);
+    public Refund updateReturn(@RequestBody  ReturnUpdate returnUpdate){
+        if(returnUpdate.isPicked()){
+            returnService.updateReturnSuccess(returnUpdate.getOrderId());
+            Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
+            return refundService.completeRefund(refund.getRefundId());
         }
-        return null;
+        returnService.updateReturnFailed(returnUpdate.getOrderId());
+        Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
+        return refundService.rejectRefund(refund.getRefundId(),"Product Damaged.");
+//        return null;
     }
+
+    @PostMapping("/updateStock")
+    public StockLog insertStock(@RequestBody StockLogModificationDTO stockLogModificationDTO){
+        return stockLogService.modifyStock(stockLogModificationDTO);
+    }
+
 
 }
 

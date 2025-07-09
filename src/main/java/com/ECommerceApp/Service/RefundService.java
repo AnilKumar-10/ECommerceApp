@@ -3,13 +3,15 @@ package com.ECommerceApp.Service;
 import com.ECommerceApp.DTO.RaiseRefundRequestDto;
 import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
 import com.ECommerceApp.Exceptions.RefundNotFoundException;
-import com.ECommerceApp.Model.DeliveryPerson;
-import com.ECommerceApp.Model.Order;
-import com.ECommerceApp.Model.Refund;
-import com.ECommerceApp.Model.ShippingDetails;
+import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.RefundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+
+import java.net.Authenticator;
 import java.util.*;
 
 @Service
@@ -23,12 +25,29 @@ public class RefundService {
     private OrderService orderService;
     @Autowired
     private ReturnService returnService;
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private ShippingService shippingService;
+    @Autowired
+    private MongoTemplate mongoTemplate;
     //1. Raising the refund request
     public RefundAndReturnResponseDTO requestRefund(RaiseRefundRequestDto refundRequestDto) {
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         if(!order.getOrderStatus().equals("DELIVERED")){
             throw new RuntimeException("The order must be delivered before the refund..");
         }
+        List<OrderItem> orderItems = order.getOrderItems();
+        double totalAmount = order.getFinalAmount();
+        double refundAmount = 0.0;
+        for(OrderItem item : orderItems){
+            if(refundRequestDto.getProductIds().contains(item.getProductId())){
+                checkProductReturnable(item.getProductId(),order.getShippingId());
+                refundAmount += item.getPrice()* item.getQuantity();
+
+            }
+        }
+        refundAmount = totalAmount-refundAmount;
         System.out.println("payment: "+order.getPaymentId());
         Refund refund = new Refund();
         refund.setRefundId(String.valueOf(sequenceGeneratorService.getNextSequence("refundId")));
@@ -37,11 +56,12 @@ public class RefundService {
         refund.setPaymentId(order.getPaymentId());
         refund.setReason(refundRequestDto.getReason());
         System.out.println("reason in refund class: "+refundRequestDto.getReason());
-        refund.setRefundAmount(order.getFinalAmount());
+        refund.setRefundAmount(refundAmount);
         refund.setStatus("PENDING");
         refund.setRequestedAt(new Date());
         System.out.println("inside the refund service class");
         ShippingDetails shippingDetails = returnService.updateShippingStatusForRefundAndReturn(order.getId()); // this will update the status in shipping details
+        returnService.updateOrderItemsForReturn(orderItems,refundRequestDto);
         DeliveryPerson deliveryPerson = returnService.assignReturnProductToDeliveryPerson(shippingDetails,refundRequestDto.getReason()); //  this will asign the delivery person to pick the items
         Refund refund1 = refundRepository.save(refund);
         approveRefund(refund1.getRefundId(),"admin");
@@ -115,7 +135,51 @@ public class RefundService {
         refundRepository.deleteById(refundId);
     }
 
+    public void checkProductReturnable(String productId,String shippingId){
+        Product product = productService.getProductById(productId);
+        int returnBefore = product.getReturnBefore(); // e.g., 7
+        Date deliveredDate = getDeliveredTimestamp(shippingId);
+
+        boolean isReturnAllowed = isReturnAvailable(deliveredDate, returnBefore);
+
+        if (isReturnAllowed) {
+            System.out.println("Product is eligible for return.");
+        } else {
+            System.out.println("Return period has expired.");
+            throw new RuntimeException(" Return period has expired. ");
+        }
+
+    }
+
+    public boolean isReturnAvailable(Date deliveredDate, int returnBeforeDays) {
+        if (deliveredDate == null) {
+            throw new IllegalArgumentException("Delivered date is null");
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(deliveredDate);
+        cal.add(Calendar.DAY_OF_MONTH, returnBeforeDays);
+        Date returnExpiryDate = cal.getTime(); // Last returnable date
+
+        Date today = new Date();
+
+        // Check if today is on or before the return expiry date
+        return !today.after(returnExpiryDate); // true if return is allowed
+    }
 
 
+    public Date getDeliveredTimestamp(String shippingId) {
+        Query query = new Query(Criteria.where("id").is(shippingId)
+                .and("modificationLogs.newValue").is("delivered"));
+        System.out.println("inside the getdeliverydate");
+        query.fields().include("modificationLogs.$");
+
+        ShippingDetails result = mongoTemplate.findOne(query, ShippingDetails.class);
+        System.out.println("with : "+result);
+        if (result != null && result.getModificationLogs() != null && !result.getModificationLogs().isEmpty()) {
+            System.out.println("inside if");
+            return result.getModificationLogs().get(0).getModifiedAt();
+        }
+        return null;
+    }
 
 }

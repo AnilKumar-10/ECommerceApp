@@ -7,7 +7,6 @@ import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.DeliveryRepository;
 import com.ECommerceApp.Repository.OrderRepository;
 import com.ECommerceApp.Repository.ShippingRepository;
-import com.mongodb.annotations.Alpha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -75,6 +74,7 @@ public class ShippingService {
                 (!"REQUESTED_TO_RETURN".equals(oldStatus) || "RETURNED".equals(newValue))) {
             shipping.setStatus(shippingUpdateDTO.getNewValue());
             order.setOrderStatus(shippingUpdateDTO.getNewValue());
+
             addLog(shipping, "status", oldStatus, shippingUpdateDTO.getNewValue(), shippingUpdateDTO.getUpdateBy());
         }
 
@@ -90,7 +90,6 @@ public class ShippingService {
             addLog(shipping, "courierName", shipping.getCourierName(), shippingUpdateDTO.getNewValue(), shippingUpdateDTO.getUpdateBy());
             shipping.setCourierName(shippingUpdateDTO.getNewValue());
         }
-
 
         return shippingRepo.save(shipping);
     }
@@ -137,8 +136,13 @@ public class ShippingService {
         shippingUpdateDTO.setUpdateBy(deliveryUpdateDTO.getUpdateBy());
         shippingUpdateDTO.setShippingId(deliveryUpdateDTO.getShippingId());
         shippingUpdateDTO.setNewValue(deliveryUpdateDTO.getNewValue());
-        updateShippingStatus(shippingUpdateDTO);
-
+        updateShippingStatus(shippingUpdateDTO); // to update the shipping status to delivered
+        updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to delivered.
+        String deliveryPersonId = shippingRepo.findById(deliveryUpdateDTO.getShippingId()).get().getDeliveryPersonId();
+        DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(deliveryPersonId);
+        deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
+        deliveryPerson.setDeliveredCount(deliveryPerson.getDeliveredCount()+1);
+        deliveryRepo.save(deliveryPerson); // updating the delivery counts of the delivered person.
         return "Your order is delivered successfully please rate us..!";
     }
 
@@ -154,8 +158,40 @@ public class ShippingService {
 //    }
 
 
+    public ShippingDetails getByShippingId(String shippingId){
+        return shippingRepo.findById(shippingId).get();
+    }
+
     public String generateTrackingId() {
         return "TRK-" + UUID.randomUUID().toString().toUpperCase().replaceAll("-", "").substring(0, 10);
     }
 
+    // this updates the status of the ordered items delivered when the order is delivered.
+    public  void updateOrderItemsDeliveredStatus(ShippingUpdateDTO shippingUpdateDTO){
+        ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
+        Order order = orderRepository.findById(shippingDetails.getOrderId()).get();
+        List<OrderItem> orderItems = new ArrayList<>();
+        if(shippingUpdateDTO.getNewValue().equalsIgnoreCase("delivered")){
+            orderItems = order.getOrderItems();
+        }
+        for(OrderItem item : orderItems){
+            item.setStatus("DELIVERED");
+        }
+        order.setOrderItems(orderItems);
+        orderRepository.save(order);
+    }
+
+    public  void updateOrderItemsReturnedStatus(ShippingUpdateDTO shippingUpdateDTO){
+        ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
+        Order order = orderRepository.findById(shippingDetails.getOrderId()).get();
+        List<OrderItem> orderItems = new ArrayList<>();
+        if(shippingUpdateDTO.getNewValue().equalsIgnoreCase("returned")){
+            orderItems = order.getOrderItems();
+        }
+        for(OrderItem item : orderItems){
+            item.setStatus("RETURNED");
+        }
+        order.setOrderItems(orderItems);
+        orderRepository.save(order);
+    }
 }

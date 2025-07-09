@@ -45,6 +45,7 @@ public class ProductRequest {
     private boolean isAvailable = true;
 
     private Date addedOn = new Date(); // Optional: can be set automatically in service
-
+    private int returnBefore;
+    private  boolean returnable;
     // Getters and Setters
 }
