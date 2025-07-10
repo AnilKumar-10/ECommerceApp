@@ -4,12 +4,8 @@ import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +28,6 @@ public class TestController {
     private OrderService orderService;
     @Autowired
     private CouponService couponService;
-//    @Autowired
-//    private OrderService orderService;
     @Autowired
     private PaymentService paymentService;
     @Autowired
@@ -102,6 +96,11 @@ public class TestController {
         return cartService.getCartByBuyerId(id);
     }
 
+    @PostMapping("/clearCart/{userId}")
+    public Cart clearCart(@PathVariable String userId){
+        return cartService.clearCart(userId);
+    }
+
     @PostMapping("/postReview")
     public Review postReview(@RequestBody Review review){
         return reviewService.addReview(review);
@@ -133,14 +132,14 @@ public class TestController {
         return orderService.createOrder(orderDto);
     }
 
-    @PostMapping("/initpay")
+    @PostMapping("/initUpiPay")
     public Payment initiatePaymentDto(@RequestBody InitiatePaymentDto initiatePaymentDto){
         return paymentService.initiatePayment(initiatePaymentDto);
     }
 
     @PostMapping("/pay")
     public Payment pay(@RequestBody PaymentDto paymentDto){
-        return paymentDto.getStatus().equalsIgnoreCase("Success")?paymentService.confirmPayment(paymentDto):paymentService.failPayment(paymentDto);
+        return paymentDto.getStatus().equalsIgnoreCase("Success")?paymentService.confirmUPIPayment(paymentDto):paymentService.failPayment(paymentDto);
     }
 
     @GetMapping("/getOrder/{id}")
@@ -173,30 +172,36 @@ public class TestController {
         return invoiceService.generateInvoice(orderid);
     }
 
+    @PostMapping("/initCODPay")
+    public Payment initiateCODPay(@RequestBody InitiatePaymentDto initiatePaymentDto){
+        return paymentService.initiatePayment(initiatePaymentDto);
+    }
 
-    @PostMapping("/updatDelivery")
+    @PostMapping("/updateDelivery")
     public String updateDelivery(@RequestBody  DeliveryUpdateDTO deliveryUpdateDTO){
-//        orderService.getOrder(deliveryUpdateDTO.getOrderId()).setOrderStatus("DELIVERED");
-        Order order = orderService.getOrder(deliveryUpdateDTO.getOrderId());
-        if(deliveryUpdateDTO.getPaymentStatus().equalsIgnoreCase("success")){
-            order.setOrderStatus("DELIVERED");
-            order.setPaymentStatus("SUCCESS");
+        if(orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod().equalsIgnoreCase("COD")){
+            System.out.println("inside the if of update: "+deliveryUpdateDTO);
+            PaymentDto paymentDto = new PaymentDto();
+            paymentDto.setPaymentId(deliveryUpdateDTO.getPaymentId());
+            paymentDto.setTransactionId(orderService.generateTransactionIdForCOD());
+            paymentDto.setStatus("SUCCESS");
+            paymentService.confirmCODPayment(paymentDto); // updating the payment success details
+            orderService.updateCODPaymentStatus(deliveryUpdateDTO);// updating the order payment status
         }
-        orderService.saveOrder(order);
-//        deliveryService.updateOrder(deliveryUpdateDTO);
         return shippingService.updateDeliveryStatus(deliveryUpdateDTO);
     }
     @PostMapping("/updateReturn")
     public Refund updateReturn(@RequestBody  ReturnUpdate returnUpdate){
         if(returnUpdate.isPicked()){
             returnService.updateReturnSuccess(returnUpdate.getOrderId());
+            DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(returnUpdate.getDeliveryPersonId());
+            deliveryPerson.getToReturnItems();
             Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
             return refundService.completeRefund(refund.getRefundId());
         }
         returnService.updateReturnFailed(returnUpdate.getOrderId());
         Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
         return refundService.rejectRefund(refund.getRefundId(),"Product Damaged.");
-//        return null;
     }
 
     @PostMapping("/updateStock")

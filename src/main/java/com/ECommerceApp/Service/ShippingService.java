@@ -65,6 +65,7 @@ public class ShippingService {
 
     // 2. Update shipping status
     public ShippingDetails updateShippingStatus(ShippingUpdateDTO shippingUpdateDTO) {
+        System.out.println("inside update shipping stats: "+shippingUpdateDTO);
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new RuntimeException("Shipping record not found"));
         Order order = orderRepository.findById(shipping.getOrderId()).get();
@@ -74,10 +75,9 @@ public class ShippingService {
                 (!"REQUESTED_TO_RETURN".equals(oldStatus) || "RETURNED".equals(newValue))) {
             shipping.setStatus(shippingUpdateDTO.getNewValue());
             order.setOrderStatus(shippingUpdateDTO.getNewValue());
-
             addLog(shipping, "status", oldStatus, shippingUpdateDTO.getNewValue(), shippingUpdateDTO.getUpdateBy());
         }
-
+        orderRepository.save(order);
         return shippingRepo.save(shipping);
     }
 
@@ -139,23 +139,11 @@ public class ShippingService {
         updateShippingStatus(shippingUpdateDTO); // to update the shipping status to delivered
         updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to delivered.
         String deliveryPersonId = shippingRepo.findById(deliveryUpdateDTO.getShippingId()).get().getDeliveryPersonId();
-        DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(deliveryPersonId);
-        deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
-        deliveryPerson.setDeliveredCount(deliveryPerson.getDeliveredCount()+1);
-        deliveryRepo.save(deliveryPerson); // updating the delivery counts of the delivered person.
+        deliveryService.updateDeliveryCount(deliveryPersonId); // updates the count
+        deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId()); // removes the order details from to deliver list
         return "Your order is delivered successfully please rate us..!";
     }
 
-//    public Refund updateReturnStatus(String orderId,String deliveryPersonId){
-//        Order order = orderRepository.findById(orderId).get();
-//        ShippingUpdateDTO shippingUpdateDTO  = new ShippingUpdateDTO();
-//        shippingUpdateDTO.setNewValue("RETURNED");
-//        shippingUpdateDTO.setShippingId(order.getShippingId());
-//        shippingUpdateDTO.setUpdateBy("D");
-//
-//
-//        return null;
-//    }
 
 
     public ShippingDetails getByShippingId(String shippingId){
@@ -181,17 +169,4 @@ public class ShippingService {
         orderRepository.save(order);
     }
 
-    public  void updateOrderItemsReturnedStatus(ShippingUpdateDTO shippingUpdateDTO){
-        ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
-        Order order = orderRepository.findById(shippingDetails.getOrderId()).get();
-        List<OrderItem> orderItems = new ArrayList<>();
-        if(shippingUpdateDTO.getNewValue().equalsIgnoreCase("returned")){
-            orderItems = order.getOrderItems();
-        }
-        for(OrderItem item : orderItems){
-            item.setStatus("RETURNED");
-        }
-        order.setOrderItems(orderItems);
-        orderRepository.save(order);
-    }
 }

@@ -47,7 +47,7 @@ public class RefundService {
 
             }
         }
-        refundAmount = totalAmount-refundAmount;
+        totalAmount = totalAmount-refundAmount;
         System.out.println("payment: "+order.getPaymentId());
         Refund refund = new Refund();
         refund.setRefundId(String.valueOf(sequenceGeneratorService.getNextSequence("refundId")));
@@ -56,14 +56,19 @@ public class RefundService {
         refund.setPaymentId(order.getPaymentId());
         refund.setReason(refundRequestDto.getReason());
         System.out.println("reason in refund class: "+refundRequestDto.getReason());
-        refund.setRefundAmount(refundAmount);
+        double amount = Math.round(refundAmount * 100.0) / 100.0;
+        refund.setRefundAmount(amount);
         refund.setStatus("PENDING");
         refund.setRequestedAt(new Date());
         System.out.println("inside the refund service class");
         ShippingDetails shippingDetails = returnService.updateShippingStatusForRefundAndReturn(order.getId()); // this will update the status in shipping details
-        returnService.updateOrderItemsForReturn(orderItems,refundRequestDto);
+        returnService.updateOrderItemsForReturn(orderItems,refundRequestDto); //update the status of product to request to return
         DeliveryPerson deliveryPerson = returnService.assignReturnProductToDeliveryPerson(shippingDetails,refundRequestDto.getReason()); //  this will asign the delivery person to pick the items
         Refund refund1 = refundRepository.save(refund);
+        order.setFinalAmount(totalAmount);
+        order.setRefundId(refund1.getRefundId());
+        order.setReturned(true);
+        orderService.saveOrder(order); // updates the total amount and the return id
         approveRefund(refund1.getRefundId(),"admin");
         return returnService.getRefundAndReturnRepsonce(deliveryPerson,refund1); // this will return the refund and return details of the product
     }
@@ -169,7 +174,7 @@ public class RefundService {
 
     public Date getDeliveredTimestamp(String shippingId) {
         Query query = new Query(Criteria.where("id").is(shippingId)
-                .and("modificationLogs.newValue").is("delivered"));
+                .and("modificationLogs.newValue").is("DELIVERED"));
         System.out.println("inside the getdeliverydate");
         query.fields().include("modificationLogs.$");
 

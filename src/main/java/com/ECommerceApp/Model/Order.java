@@ -20,6 +20,7 @@ public class Order {
     private double discount;
     private double tax;
     private double finalAmount;
+    private String  refundId;
     private String orderStatus;         // PLACED, CONFIRMED, PACKED, SHIPPED, IN_TRANSIT,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
     private String paymentMethod;       // UPI, CARD, COD
     private String paymentStatus;       // PENDING, SUCCESS, FAILED
@@ -28,6 +29,7 @@ public class Order {
     private boolean isCancelled;
     private String cancelReason;
     private Date cancellationTime;
+    private boolean isReturned = false;
     private String shippingId;
 }
 

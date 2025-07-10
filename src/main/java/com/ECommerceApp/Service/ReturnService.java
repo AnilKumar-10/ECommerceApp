@@ -91,14 +91,19 @@ public class ReturnService {
         updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
     }
 
+    //this will update the status success of the orderItems product.
     private void updateOrderItemsForReturnSuccess(Order order) {
         List<OrderItem> orderItems = order.getOrderItems();
+//        System.out.println("inside updateorderitems: "+order);
+//        System.out.println("inside updateorderitems before : "+orderItems);
         for(OrderItem orderItem:orderItems){
-            if(orderItem.getStatus().equalsIgnoreCase("REQUEST_TO_RETURN")){
+//            System.out.println("inside for with orderIten: "+orderItem.getStatus());
+            if(orderItem.getStatus().equals("REQUEST_T0_RETURN")){
                 orderItem.setStatus("RETURNED");
             }
         }
         order.setOrderItems(orderItems);
+//        System.out.println("inside order after: "+orderItems);
         orderService.saveOrder(order);
     }
 
@@ -111,20 +116,24 @@ public class ReturnService {
         shippingUpdateDTO.setNewValue("RETURNED_FAILED");
         shippingService.updateShippingStatus(shippingUpdateDTO);
 //        System.out.println("inside the return service class with : "+shippingDetails);
-        updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
+//        updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
     }
 
 
     public void updateStockLogAfterReturn(String orderId){
-        StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
         Order order = orderService.getOrder(orderId);
-        OrderItem orderedProduct = order.getOrderItems().getFirst();
-        stockLogModificationDTO.setAction("RETURNED");
-        stockLogModificationDTO.setModifiedAt(new Date());
-        stockLogModificationDTO.setQuantityChanged(orderedProduct.getQuantity());
-        stockLogModificationDTO.setSellerId(productService.getProductById(orderedProduct.getProductId()).getSellerId());
-        stockLogModificationDTO.setProductId(orderedProduct.getProductId());
-        stockLogService.modifyStock(stockLogModificationDTO);
+        List<OrderItem> orderedProducts = order.getOrderItems();
+        for(OrderItem orderItem : orderedProducts){
+            if(orderItem.getStatus().equals("RETURNED")){
+                StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+                stockLogModificationDTO.setAction("RETURNED");
+                stockLogModificationDTO.setModifiedAt(new Date());
+                stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
+                stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
+                stockLogModificationDTO.setProductId(orderItem.getProductId());
+                stockLogService.modifyStock(stockLogModificationDTO);
+            }
+        }
     }
 
     public void updateOrderItemsForReturn(List<OrderItem> orderItems, RaiseRefundRequestDto refundRequestDto) {

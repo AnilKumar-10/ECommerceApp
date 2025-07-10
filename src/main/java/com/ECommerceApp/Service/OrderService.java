@@ -1,9 +1,9 @@
 package com.ECommerceApp.Service;
 
+import com.ECommerceApp.DTO.DeliveryUpdateDTO;
 import com.ECommerceApp.DTO.OrderDto;
 import com.ECommerceApp.DTO.StockLogModificationDTO;
 import com.ECommerceApp.Exceptions.OrderNotFoundException;
-import com.ECommerceApp.Exceptions.RefundNotFoundException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -47,27 +48,36 @@ public class OrderService {
         order.setId(String.valueOf(nextId)); // If id is String
         order.setOrderItems(orderItem);
         order.setBuyerId(orderDto.getUserId());
-        order.setAddressId(getAddress(orderDto.getUserId(),orderDto.getAddressType()));
+        String addressId = getAddress(orderDto.getUserId(),orderDto.getAddressType());
+        order.setAddressId(addressId);
         order.setCouponId(orderDto.getCoupon());
         order.setOrderDate(new Date());
         double value = getTotalAmount(orderDto);
-        System.out.println("valuse: "+value);
+        System.out.println("value: "+value);
         double amount = Math.round(value * 100.0) / 100.0;
         System.out.println("amount in order servie: "+amount);
         order.setTotalAmount(amount);
         double discountAmount = Math.round(getCouponDiscount(orderDto,amount)*100.0)/100.0;
         order.setDiscount(discountAmount);
-        double finalAmount = amount-discountAmount;
-        order.setFinalAmount(finalAmount);
+        double tax = getTax(addressId);
+        order.setTax(tax);
+        double finalAmount = amount - discountAmount + tax;
+        order.setFinalAmount(Math.round(finalAmount * 100.0) / 100.0);
         order.setPaymentMethod(orderDto.getPayMode());
         order.setOrderDate(new Date());
         order.setOrderStatus(orderDto.getPayMode().equalsIgnoreCase("COD")?"PLACED":"PENDING");
-//        order.setShippingId(shippingService.createShippingDetails());
         order.setPaymentStatus("PENDING"); // pending until the payment is successful
-       // the remaining fields like status are updated after the payment
         Order order1 = orderRepository.save(order);
-        order1.setShippingId(shippingService.createShippingDetails(order1).getId());
-        return order1; // flow goes to the initiating payment
+        if(orderDto.getPayMode().equalsIgnoreCase("COD")){ // if the paymode is UPI then the shipping details must be generated after the payment.
+            shippingService.createShippingDetails(order1);
+            updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
+            cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
+        }
+        return order1; // flow goes to the initiating payment is the paymode is upi
+    }
+
+    private double getTax(String addressId) {
+        return  0.0;
     }
 
     public String getAddress(String userId,String type){
@@ -94,34 +104,22 @@ public class OrderService {
         for(OrderItem item : orderItem){
             amount += item.getPrice();
         }
-        System.out.println("amount is methos: "+amount);
+        System.out.println("amount is method: "+amount);
         return amount;
     }
 
-
+    // update the order and payment status after the completion of payment.
     public void markOrderAsPaid(String orderId, String paymentId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
         order.setPaymentStatus("SUCCESS");
         order.setOrderStatus("CONFIRMED");
         order.setPaymentId(paymentId);
-        orderRepository.save(order);
-        updateStockLogAfterOrder(orderId);
+        Order order1 = orderRepository.save(order);
+        shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
+        updateStockLogAfterOrderConfirmed(orderId); // after the order is confirmed the stock details get updated.
+        cartService.removeOrderedItemsFromCart(order1);
     }
-
-    private void updateStockLogAfterOrder(String orderId) {
-        StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
-        Order order = getOrder(orderId);
-        OrderItem orderedProduct = order.getOrderItems().getFirst();
-        stockLogModificationDTO.setAction("SOLD");
-        stockLogModificationDTO.setModifiedAt(new Date());
-        stockLogModificationDTO.setQuantityChanged(orderedProduct.getQuantity());
-        stockLogModificationDTO.setSellerId(productService.getProductById(orderedProduct.getProductId()).getSellerId());
-        stockLogModificationDTO.setProductId(orderedProduct.getProductId());
-        stockLogService.modifyStock(stockLogModificationDTO);
-
-    }
-
 
     public void markOrderAsPaymentFailed(String orderId) {
         Order order = orderRepository.findById(orderId)
@@ -134,6 +132,38 @@ public class OrderService {
         orderRepository.save(order);
     }
 
+
+    // update the stock details after the order is confirmed
+    private void updateStockLogAfterOrderConfirmed(String orderId) {
+        Order order = getOrder(orderId);
+        List<OrderItem> orderedProducts = order.getOrderItems();
+        for(OrderItem orderItem : orderedProducts){
+            StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+            stockLogModificationDTO.setAction("SOLD");
+            stockLogModificationDTO.setModifiedAt(new Date());
+            stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
+            stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
+            stockLogModificationDTO.setProductId(orderItem.getProductId());
+            stockLogService.modifyStock(stockLogModificationDTO);
+        }
+    }
+
+
+    // update the stock details after the order is returned
+//    private void updateStockLogAfterOrderReturned(String orderId) {
+//        Order order = getOrder(orderId);
+//        List<OrderItem> orderedProducts = order.getOrderItems();
+//        for(OrderItem orderItem : orderedProducts){
+//            StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+//            stockLogModificationDTO.setAction("RETURN");
+//            stockLogModificationDTO.setModifiedAt(new Date());
+//            stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
+//            stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
+//            stockLogModificationDTO.setProductId(orderItem.getProductId());
+//            stockLogService.modifyStock(stockLogModificationDTO);
+//        }
+//    }
+
     public Order saveOrder(Order order){
         return orderRepository.save(order);
     }
@@ -141,4 +171,21 @@ public class OrderService {
     public Order getOrder(String id){
         return orderRepository.findById(id).get();
     }
+
+    public void updateCODPaymentStatus(DeliveryUpdateDTO deliveryUpdateDTO){
+        Order order = getOrder(deliveryUpdateDTO.getOrderId());
+        if(deliveryUpdateDTO.getPaymentStatus().equalsIgnoreCase("success")){
+            order.setOrderStatus("DELIVERED");
+            order.setPaymentStatus("SUCCESS");
+            order.setPaymentId(deliveryUpdateDTO.getPaymentId());
+        }
+        saveOrder(order);
+    }
+
+    // generate the random transaction id's for COD orders.
+    public String generateTransactionIdForCOD() {
+        return "TRNSCN-" + UUID.randomUUID().toString().toUpperCase().replaceAll("-", "").substring(0, 10);
+    }
+
+
 }

@@ -8,6 +8,6 @@ import java.util.List;
 public class RaiseRefundRequestDto {
     private String orderId;
     private List<String> productIds;
-    private String Reason;
+    private String reason;
 
 }

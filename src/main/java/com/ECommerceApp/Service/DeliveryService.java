@@ -1,12 +1,14 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.DeliveryItems;
-import com.ECommerceApp.DTO.DeliveryUpdateDTO;
-import com.ECommerceApp.DTO.ShippingUpdateDTO;
+import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Model.DeliveryPerson;
 import com.ECommerceApp.Model.Order;
 import com.ECommerceApp.Repository.DeliveryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,9 @@ public class DeliveryService {
     private AddressService addressService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
 //    @Autowired
 //    private OrderService orderService;
 
@@ -76,6 +81,22 @@ public class DeliveryService {
 
     public DeliveryPerson updateDeliveryPerson(DeliveryPerson deliveryPerson){
         return deliveryRepository.save(deliveryPerson);
+    }
+
+
+    public void removeDeliveredOrderFromToDeliveryItems(String deliveryPersonId, String orderId) {
+        Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
+        Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("orderId").is(orderId)));
+        mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
+    }
+
+
+    public void updateDeliveryCount(String deliveryPersonId){
+        DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
+        deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
+        deliveryPerson.setDeliveredCount(deliveryPerson.getDeliveredCount()+1);
+        updateDeliveryPerson(deliveryPerson); // updating the delivery counts of the delivered person.
+
     }
 
 }

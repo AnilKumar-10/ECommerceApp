@@ -49,17 +49,18 @@ public class ProductService{
 
     public Product updateProduct(String id, ProductRequest request) {
         Product existing = getProductById(id);
-        existing.setName(request.getName());
-        existing.setDescription(request.getDescription());
-        existing.setPrice(request.getPrice());
-        existing.setStock(request.getStock());
-        existing.setReturnPolicy(request.getReturnPolicy());
-        existing.setCategoryId(request.getCategoryId());
-        existing.setSellerId(request.getSellerId());
-        existing.setColors(request.getColors());
-        existing.setSizes(request.getSizes());
-        existing.setImages(request.getImages());
-        existing.setAvailable(request.isAvailable());
+        BeanUtils.copyProperties(request,existing);
+//        existing.setName(request.getName());
+//        existing.setDescription(request.getDescription());
+//        existing.setPrice(request.getPrice());
+//        existing.setStock(request.getStock());
+//        existing.setReturnPolicy(request.getReturnPolicy());
+//        existing.setCategoryId(request.getCategoryId());
+//        existing.setSellerId(request.getSellerId());
+//        existing.setColors(request.getColors());
+//        existing.setSizes(request.getSizes());
+//        existing.setImages(request.getImages());
+//        existing.setAvailable(request.isAvailable());
 //        existing.setRating(calculateAverageRating(id));
         // here the ratings are not updated by the user/seller because it must update when the new reviews are added to this product
         return productRepository.save(existing);

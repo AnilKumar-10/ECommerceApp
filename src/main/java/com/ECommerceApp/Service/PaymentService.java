@@ -23,6 +23,7 @@ public class PaymentService {
 
     // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
     public Payment initiatePayment(InitiatePaymentDto initiatePaymentDto) {
+        System.out.println("inside the initiate payment : "+initiatePaymentDto);
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
         if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
@@ -40,7 +41,7 @@ public class PaymentService {
     }
 
     // 2. Update payment on success
-    public Payment confirmPayment(PaymentDto paymentDto) {
+    public Payment confirmUPIPayment(PaymentDto paymentDto) {
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
@@ -65,5 +66,19 @@ public class PaymentService {
         // Mark order failed too
         orderService.markOrderAsPaymentFailed(payment.getOrderId());
         return payment;
+    }
+
+    public Payment confirmCODPayment(PaymentDto paymentDto) { // for COD payment
+        Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+        payment.setTransactionId(paymentDto.getTransactionId());
+        payment.setStatus("SUCCESS");
+        payment.setTransactionTime(new Date());
+        return paymentRepository.save(payment); // after this the flow goes to the shipping details.
+    }
+
+
+    public Payment getPaymentById(String paymentId){
+        return paymentRepository.findById(paymentId).get();
     }
 }

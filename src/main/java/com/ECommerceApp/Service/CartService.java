@@ -1,9 +1,6 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Model.Cart;
-import com.ECommerceApp.Model.CartItem;
-import com.ECommerceApp.Model.OrderItem;
-import com.ECommerceApp.Model.Product;
+import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.CartRerepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,16 +60,50 @@ public class CartService {
     }
 
 
-    public Cart removeItemFromCart(String buyerId, String productId) {
+    public Cart removeOneItemFromCart(String buyerId, String  productId) {
         Cart cart = getCartByBuyerId(buyerId);
         cart.getItems().removeIf(item -> item.getProductId().equals(productId));
         cart.setUpdatedAt(new Date());
         return cartRepository.save(cart);
     }
 
+    public void removeOrderedItemsFromCart(Order order) {
+        String userId = order.getBuyerId();
+        List<OrderItem> orderItems = order.getOrderItems();
+        // Get the Cart
+        Cart cart = getCartByBuyerId(userId);
+        if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
+            return;
+        }
+        List<CartItem> cartItems = cart.getItems();
+        // Create a filtered list excluding ordered items
+        List<CartItem> updatedCartItems = new ArrayList<>();
+        for (CartItem cartItem : cartItems) {
+            boolean matched = false;
+            for (OrderItem orderItem : orderItems) {
+                if (cartItem.getProductId().equals(orderItem.getProductId())
+                        && cartItem.getSize().equals(orderItem.getSize())
+                        && cartItem.getColor().equals(orderItem.getColor())) {
+                    matched = true;
+                    cart.setTotalAmount(cart.getTotalAmount() - orderItem.getPrice());
+                    break;
+                }
+            }
+            if (!matched) {
+                updatedCartItems.add(cartItem);
+            }
+        }
+        // Save updated cart
+        cart.setItems(updatedCartItems);
+        cart.setUpdatedAt(new Date());
+        cartRepository.save(cart);
+    }
+
+
     public Cart clearCart(String buyerId) {
         Cart cart = getCartByBuyerId(buyerId);
         cart.setItems(new ArrayList<>());
+        cart.setTotalAmount(0);
         cart.setUpdatedAt(new Date());
         return cartRepository.save(cart);
     }
@@ -80,22 +111,19 @@ public class CartService {
 
     // moving the cart items to orderItems
     public List<OrderItem> checkOutForOrder(List<Integer> itemIds,String userId){
-//        System.out.println("inside cartService with : "+itemIds+"  "+userId);
         List<OrderItem> items = new ArrayList<>();
         for(CartItem item : cartRepository.findByBuyerId(userId).get().getItems()){
-//            System.out.println(itemIds+" ==> "+item.getItemId()+"  ==>  "+itemIds.contains(item.getItemId()));
             if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
                 BeanUtils.copyProperties(item,orderItem);
                 // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
                 items.add(orderItem);
-//                System.out.println("cartItem: "+item);
-//                System.out.println("matched and placed in list: "+orderItem);
 //                removeItemFromCart(userId,item.getProductId());
             }
         }
-//        System.out.println(" items list:  "+ items);
         return items;
     }
+
+
 
 }
