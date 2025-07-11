@@ -10,5 +10,6 @@ public class OrderItem {
     private String color;
     private double price;
     private String status;
+    private double tax;
 }
 

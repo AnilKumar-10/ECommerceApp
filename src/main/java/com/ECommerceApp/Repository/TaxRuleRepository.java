@@ -11,5 +11,7 @@ public interface TaxRuleRepository extends MongoRepository<TaxRule, String> {
     Optional<TaxRule> findByStateAndCategoryIdAndIsActiveTrue(String state, String categoryId);
 
     // Optional fallback if needed
-    List<TaxRule> findByCountryAndCategoryIdAndIsActiveTrue(String country, String categoryId);
+//    List<TaxRule> findByCountryAndCategoryIdAndIsActiveTrue(String country, String categoryId);
+
+    TaxRule findByCategoryIdAndStateAndIsActiveTrue(String rootCategoryId,String  shippingState);
 }

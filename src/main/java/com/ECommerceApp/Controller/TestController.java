@@ -15,7 +15,6 @@ public class TestController {
     private ProductService productService;
     @Autowired
     private ReviewService reviewService;
-
     @Autowired
     private UserService userService;
     @Autowired
@@ -42,6 +41,11 @@ public class TestController {
     private ReturnService returnService ;
     @Autowired
     private StockLogService stockLogService;
+    @Autowired
+    private TaxRuleService taxRuleService;
+    @Autowired
+    private CategoryService categoryService;
+
 
 
     @GetMapping("/home")
@@ -208,7 +212,17 @@ public class TestController {
     public StockLog insertStock(@RequestBody StockLogModificationDTO stockLogModificationDTO){
         return stockLogService.modifyStock(stockLogModificationDTO);
     }
+// ====================================
+    // tax controller
+    @PostMapping("/createTax")
+    public String  createTax(@RequestBody List<TaxRule> rule){
+        return taxRuleService.createMultiTaxRules(rule);
+    }
 
-
+    // category controller
+    @PostMapping("/insertCategory")
+    public String  inserCategory(@RequestBody List<Category> categories){
+        return categoryService.createCategoryList(categories);
+    }
 }
 

@@ -31,6 +31,7 @@ public class RefundService {
     private ShippingService shippingService;
     @Autowired
     private MongoTemplate mongoTemplate;
+
     //1. Raising the refund request
     public RefundAndReturnResponseDTO requestRefund(RaiseRefundRequestDto refundRequestDto) {
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
@@ -43,7 +44,7 @@ public class RefundService {
         for(OrderItem item : orderItems){
             if(refundRequestDto.getProductIds().contains(item.getProductId())){
                 checkProductReturnable(item.getProductId(),order.getShippingId());
-                refundAmount += item.getPrice()* item.getQuantity();
+                refundAmount += item.getPrice()* item.getQuantity() - item.getTax();
 
             }
         }
@@ -61,11 +62,13 @@ public class RefundService {
         refund.setStatus("PENDING");
         refund.setRequestedAt(new Date());
         System.out.println("inside the refund service class");
-        ShippingDetails shippingDetails = returnService.updateShippingStatusForRefundAndReturn(order.getId()); // this will update the status in shipping details
+        ShippingDetails shippingDetails = returnService.updateShippingStatusForRefundAndReturn(order.getId());
+        // this will update the status in shipping details
         returnService.updateOrderItemsForReturn(orderItems,refundRequestDto); //update the status of product to request to return
-        DeliveryPerson deliveryPerson = returnService.assignReturnProductToDeliveryPerson(shippingDetails,refundRequestDto.getReason()); //  this will asign the delivery person to pick the items
+        DeliveryPerson deliveryPerson = returnService.assignReturnProductToDeliveryPerson(shippingDetails,refundRequestDto.getReason());
+        // this will asign the delivery person to pick the items
         Refund refund1 = refundRepository.save(refund);
-        order.setFinalAmount(totalAmount);
+        order.setFinalAmount(Math.round(totalAmount * 100.0) / 100.0);
         order.setRefundId(refund1.getRefundId());
         order.setReturned(true);
         orderService.saveOrder(order); // updates the total amount and the return id
@@ -175,11 +178,11 @@ public class RefundService {
     public Date getDeliveredTimestamp(String shippingId) {
         Query query = new Query(Criteria.where("id").is(shippingId)
                 .and("modificationLogs.newValue").is("DELIVERED"));
-        System.out.println("inside the getdeliverydate");
+//        System.out.println("inside the getdeliverydate");
         query.fields().include("modificationLogs.$");
 
         ShippingDetails result = mongoTemplate.findOne(query, ShippingDetails.class);
-        System.out.println("with : "+result);
+//        System.out.println("with : "+result);
         if (result != null && result.getModificationLogs() != null && !result.getModificationLogs().isEmpty()) {
             System.out.println("inside if");
             return result.getModificationLogs().get(0).getModifiedAt();

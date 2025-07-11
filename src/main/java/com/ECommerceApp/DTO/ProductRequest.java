@@ -30,7 +30,7 @@ public class ProductRequest {
     private String returnPolicy;
 
     @NotBlank(message = "Category ID is required")
-    private String categoryId;
+    private List<String> categoryIds;
 
     @NotBlank(message = "Seller ID is required")
     private String sellerId;

@@ -6,6 +6,7 @@ import com.ECommerceApp.DTO.StockLogModificationDTO;
 import com.ECommerceApp.Exceptions.OrderNotFoundException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.OrderRepository;
+import com.ECommerceApp.Repository.TaxRuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,10 @@ public class OrderService {
     private ProductService productService;
     @Autowired
     private StockLogService stockLogService;
+    @Autowired
+    private CategoryService categoryService;
+    @Autowired
+    private TaxRuleService taxRuleService;
 
     public Order createOrder(OrderDto orderDto){
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
@@ -42,8 +47,6 @@ public class OrderService {
             }
         }
         Order order = new Order();
-        System.out.println("orderDTO:  "+orderDto);
-        System.out.println("orderItems:  "+orderItem);
         long nextId = sequenceService.getNextSequence("orderId");
         order.setId(String.valueOf(nextId)); // If id is String
         order.setOrderItems(orderItem);
@@ -52,14 +55,11 @@ public class OrderService {
         order.setAddressId(addressId);
         order.setCouponId(orderDto.getCoupon());
         order.setOrderDate(new Date());
-        double value = getTotalAmount(orderDto);
-        System.out.println("value: "+value);
-        double amount = Math.round(value * 100.0) / 100.0;
-        System.out.println("amount in order servie: "+amount);
+        double amount = getTotalAmount(orderDto);
         order.setTotalAmount(amount);
-        double discountAmount = Math.round(getCouponDiscount(orderDto,amount)*100.0)/100.0;
+        double discountAmount = getCouponDiscount(orderDto,amount);
         order.setDiscount(discountAmount);
-        double tax = getTax(addressId);
+        double tax = calculateTaxForOrder(order,addressId);
         order.setTax(tax);
         double finalAmount = amount - discountAmount + tax;
         order.setFinalAmount(Math.round(finalAmount * 100.0) / 100.0);
@@ -68,7 +68,8 @@ public class OrderService {
         order.setOrderStatus(orderDto.getPayMode().equalsIgnoreCase("COD")?"PLACED":"PENDING");
         order.setPaymentStatus("PENDING"); // pending until the payment is successful
         Order order1 = orderRepository.save(order);
-        if(orderDto.getPayMode().equalsIgnoreCase("COD")){ // if the paymode is UPI then the shipping details must be generated after the payment.
+        if(orderDto.getPayMode().equalsIgnoreCase("COD")){
+            // if the paymode is UPI then the shipping details must be generated after the payment.
             shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
@@ -76,9 +77,6 @@ public class OrderService {
         return order1; // flow goes to the initiating payment is the paymode is upi
     }
 
-    private double getTax(String addressId) {
-        return  0.0;
-    }
 
     public String getAddress(String userId,String type){
         List<Address> address = addressService.getAddressesByUserId(userId);
@@ -92,8 +90,10 @@ public class OrderService {
     }
 
     public double getCouponDiscount(OrderDto orderDto,double amount){
+        couponService.recordCouponUsage(orderDto.getCoupon(),orderDto.getUserId());// this is used to track the no of time the coupon is used by user
         Coupon coupon = couponService.validateCoupon(orderDto.getCoupon(),orderDto.getUserId(),amount);
-        return couponService.getDiscountAmount(coupon,amount);
+        double discount = couponService.getDiscountAmount(coupon,amount);
+        return Math.round(discount * 100.0)/100.0;
     }
 
 
@@ -105,7 +105,7 @@ public class OrderService {
             amount += item.getPrice();
         }
         System.out.println("amount is method: "+amount);
-        return amount;
+        return Math.round(amount * 100.0) / 100.0;
     }
 
     // update the order and payment status after the completion of payment.
@@ -187,5 +187,26 @@ public class OrderService {
         return "TRNSCN-" + UUID.randomUUID().toString().toUpperCase().replaceAll("-", "").substring(0, 10);
     }
 
+    // this will calculates the tax of every product and return the whole tax applicable for the order.
+    public double calculateTaxForOrder(Order order,String addressId){
+        List<OrderItem> orderItems = order.getOrderItems();
+        double totalTax = 0.0;
+        String shippingState = addressService.getAddressById(addressId).getState();
+
+        for (OrderItem item : orderItems) {
+            Product product = productService.getProductById(item.getProductId());
+            // Get root category ID
+            String rootCategoryId = categoryService.getRootCategoryId(product.getCategoryIds());
+            // Get tax rule
+//            TaxRule rule = taxRuleService.getTaxRule(rootCategoryId, shippingState).get();
+            double taxRate = taxRuleService.getApplicableTaxRate(rootCategoryId, shippingState);
+            // Calculate tax for this item
+            double tax = (item.getPrice() * taxRate) / 100;
+            item.setTax(tax);
+
+            totalTax += tax;
+        }
+        return Math.round(totalTax * 100.0)/100.0;
+    }
 
 }

@@ -14,6 +14,7 @@ public class TaxRule {
     private String country;
     private String state;
     private String categoryId;
+    private String categoryName;
     private double taxRate;
     private boolean isActive;
 }

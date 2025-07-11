@@ -81,7 +81,7 @@ public class ProductService{
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());
         product.setReturnPolicy(dto.getReturnPolicy());
-        product.setCategoryId(dto.getCategoryId());
+        product.setCategoryIds(dto.getCategoryIds());
         product.setSellerId(dto.getSellerId());
         product.setColors(dto.getColors());
         product.setSizes(dto.getSizes());

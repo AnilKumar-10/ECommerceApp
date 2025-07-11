@@ -34,14 +34,14 @@ public class ReturnService {
         shippingUpdateDTO.setUpdateBy("ADMIN");
         shippingUpdateDTO.setNewValue("REQUESTED_TO_RETURNED");
         ShippingDetails  shippingDetails = shippingService.updateShippingStatus(shippingUpdateDTO);
-        System.out.println("indide the return service class with : "+shippingDetails);
+//        System.out.println("indide the return service class with : "+shippingDetails);
         return shippingDetails;
     }
 
     public DeliveryPerson assignReturnProductToDeliveryPerson(ShippingDetails shippingDetails,String reason){
-        System.out.println("indide the return assignReturnProductToDeliveryPerson");
+//        System.out.println("indide the return assignReturnProductToDeliveryPerson");
         DeliveryPerson deliveryPerson =  deliveryService.getDeliveryPerson(shippingDetails.getDeliveryPersonId());
-        System.out.println("indide the return assignReturnProductToDeliveryPerson with delivery: "+deliveryPerson);
+//        System.out.println("indide the return assignReturnProductToDeliveryPerson with delivery: "+deliveryPerson);
         ProductReturnDto productReturnDto = new ProductReturnDto();
         DeliveryItems deliveryItems = new DeliveryItems();
         for(DeliveryItems item : deliveryPerson.getToDeliveryItems()){
@@ -54,7 +54,7 @@ public class ReturnService {
             }
         }
         deliveryPerson.getToReturnItems().add(productReturnDto);
-        System.out.println("indide the return service assignReturnProductToDeliveryPerson class wiht :"+deliveryPerson);
+//        System.out.println("indide the return service assignReturnProductToDeliveryPerson class wiht :"+deliveryPerson);
         return deliveryService.updateDeliveryPerson(deliveryPerson);
     }
 

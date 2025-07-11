@@ -15,8 +15,21 @@ public class TaxRuleService {
     private TaxRuleRepository taxRuleRepository;
 
     // 1. Create new tax rule
-    public TaxRule createTaxRule(TaxRule rule) {
+    public TaxRule createOneTaxRule(TaxRule rule) {
         return taxRuleRepository.save(rule);
+    }
+
+    public String  createMultiTaxRules(List<TaxRule> taxRules) {
+        int count = 0;
+
+        for(TaxRule rule : taxRules){
+            taxRuleRepository.save(rule);
+            count++;
+        }
+        if(count==taxRules.size()){
+             return "taxRules are inserted successfully!  "+count;
+        }
+        return "Something went wrong";
     }
 
     // 2. Update existing tax rule
@@ -47,19 +60,17 @@ public class TaxRuleService {
     }
 
     // 5. Get applicable tax rate based on state and category
-    public double getApplicableTaxRate(String state, String categoryId) {
+    public double getApplicableTaxRate(String categoryId , String state) {
         TaxRule rule = taxRuleRepository.findByStateAndCategoryIdAndIsActiveTrue(state, categoryId)
                 .orElse(null);
-
         if (rule == null) {
-            // Optionally fall back to country-level default tax or 0
             return 0.0;
         }
         return rule.getTaxRate();
     }
 
-    // 6. Optional: Get tax rule (for auditing/debugging)
-    public Optional<TaxRule> getTaxRule(String state, String categoryId) {
+    // 6. Get tax rule by category and state
+    public Optional<TaxRule> getTaxRule(String categoryId, String state ) {
         return taxRuleRepository.findByStateAndCategoryIdAndIsActiveTrue(state, categoryId);
     }
 }

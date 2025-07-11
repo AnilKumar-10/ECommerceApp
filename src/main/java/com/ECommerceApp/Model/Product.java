@@ -20,7 +20,7 @@ public class Product {
     private String returnPolicy;
     private int returnBefore; // no of days like 5,10
     private boolean isReturnable;
-    private String categoryId;       // Reference to Categories collection
+    private List<String> categoryIds;       // Reference to Categories collection
     private String sellerId;         // Reference to Users collection (with role = SELLER)
 
     private List<String> colors;

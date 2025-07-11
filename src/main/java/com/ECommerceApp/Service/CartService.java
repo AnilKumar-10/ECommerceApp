@@ -31,6 +31,7 @@ public class CartService {
                 });
     }
 
+    // Each time it add one item to the cart.
     public Cart addItemToCart(String buyerId, CartItem item) {
         Cart cart = getCartByBuyerId(buyerId);
         double price = productService.getProductPrice(item.getProductId());
@@ -59,7 +60,7 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-
+    // this will remove one item from the cart.
     public Cart removeOneItemFromCart(String buyerId, String  productId) {
         Cart cart = getCartByBuyerId(buyerId);
         cart.getItems().removeIf(item -> item.getProductId().equals(productId));
@@ -95,11 +96,16 @@ public class CartService {
         }
         // Save updated cart
         cart.setItems(updatedCartItems);
+        int i=0;
+        for(CartItem cartItem : cart.getItems()){
+            cartItem.setItemId(i);
+            i++;
+        }
         cart.setUpdatedAt(new Date());
         cartRepository.save(cart);
     }
 
-
+    // Clear all the items in the cart.
     public Cart clearCart(String buyerId) {
         Cart cart = getCartByBuyerId(buyerId);
         cart.setItems(new ArrayList<>());
@@ -115,8 +121,7 @@ public class CartService {
         for(CartItem item : cartRepository.findByBuyerId(userId).get().getItems()){
             if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
-                BeanUtils.copyProperties(item,orderItem);
-                // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
+                BeanUtils.copyProperties(item,orderItem); // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
                 items.add(orderItem);
 //                removeItemFromCart(userId,item.getProductId());
             }
