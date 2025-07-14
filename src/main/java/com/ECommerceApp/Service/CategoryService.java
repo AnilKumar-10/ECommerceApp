@@ -134,5 +134,31 @@ public class CategoryService {
     }
 
 
+    public Category getCategoryByName(String name){
+        return categoryRepository.findByName(name);
+    }
+
+
+    public List<String> getAllSubCategoryIds(String rootId) {
+        List<String> result = new ArrayList<>();
+        Queue<String> queue = new LinkedList<>();
+        queue.add(rootId);
+
+        while (!queue.isEmpty()) {
+            String currentId = queue.poll();
+            result.add(currentId);
+            List<Category> children = categoryRepository.findByParentId(currentId);
+            for (Category sub : children) {
+                queue.add(sub.getId());
+            }
+        }
+
+        return result;
+    }
+
+
+    public List<Category> getCategoryByNameIgnoreCase(String name){
+        return categoryRepository.findByNameIgnoreCase(name);
+    }
 
 }

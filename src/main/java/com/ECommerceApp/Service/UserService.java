@@ -26,6 +26,17 @@ public class UserService {
         return usersRepository.save(user);
     }
 
+    public String registerUsers(List<Users> users){
+        int c=0;
+        for(Users user:users){
+            user.setCreatedAt(new Date());
+            usersRepository.save(user);
+            c++;
+        }
+        return "done"+c;
+    }
+
+
     // 2. Update user profile based on roles
     public Users updateUser(String userId, Users updatedData) {
         Users existing = usersRepository.findById(userId)

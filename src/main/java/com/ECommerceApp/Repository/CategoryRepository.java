@@ -13,4 +13,6 @@ public interface CategoryRepository extends MongoRepository<Category,String> {
     // Get category by name (optional - useful for validation or lookup)
     Category findByName(String name);
 
+    List<Category> findByNameIgnoreCase(String name);
+//    List<Category> findByParentId(String parentId);
 }

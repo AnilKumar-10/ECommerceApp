@@ -26,6 +26,8 @@ public class ProductRequest {
     @Min(value = 0, message = "Stock cannot be negative")
     private int stock;
 
+    private String brand;
+
     @NotBlank(message = "Return policy must be provided")
     private String returnPolicy;
 

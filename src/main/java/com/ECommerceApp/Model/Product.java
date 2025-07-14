@@ -14,6 +14,7 @@ public class Product {
     @Id
     private String id;
     private String name;
+    private String brand;
     private String description;
     private double price;
     private int stock;

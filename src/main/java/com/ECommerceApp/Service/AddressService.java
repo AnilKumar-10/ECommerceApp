@@ -4,6 +4,7 @@ import com.ECommerceApp.Exceptions.AddressNotFoundException;
 import com.ECommerceApp.Model.Address;
 import com.ECommerceApp.Repository.AddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,14 @@ public class AddressService {
         return addressRepository.save(address);
     }
 
+    public String  createAddresses(List<Address> addresses) {
+        int c=0;
+        for(Address address:addresses){
+            addressRepository.save(address);
+            c++;
+        }
+         return "done: "+c;
+    }
     // getting the address based on the userid
     public List<Address> getAddressesByUserId(String userId) {
 
@@ -51,5 +60,9 @@ public class AddressService {
             throw new AddressNotFoundException("Address not found with ID: " + id);
         }
         addressRepository.deleteById(id);
+    }
+
+    public List<Address> getAllAddressess() {
+        return addressRepository.findAll();
     }
 }

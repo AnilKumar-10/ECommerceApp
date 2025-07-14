@@ -49,6 +49,15 @@ public class DeliveryService {
         return deliveryRepository.save(deliveryPerson);
     }
 
+    public String  registerPersons(List<DeliveryPerson> deliveryPerson){
+        int c=0;
+        for(DeliveryPerson person: deliveryPerson){
+            deliveryRepository.save(person);
+            c++;
+        }
+        return "inserted: "+c;
+    }
+
 
     public DeliveryPerson getDeliveryPerson(String id){
         return deliveryRepository.findById(id).get();

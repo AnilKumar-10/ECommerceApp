@@ -2,11 +2,8 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.ProductRequest;
 import com.ECommerceApp.Exceptions.ProductNotFoundException;
-import com.ECommerceApp.Model.Product;
-import com.ECommerceApp.Model.Review;
-import com.ECommerceApp.Model.StockLog;
+import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.ProductRepository;
-import com.ECommerceApp.Repository.ReviewRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +32,21 @@ public class ProductService{
         product.setRating(0.0);
         StockLog stockLog = stockLogService.getByProductId(request.getId());
         return productRepository.save(product);
+    }
+
+    public String  createProductList(List<ProductRequest> products){
+        int count = 0;
+
+        for(ProductRequest product : products){
+            Product p = new Product();
+            BeanUtils.copyProperties(product,p);
+            productRepository.save(p);
+            count++;
+        }
+        if(count==products.size()){
+            return "Products are inserted successfully!  "+count;
+        }
+        return "Something went wrong";
     }
 
 
@@ -118,6 +130,16 @@ public class ProductService{
     public double getProductPrice(String id){
         Product product = productRepository.findById(id).get();
         return product.getPrice();
+    }
+
+    // return the porducts that contain any of the given category
+    public List<Product> getProductContainsAnyCategory(List<String> allCategoryIds){
+        return productRepository.findByCategoryIdsIn(allCategoryIds);
+    }
+
+
+    public List<Product> getProductContainsAllCategory(List<String> allCategoryIds){
+        return productRepository.findByCategoryIdsContainingAll(allCategoryIds);
     }
 
 }

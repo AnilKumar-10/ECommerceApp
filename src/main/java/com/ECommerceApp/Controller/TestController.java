@@ -3,11 +3,15 @@ package com.ECommerceApp.Controller;
 import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Service.*;
+import jdk.jfr.Frequency;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class TestController {
@@ -45,18 +49,25 @@ public class TestController {
     private TaxRuleService taxRuleService;
     @Autowired
     private CategoryService categoryService;
-
+    @Autowired
+    private ProductSearchService productSearchService;
 
 
     @GetMapping("/home")
     public String getHome(){
         return "welcome";
     }
-
+// ========= PRODUCT  ==============
     @PostMapping("/insertProduct")
     public Product insertProduct(@RequestBody  ProductRequest product){
         return productService.createProduct(product);
     }
+
+    @PostMapping("/insertProducts")
+    public String  insertProducts(@RequestBody  List<ProductRequest> product){
+        return productService.createProductList(product);
+    }
+
 
     @GetMapping("/getprd/{id}")
     public Product getProduct(@PathVariable String id){
@@ -68,9 +79,16 @@ public class TestController {
         return productService.getAllProducts();
     }
 
+
+    // =========  USER   =================
     @PostMapping("/insertUser")
     public Users insertUser(@RequestBody Users users){
         return  userService.registerUser(users);
+    }
+
+    @PostMapping("/insertUsers")
+    public String insertUsers(@RequestBody List<Users> users){
+        return  userService.registerUsers(users);
     }
 
     @GetMapping("/users")
@@ -78,9 +96,16 @@ public class TestController {
        return userService.getAllUsers();
     }
 
+
+    // ==========  ADDRESS   ================
     @PostMapping("/insertAddress")
     public Address insertUserAddress(@RequestBody Address address){
         return  addressService.createAddress(address);
+    }
+
+    @PostMapping("/insertAddresses")
+    public String  insertUsersAddress(@RequestBody List<Address> address){
+            return addressService.createAddresses(address);
     }
 
     @GetMapping("/getAddress/{id}")
@@ -88,11 +113,18 @@ public class TestController {
         return addressService.getAddressesByUserId(id);
     }
 
+    @GetMapping("/allAddress")
+    public List<Address> getAddressess(){
+        return addressService.getAllAddressess();
+    }
+
+
+    // ============  CART   ====================
     @PostMapping("/insertCart")
     public Cart insertCart(@RequestBody CartItem items){
         items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
         System.out.println(items);
-        return cartService.addItemToCart("USER1005",items);
+        return cartService.addItemToCart("USER1006",items);
     }
 
     @GetMapping("/getcart/{id}")
@@ -105,6 +137,8 @@ public class TestController {
         return cartService.clearCart(userId);
     }
 
+
+    // ============  REVIEW  ===================
     @PostMapping("/postReview")
     public Review postReview(@RequestBody Review review){
         return reviewService.addReview(review);
@@ -115,6 +149,8 @@ public class TestController {
         return reviewService.getReviewByProductId(id);
     }
 
+
+    // ========== WISH LIST =====================
     @PostMapping("/addWish")
     public Wishlist insertWish(@RequestBody Map<String,String > pid ){
         return wishListService.addToWishlist("USER1002",pid.get("id"));
@@ -125,12 +161,14 @@ public class TestController {
         return  wishListService.getWishlistByBuyerId("USER1002");
     }
 
-
+// ================  COUPON ===============
     @PostMapping("/insertCoupon")
     public Coupon insertCoupon(@RequestBody Coupon coupon){
         return couponService.createCoupon(coupon);
     }
 
+
+    // ========== ORDER  ===================
     @PostMapping("/placeOrder")
     public Order placeOrder(@RequestBody OrderDto orderDto){
         return orderService.createOrder(orderDto);
@@ -151,11 +189,19 @@ public class TestController {
         return orderService.getOrder(id);
     }
 
+
+    // ================ DELIVERY  ===============
     @PostMapping("/insertDelivery")
     public DeliveryPerson insertDelivery(@RequestBody DeliveryPerson deliveryPerson){
         return  deliveryService.register(deliveryPerson);
     }
 
+    @PostMapping("/insertDeliverys")
+    public String  insertDeliveryPersons(@RequestBody List<DeliveryPerson> deliveryPerson){
+        return  deliveryService.registerPersons(deliveryPerson);
+    }
+
+    // ========== SHIPPING  ==========
     @GetMapping("/getShipping/{id}")
     public ShippingDetails getShipping(@PathVariable String id){
         return shippingService.getShippingByOrderId(id);
@@ -166,6 +212,8 @@ public class TestController {
         return shippingService.updateShippingStatus(shippingUpdateDTO);
     }
 
+
+    // ============= RETURN AND REFUND =============
     @PostMapping("/requestRefund")
     public RefundAndReturnResponseDTO raiseRefundReq(@RequestBody RaiseRefundRequestDto refundRequestDto){
         return refundService.requestRefund(refundRequestDto);
@@ -181,6 +229,7 @@ public class TestController {
         return paymentService.initiatePayment(initiatePaymentDto);
     }
 
+    // ============== OUT FOR DELIVERY  =============
     @PostMapping("/updateDelivery")
     public String updateDelivery(@RequestBody  DeliveryUpdateDTO deliveryUpdateDTO){
         if(orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod().equalsIgnoreCase("COD")){
@@ -208,6 +257,8 @@ public class TestController {
         return refundService.rejectRefund(refund.getRefundId(),"Product Damaged.");
     }
 
+
+    // ========== STOCK ================
     @PostMapping("/updateStock")
     public StockLog insertStock(@RequestBody StockLogModificationDTO stockLogModificationDTO){
         return stockLogService.modifyStock(stockLogModificationDTO);
@@ -224,5 +275,24 @@ public class TestController {
     public String  inserCategory(@RequestBody List<Category> categories){
         return categoryService.createCategoryList(categories);
     }
+
+
+    // ======  SEARCH TEST  ================
+    @GetMapping("/product/{name}")
+    public List<ProductSearchDto> getProductByCategoryName(@PathVariable String name){
+        List<Product> products = productSearchService.getProductsByCategoryName(name);
+        System.out.println("products are: "+products);
+        List<ProductSearchDto> productSearchDtos  = new ArrayList<>();
+        for(Product product : products){
+            ProductSearchDto productSearchDto = new ProductSearchDto();
+            BeanUtils.copyProperties(product , productSearchDto);
+            productSearchDtos.add(productSearchDto);
+        }
+        return productSearchDtos;
+    }
+
+
+
+
 }
 
