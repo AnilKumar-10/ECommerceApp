@@ -30,15 +30,6 @@ public class CouponService {
     public Coupon updateCoupon(String couponId, Coupon updatedCoupon) {
         Coupon existing = couponRepository.findById(couponId)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
-//        existing.setCode(updatedCoupon.getCode());
-//        existing.setDiscountType(updatedCoupon.getDiscountType());
-//        existing.setDiscountValue(updatedCoupon.getDiscountValue());
-//        existing.setMinOrderValue(updatedCoupon.getMinOrderValue());
-//        existing.setMaxUsagePerUser(updatedCoupon.getMaxUsagePerUser());
-//        existing.setValidFrom(updatedCoupon.getValidFrom());
-//        existing.setValidTo(updatedCoupon.getValidTo());
-//        existing.setActive(updatedCoupon.isActive());
-
         BeanUtils.copyProperties(existing,updatedCoupon);
 
         return couponRepository.save(existing);

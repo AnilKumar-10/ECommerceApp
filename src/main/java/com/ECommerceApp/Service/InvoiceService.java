@@ -1,5 +1,7 @@
 package com.ECommerceApp.Service;
 
+import com.ECommerceApp.Exceptions.InvoiceNotFoundException;
+import com.ECommerceApp.Exceptions.PaymentNotFoundException;
 import com.ECommerceApp.Model.Invoice;
 import com.ECommerceApp.Model.Order;
 import com.ECommerceApp.Model.Payment;
@@ -7,6 +9,7 @@ import com.ECommerceApp.Repository.InvoiceRepository;
 import com.ECommerceApp.Repository.OrderRepository;
 import com.ECommerceApp.Repository.PaymentRepository;
 import com.ECommerceApp.Repository.ProductRepository;
+import org.springframework.beans.InvalidPropertyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +46,7 @@ public class InvoiceService {
 
         // Get related payment
         Payment payment = paymentRepository.findById(order.getPaymentId())
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
         Invoice invoice = new Invoice();
         invoice.setId(String.valueOf(sequenceGeneratorService.getNextSequence("invoiceId")));
@@ -60,7 +63,7 @@ public class InvoiceService {
      // 2. Get invoice by ID
     public Invoice getInvoiceById(String invoiceId) {
         return invoiceRepository.findById(invoiceId)
-                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+                .orElseThrow(() -> new InvoiceNotFoundException("Invoice not found"));
     }
 
     //.3. Get invoice by order ID
@@ -84,7 +87,7 @@ public class InvoiceService {
      //6. Delete an invoice (admin only - optional)
     public void deleteInvoice(String invoiceId) {
         if (!invoiceRepository.existsById(invoiceId)) {
-            throw new RuntimeException("Invoice not found");
+            throw new InvoiceNotFoundException("Invoice not found");
         }
         invoiceRepository.deleteById(invoiceId);
     }

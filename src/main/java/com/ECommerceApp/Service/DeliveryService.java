@@ -82,12 +82,6 @@ public class DeliveryService {
     }
 
 
-//    public DeliveryPerson getDeliveryPersonByShippingId(String shippingId){
-//
-//        return deliveryRepository.findById();
-//    }
-
-
     public DeliveryPerson updateDeliveryPerson(DeliveryPerson deliveryPerson){
         return deliveryRepository.save(deliveryPerson);
     }
@@ -95,7 +89,8 @@ public class DeliveryService {
 
     public void removeDeliveredOrderFromToDeliveryItems(String deliveryPersonId, String orderId) {
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
-        Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("orderId").is(orderId)));
+        Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("OrderId").is(orderId)));
+        System.out.println("inside remove delivery orders: "+query+"  =  "+update);
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
     }
 

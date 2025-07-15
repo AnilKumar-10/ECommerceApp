@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Delivered</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .total { font-weight: bold; }
+        .footer { margin-top: 30px; font-size: 14px; color: #555; }
+    </style>
+</head>
+<body>
+
+<h2>Hi <span th:text="${userName}">Customer</span>,</h2>
+
+<p>Your order <strong>#<span th:text="${orderId}">101068</span></strong> has been successfully <strong>delivered</strong>.</p>
+
+<h3>Order Summary:</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Product ID</th>
+        <th>Color</th>
+        <th>Size</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Tax</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td th:text="${item.productId}">P1005</td>
+        <td th:text="${item.color}">White</td>
+        <td th:text="${item.size}">XL</td>
+        <td th:text="${item.quantity}">1</td>
+        <td th:text="'₹' + ${item.price}">₹1299.0</td>
+        <td th:text="'₹' + ${item.tax}">₹155.88</td>
+    </tr>
+    </tbody>
+</table>
+
+<p class="total">Total Amount: <strong th:text="'₹' + ${totalAmount}">₹2798.0</strong></p>
+<p class="total">Discount Applied: <strong th:text="'₹' + ${discount}">₹559.60</strong> (Coupon: <span th:text="${couponId}">SUMMER20</span>)</p>
+<p class="total">Tax: <strong th:text="'₹' + ${tax}">₹335.76</strong></p>
+<p class="total">Final Amount Paid: <strong th:text="'₹' + ${finalAmount}">₹2574.16</strong></p>
+<p class="total">Payment Method: <strong th:text="${paymentMethod}">UPI</strong></p>
+
+<div class="footer">
+    <p>We hope you love your purchase! If you need any help or wish to return, please refer to our return policy.</p>
+    <p>Thank you for shopping with us!</p>
+</div>
+
+</body>
+</html>

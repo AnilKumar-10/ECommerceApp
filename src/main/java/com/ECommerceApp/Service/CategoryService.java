@@ -1,6 +1,7 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.Exceptions.CategoryNotFoundException;
+import com.ECommerceApp.Exceptions.RootCategoryNotFoundException;
 import com.ECommerceApp.Model.Category;
 import com.ECommerceApp.Repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +131,7 @@ public class CategoryService {
             if (cat != null) return cat.getId();
         }
 
-        throw new RuntimeException("No valid root category found for product");
+        throw new RootCategoryNotFoundException("No valid root category found for product");
     }
 
 
@@ -160,5 +161,8 @@ public class CategoryService {
     public List<Category> getCategoryByNameIgnoreCase(String name){
         return categoryRepository.findByNameIgnoreCase(name);
     }
+
+
+//    public boolean isRootCategory(String )
 
 }

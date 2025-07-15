@@ -4,7 +4,7 @@ import lombok.Data;
 
 import java.util.List;
 @Data
-public class OrderDto {
+public class PlaceOrderDto {
     List<Integer > productIds;
     String userId;
     String addressType;

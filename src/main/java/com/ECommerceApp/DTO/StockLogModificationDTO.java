@@ -8,7 +8,6 @@ import java.util.Date;
 public class StockLogModificationDTO {
     private String  productId;
     private String sellerId;
-//    private String userId;
     private String action; // ADD,SOLD,RETURNED
     private int quantityChanged;
     private Date modifiedAt;

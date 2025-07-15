@@ -1,12 +1,12 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.DeliveryUpdateDTO;
-import com.ECommerceApp.DTO.OrderDto;
+import com.ECommerceApp.DTO.PlaceOrderDto;
 import com.ECommerceApp.DTO.StockLogModificationDTO;
 import com.ECommerceApp.Exceptions.OrderNotFoundException;
+import com.ECommerceApp.Exceptions.ProductOutOfStockException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.OrderRepository;
-import com.ECommerceApp.Repository.TaxRuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,13 +37,15 @@ public class OrderService {
     private CategoryService categoryService;
     @Autowired
     private TaxRuleService taxRuleService;
+    @Autowired
+    private EmailService emailService;
 
-    public Order createOrder(OrderDto orderDto){
+    public Order createOrder(PlaceOrderDto orderDto){
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
         for(OrderItem item : orderItem){
             Product product = productService.getProductById(item.getProductId());
             if(!product.isAvailable()){
-                throw new RuntimeException(product.getName()+" is Out of Stock");
+                throw new ProductOutOfStockException(product.getName()+" is Out of Stock");
             }
         }
         Order order = new Order();
@@ -70,9 +72,10 @@ public class OrderService {
         Order order1 = orderRepository.save(order);
         if(orderDto.getPayMode().equalsIgnoreCase("COD")){
             // if the paymode is UPI then the shipping details must be generated after the payment.
-            shippingService.createShippingDetails(order1);
+            ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
+            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", order1.getBuyerId(), order1, shippingDetails);
         }
         return order1; // flow goes to the initiating payment is the paymode is upi
     }
@@ -89,7 +92,7 @@ public class OrderService {
         return addressId;
     }
 
-    public double getCouponDiscount(OrderDto orderDto,double amount){
+    public double getCouponDiscount(PlaceOrderDto orderDto, double amount){
         couponService.recordCouponUsage(orderDto.getCoupon(),orderDto.getUserId());// this is used to track the no of time the coupon is used by user
         Coupon coupon = couponService.validateCoupon(orderDto.getCoupon(),orderDto.getUserId(),amount);
         double discount = couponService.getDiscountAmount(coupon,amount);
@@ -97,7 +100,7 @@ public class OrderService {
     }
 
 
-    public double getTotalAmount(OrderDto orderDto){
+    public double getTotalAmount(PlaceOrderDto orderDto){
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
         System.out.println(orderItem);
         double amount=0.0;
@@ -116,9 +119,11 @@ public class OrderService {
         order.setOrderStatus("CONFIRMED");
         order.setPaymentId(paymentId);
         Order order1 = orderRepository.save(order);
-        shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
+        ShippingDetails shippingDetails = shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
         updateStockLogAfterOrderConfirmed(orderId); // after the order is confirmed the stock details get updated.
-        cartService.removeOrderedItemsFromCart(order1);
+        cartService.removeOrderedItemsFromCart(order1); // this will remove the ordered items from the cart.
+        emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", order1.getBuyerId(), order1,shippingDetails);
+
     }
 
     public void markOrderAsPaymentFailed(String orderId) {
@@ -148,21 +153,6 @@ public class OrderService {
         }
     }
 
-
-    // update the stock details after the order is returned
-//    private void updateStockLogAfterOrderReturned(String orderId) {
-//        Order order = getOrder(orderId);
-//        List<OrderItem> orderedProducts = order.getOrderItems();
-//        for(OrderItem orderItem : orderedProducts){
-//            StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
-//            stockLogModificationDTO.setAction("RETURN");
-//            stockLogModificationDTO.setModifiedAt(new Date());
-//            stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
-//            stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
-//            stockLogModificationDTO.setProductId(orderItem.getProductId());
-//            stockLogService.modifyStock(stockLogModificationDTO);
-//        }
-//    }
 
     public Order saveOrder(Order order){
         return orderRepository.save(order);

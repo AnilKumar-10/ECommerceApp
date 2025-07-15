@@ -3,6 +3,7 @@ package com.ECommerceApp.Service;
 import com.ECommerceApp.DTO.DeliveryUpdateDTO;
 import com.ECommerceApp.DTO.ShippingUpdateDTO;
 import com.ECommerceApp.Exceptions.DeliveryNotFoundException;
+import com.ECommerceApp.Exceptions.ShippingDetailsNotFoundException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.DeliveryRepository;
 import com.ECommerceApp.Repository.OrderRepository;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class ShippingService {
@@ -34,6 +36,7 @@ public class ShippingService {
         long nextId = sequenceGeneratorService.getNextSequence("shippingId");
         shipping.setId(String.valueOf(nextId));
         shipping.setOrderId(order.getId());
+        shipping.setCourierName(getCourierName());  // this will set some random courier name for every order
         shipping.setDeliveryAddress(addressService.getAddressById(order.getAddressId()));
         shipping.setStatus("PLACED");
         shipping.setTrackingId(generateTrackingId());
@@ -84,7 +87,7 @@ public class ShippingService {
     // 3. Update courier name or tracking ID
     public ShippingDetails updateCourierDetails(ShippingUpdateDTO shippingUpdateDTO) {
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
-                .orElseThrow(() -> new RuntimeException("Shipping record not found"));
+                .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
 
         if (shippingUpdateDTO.getNewValue() != null && !Objects.equals(shippingUpdateDTO.getNewValue(), shipping.getCourierName())) {
             addLog(shipping, "courierName", shipping.getCourierName(), shippingUpdateDTO.getNewValue(), shippingUpdateDTO.getUpdateBy());
@@ -99,7 +102,7 @@ public class ShippingService {
     // 5. Get shipping by order ID
     public ShippingDetails getShippingByOrderId(String orderId) {
         return shippingRepo.findByOrderId(orderId)
-                .orElseThrow(() -> new RuntimeException("Shipping not found for order ID"));
+                .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping not found for order ID"));
     }
 
     // 6. Get all shipping records for a delivery person
@@ -140,7 +143,8 @@ public class ShippingService {
         updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to delivered.
         String deliveryPersonId = shippingRepo.findById(deliveryUpdateDTO.getShippingId()).get().getDeliveryPersonId();
         deliveryService.updateDeliveryCount(deliveryPersonId); // updates the count
-        deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId()); // removes the order details from to deliver list
+        deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());
+        // removes the order details from to deliver list
         return "Your order is delivered successfully please rate us..!";
     }
 
@@ -159,7 +163,7 @@ public class ShippingService {
         ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
         Order order = orderRepository.findById(shippingDetails.getOrderId()).get();
         List<OrderItem> orderItems = new ArrayList<>();
-        if(shippingUpdateDTO.getNewValue().equalsIgnoreCase("delivered")){
+        if(shippingUpdateDTO.getNewValue().equalsIgnoreCase("DELIVERED")){
             orderItems = order.getOrderItems();
         }
         for(OrderItem item : orderItems){
@@ -168,5 +172,23 @@ public class ShippingService {
         order.setOrderItems(orderItems);
         orderRepository.save(order);
     }
+
+
+    public String getCourierName(){
+        List<String> courierNames = List.of(
+                "Ekart Logistics",
+                "Amazon Transportation Services",
+                "Delhivery",
+                "Shadowfax",
+                "XpressBees"
+        );
+        String randomName = courierNames.get(ThreadLocalRandom.current().nextInt(courierNames.size()));
+//        System.out.println(randomName);
+        return randomName;
+    }
+
+
+
+
 
 }

@@ -13,7 +13,7 @@ public class ShippingDetails {
     @Id
     private String id;
     private String orderId;
-    private String courierName;
+    private String courierName ;
     private Address DeliveryAddress;
     private String trackingId;
     private Date expectedDate;
