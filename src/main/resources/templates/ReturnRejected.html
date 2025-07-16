@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Refund Rejected</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; background-color: #fafafa; }
+        h2 { color: #c0392b; }
+        .reason { background-color: #f9e6e6; padding: 10px; border-left: 5px solid #c0392b; margin: 15px 0; }
+        .footer { font-size: 14px; color: #777; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Hi <span th:text="${userName}">Customer</span>,</h2>
+
+    <p>We regret to inform you that your refund request for order <strong>#<span th:text="${orderId}">101068</span></strong> has been <strong>rejected</strong>.</p>
+
+    <div class="reason">
+        <strong>Reason for Rejection:</strong>
+        <p th:text="${reason}">The product was found damaged upon inspection.</p>
+    </div>
+
+    <p>If you believe this decision was made in error or you require further assistance, please contact our support team with your order details.</p>
+
+    <div class="footer">
+        <p>Thank you for understanding. We appreciate your continued support.</p>
+        <p>— The E-Commerce Team</p>
+    </div>
+</div>
+
+</body>
+</html>

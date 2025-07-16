@@ -55,11 +55,12 @@ public class AddressService {
     }
 
     // delete the address based on id.
-    public void deleteAddress(String id) {
+    public String  deleteAddress(String id) {
         if (!addressRepository.existsById(id)) {
             throw new AddressNotFoundException("Address not found with ID: " + id);
         }
         addressRepository.deleteById(id);
+        return "Deleted successfully";
     }
 
     public List<Address> getAllAddressess() {

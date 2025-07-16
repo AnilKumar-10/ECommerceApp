@@ -36,8 +36,8 @@ public class ReturnController {
             returnService.updateReturnSuccess(returnUpdate.getOrderId());
             DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(returnUpdate.getDeliveryPersonId());
             deliveryPerson.getToReturnItems();
-            Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
-            return refundService.completeRefund(refund.getRefundId());
+
+            return refundService.completeRefund(returnUpdate);
         }
         returnService.updateReturnFailed(returnUpdate.getOrderId());
         Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());

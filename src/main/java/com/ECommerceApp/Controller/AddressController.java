@@ -33,5 +33,13 @@ public class AddressController {
         return addressService.getAllAddressess();
     }
 
+    @PutMapping("/updateAddress")
+    public Address updateAddress(@RequestBody Address address){
+        return addressService.updateAddress("",address);
+    }
 
+
+    public String deleteAddress(@PathVariable String addressId){
+        return addressService.deleteAddress(addressId);
+    }
 }

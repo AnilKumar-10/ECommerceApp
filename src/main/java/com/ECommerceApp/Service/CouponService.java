@@ -27,8 +27,8 @@ public class CouponService {
     }
 
     // 2. Update an existing coupon
-    public Coupon updateCoupon(String couponId, Coupon updatedCoupon) {
-        Coupon existing = couponRepository.findById(couponId)
+    public Coupon updateCoupon(Coupon updatedCoupon) {
+        Coupon existing = couponRepository.findById(updatedCoupon.getId())
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
         BeanUtils.copyProperties(existing,updatedCoupon);
 
@@ -44,8 +44,8 @@ public class CouponService {
     }
 
     // 4. Get coupon by ID
-    public Coupon getCouponById(String couponId) {
-        return couponRepository.findById(couponId)
+    public Coupon getCouponById(String couponCode) {
+        return couponRepository.findByCode(couponCode)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
     }
 

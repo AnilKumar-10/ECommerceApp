@@ -6,13 +6,14 @@ import com.ECommerceApp.Service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.datatransfer.Clipboard;
+import java.util.List;
+
 @RestController
 public class OrderController {
 
-
     @Autowired
     private OrderService orderService;
-
 
     @PostMapping("/placeOrder")
     public Order placeOrder(@RequestBody PlaceOrderDto orderDto){
@@ -22,5 +23,19 @@ public class OrderController {
     @GetMapping("/getOrder/{id}")
     public Order getOrder(@PathVariable String id){
         return orderService.getOrder(id);
+    }
+
+    @GetMapping("/getAllOrderByUser/{userId}")
+    public List<Order> getAllOrdersByUser(@PathVariable String userId){
+        return orderService.getAllOrderByUserId(userId);
+    }
+
+    @GetMapping("/getAllorders")
+    public List<Order> getAllOrders(){
+        return orderService.getAllOrders();
+    }
+
+    public List<Order> getAllPendingOrders(){
+        return orderService.getAllPendingOrders();
     }
 }

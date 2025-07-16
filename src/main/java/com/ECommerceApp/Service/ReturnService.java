@@ -25,6 +25,8 @@ public class ReturnService {
     private ProductService productService;
     @Autowired
     private StockLogService stockLogService;
+    @Autowired
+    private EmailService emailService;
 
     public ShippingDetails updateShippingStatusForRefundAndReturn(String orderId){
 
@@ -66,7 +68,7 @@ public class ReturnService {
         refundAndReturnResponseDTO.setDeliveryPersonName(deliveryPerson.getName());
         refundAndReturnResponseDTO.setProductPicked(false);
         refundAndReturnResponseDTO.setExpectedPickUpDate(getExpectedDate(refund1.getRequestedAt()));
-
+        emailService.sendReturnRequestedEmail("sohailibrahim11223@gmail.com",refundAndReturnResponseDTO);
         return refundAndReturnResponseDTO;
     }
 
@@ -89,6 +91,7 @@ public class ReturnService {
         updateOrderItemsForReturnSuccess(order);
 //        System.out.println("inside the return service class with : "+shippingDetails);
         updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
+
     }
 
     //this will update the status success of the orderItems product.
@@ -115,8 +118,6 @@ public class ReturnService {
         shippingUpdateDTO.setUpdateBy("ADMIN");
         shippingUpdateDTO.setNewValue("RETURNED_FAILED");
         shippingService.updateShippingStatus(shippingUpdateDTO);
-//        System.out.println("inside the return service class with : "+shippingDetails);
-//        updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
     }
 
 

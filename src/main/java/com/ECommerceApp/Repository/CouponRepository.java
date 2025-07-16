@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface CouponRepository extends MongoRepository<Coupon,String> {
     Optional<Coupon> findByCodeAndIsActiveTrue(String code);
     List<Coupon> findByIsActiveTrue();
-
+    Optional<Coupon> findByCode(String code);
 }

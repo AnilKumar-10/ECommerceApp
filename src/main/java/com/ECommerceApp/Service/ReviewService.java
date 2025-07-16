@@ -34,19 +34,20 @@ public class ReviewService {
                 .orElseThrow(() -> new ReviewNotFountException("Review not found with ID: " + id));
     }
 
-    public Review updateReview(String id, Review updatedReview) {
-        Review existing = getReviewById(id);
+    public Review updateReview( Review updatedReview) {
+        Review existing = getReviewById(updatedReview.getId());
         existing.setRating(updatedReview.getRating());
         existing.setComment(updatedReview.getComment());
         existing.setUpdatedAt(new Date());
         return reviewRepository.save(existing);
     }
 
-    public void deleteReview(String id) {
+    public String deleteReview(String id) {
         if (!reviewRepository.existsById(id)) {
             throw new ReviewNotFountException("Review not found with ID: " + id);
         }
         reviewRepository.deleteById(id);
+        return "Review is deleted successfully";
 
     }
 
@@ -83,5 +84,13 @@ public class ReviewService {
 
     public List<Review> findByProductId(String productId) {
         return reviewRepository.findByProductId(productId);
+    }
+
+    public String deleteReviewByUserId(String userId) {
+        if(!reviewRepository.existsByUserId(userId)){
+            throw new ReviewNotFountException("The user didn't posted any review yet.");
+        }
+        reviewRepository.deleteByUserId(userId);
+        return "Review is deleted successfully";
     }
 }

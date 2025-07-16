@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Return Completed</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: auto; padding: 20px; }
+        .header { background-color: #eaf8ea; padding: 10px 20px; border-radius: 5px; }
+        .footer { margin-top: 30px; font-size: 14px; color: #555; }
+        .highlight { font-weight: bold; color: #2e7d32; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Return Completed Successfully</h2>
+    </div>
+
+    <p>Hi <span th:text="${userName}">Customer</span>,</p>
+
+    <p>We’ve successfully processed your return for order <strong>#<span th:text="${orderId}">123456</span></strong>.</p>
+
+    <p>The refund amount of <strong class="highlight" th:text="'₹' + ${refundAmount}">₹0.00</strong> will be credited back to your original payment method within <strong>2 working days</strong>.</p>
+
+    <p><strong>Refund ID:</strong> <span th:text="${refundId}">R12345</span></p>
+    <p><strong>Payment ID:</strong> <span th:text="${paymentId}">P98765</span></p>
+    <p><strong>Refund Status:</strong> <span th:text="${status}">COMPLETED</span></p>
+
+    <div class="footer">
+        <p>If you have any questions, feel free to reach out to our support team.</p>
+        <p>Thank you for shopping with us!</p>
+    </div>
+</div>
+</body>
+</html>

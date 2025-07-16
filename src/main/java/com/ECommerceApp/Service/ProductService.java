@@ -78,28 +78,29 @@ public class ProductService{
         return productRepository.save(existing);
     }
 
-    public void deleteProduct(String id) {
+    public String  deleteProduct(String id) {
         if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException("Product not found with ID: " + id);
         }
         productRepository.deleteById(id);
+        return "Product deleted Successfully";
     }
 
-    private Product mapToEntity(ProductRequest dto) {
-        Product product = new Product();
-        product.setId(dto.getId());
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setPrice(dto.getPrice());
-        product.setStock(dto.getStock());
-        product.setReturnPolicy(dto.getReturnPolicy());
-        product.setCategoryIds(dto.getCategoryIds());
-        product.setSellerId(dto.getSellerId());
-        product.setColors(dto.getColors());
-        product.setSizes(dto.getSizes());
-        product.setImages(dto.getImages());
-        return product;
-    }
+//    private Product mapToEntity(ProductRequest dto) {
+//        Product product = new Product();
+//        product.setId(dto.getId());
+//        product.setName(dto.getName());
+//        product.setDescription(dto.getDescription());
+//        product.setPrice(dto.getPrice());
+//        product.setStock(dto.getStock());
+//        product.setReturnPolicy(dto.getReturnPolicy());
+//        product.setCategoryIds(dto.getCategoryIds());
+//        product.setSellerId(dto.getSellerId());
+//        product.setColors(dto.getColors());
+//        product.setSizes(dto.getSizes());
+//        product.setImages(dto.getImages());
+//        return product;
+//    }
 
 
     public double calculateAverageRating(String productId) {

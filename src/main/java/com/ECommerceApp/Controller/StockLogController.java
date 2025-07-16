@@ -4,10 +4,7 @@ import com.ECommerceApp.DTO.StockLogModificationDTO;
 import com.ECommerceApp.Model.StockLog;
 import com.ECommerceApp.Service.StockLogService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.Query;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +28,11 @@ public class StockLogController {
             stockLogs.add(stockLogService.modifyStock(stockLogModificationDTO));
         }
         return stockLogs;
+    }
+
+    @GetMapping("/getStockLogByProduct/{productId}")
+    public StockLog getStockLogByProduct(@PathVariable String productId){
+        return stockLogService.getByProductId(productId);
     }
 
 

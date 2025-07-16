@@ -1,5 +1,6 @@
 package com.ECommerceApp.Controller;
 
+import com.ECommerceApp.DTO.DeliveryPersonResponseDto;
 import com.ECommerceApp.DTO.DeliveryUpdateDTO;
 import com.ECommerceApp.DTO.PaymentDto;
 import com.ECommerceApp.Model.DeliveryPerson;
@@ -7,10 +8,10 @@ import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.OrderService;
 import com.ECommerceApp.Service.PaymentService;
 import com.ECommerceApp.Service.ShippingService;
+import com.mongodb.internal.connection.DefaultDnsSrvRecordMonitorFactory;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class DeliveryController {
         return  deliveryService.register(deliveryPerson);
     }
 
-    @PostMapping("/insertDeliverys")
+    @PostMapping("/insertDeliveries")
     public String  insertDeliveryPersons(@RequestBody List<DeliveryPerson> deliveryPerson){
         return  deliveryService.registerPersons(deliveryPerson);
     }
@@ -50,6 +51,21 @@ public class DeliveryController {
             orderService.updateCODPaymentStatus(deliveryUpdateDTO);// updating the order payment status
         }
         return shippingService.updateDeliveryStatus(deliveryUpdateDTO);
+    }
+
+    @DeleteMapping("/deleteDeliveryPerson/{id}")
+    public String deleteDeliveryPerson(@PathVariable String id){
+        return deliveryService.deleteDeliveryMan(id);
+    }
+
+    @GetMapping("/getDeliveryPerson/{id}")
+    public DeliveryPerson getDeliveryPerson(@PathVariable String id){
+        return deliveryService.getDeliveryPerson(id);
+    }
+
+    @GetMapping("/getDelPersonByOrder/{orderId}")
+    public DeliveryPersonResponseDto getByOrderId(@PathVariable String orderId){
+        return deliveryService.getDeliveryPersonByOrderId(orderId);
     }
 
 }

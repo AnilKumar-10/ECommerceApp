@@ -1,9 +1,11 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.*;
+import com.ECommerceApp.Exceptions.DeliveryNotFoundException;
 import com.ECommerceApp.Model.DeliveryPerson;
 import com.ECommerceApp.Model.Order;
 import com.ECommerceApp.Repository.DeliveryRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DeliveryService {
@@ -25,9 +28,6 @@ public class DeliveryService {
     private UserService userService;
     @Autowired
     private MongoTemplate mongoTemplate;
-
-//    @Autowired
-//    private OrderService orderService;
 
     // Assign delivery person by address match
     public DeliveryPerson assignDeliveryPerson(String deliveryAddress) {
@@ -101,6 +101,43 @@ public class DeliveryService {
         deliveryPerson.setDeliveredCount(deliveryPerson.getDeliveredCount()+1);
         updateDeliveryPerson(deliveryPerson); // updating the delivery counts of the delivered person.
 
+    }
+
+
+    public void removeReturnItemFromDeliveryPerson(String deliveryPersonId, String orderId) {
+        Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
+        Update update = new Update().pull("toReturnItems", Query.query(Criteria.where("orderId").is(orderId)));
+        mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
+    }
+
+
+    public String  deleteDeliveryMan(String id){
+        if(!deliveryRepository.existsById(id)){
+            throw new DeliveryNotFoundException("There is no delivery man present with that id");
+        }
+        deliveryRepository.deleteById(id);
+        return "Deleted Successfully";
+    }
+
+//    public Optional<DeliveryItems> getDeliveryItemByOrderId(String deliveryPersonId, String orderId) {
+//        Optional<DeliveryPerson> deliveryPersonOptional =
+//                deliveryRepository.findSingleDeliveryItemByOrderId(deliveryPersonId, orderId);
+//
+//        if (deliveryPersonOptional.isPresent()) {
+//            List<DeliveryItems> items = deliveryPersonOptional.get().getToDeliveryItems();
+//            if (items != null && !items.isEmpty()) {
+//                return Optional.of(items.get(0)); // Only one item is returned by the query
+//            }
+//        }
+//        return Optional.empty();
+//    }
+
+
+    public DeliveryPersonResponseDto getDeliveryPersonByOrderId(String orderId){
+        DeliveryPerson deliveryPerson = deliveryRepository.findByOrderId(orderId).get();
+        DeliveryPersonResponseDto deliveryPersonResponseDto = new DeliveryPersonResponseDto();
+        BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
+        return deliveryPersonResponseDto;
     }
 
 }

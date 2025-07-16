@@ -39,54 +39,6 @@ public class ProductSearchService {
 
 
 
-//    public List<Product> getProductsByMultipleCategoryNames(List<String> categoryNames) {
-//        Set<String> categoryIds = new HashSet<>();
-//        for (String name : categoryNames) {
-//            Category root = categoryService.getCategoryByNameIgnoreCase(name);
-//            if (root != null) {
-//                categoryIds.addAll(categoryService.getAllSubCategoryIds(root.getId()));
-//            }
-//        }
-//
-//        // Now fetch only products whose categoryIds contain *all* the categoryIds
-//        return productService.getProductContainsAllCategory(new ArrayList<>(categoryIds));
-//    }
-
-//    public List<String> resolveCategoryIds(List<String> categoryNames) {
-//        List<Category> categories = new ArrayList<>();
-//        System.out.println("cateG: "+categories);
-//        for (String name : categoryNames) {
-//            categories.addAll(categoryService.getCategoryByNameIgnoreCase(name));
-//        }
-//
-//        // Get combinations that match all input names in path
-//        return getMatchingLeafCategoryIds(categoryNames, categories);
-//    }
-//
-//    private List<String> getMatchingLeafCategoryIds(List<String> names, List<Category> allMatches) {
-//        System.out.println("names: "+names+"  "+allMatches);
-//        List<String> matchingLeafIds = new ArrayList<>();
-//
-//        for (Category cat : allMatches) {
-//            List<String> path = new ArrayList<>();
-//            Category current = cat;
-//            while (current != null) {
-//                path.add(current.getName());
-//                System.out.println("path: "+path);
-//                current = categoryService.getCategoryById(current.getParentId());
-//            }
-//            // Check if all input names exist in this category path
-//            if (names.stream().allMatch(n -> path.contains(n))) {
-//                matchingLeafIds.add(cat.getId());
-//                System.out.println("match: "+matchingLeafIds);
-//            }
-//        }
-//        System.out.println(" returm before: "+matchingLeafIds);
-//        return matchingLeafIds;
-//    }
-
-
-
     public List<List<String>> resolveCategoryIdGroups(List<String> inputNames) {
 //        System.out.println("in resolve: "+inputNames);
         List<Category> matchedCategories = new ArrayList<>();

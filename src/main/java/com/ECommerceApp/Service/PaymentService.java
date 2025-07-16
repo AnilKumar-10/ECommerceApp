@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class PaymentService {
@@ -62,7 +63,6 @@ public class PaymentService {
         payment.setStatus("FAILED");
         payment.setTransactionTime(new Date());
         paymentRepository.save(payment);
-
         // Mark order failed too
         orderService.markOrderAsPaymentFailed(payment.getOrderId());
         return payment;
@@ -80,5 +80,9 @@ public class PaymentService {
 
     public Payment getPaymentById(String paymentId){
         return paymentRepository.findById(paymentId).get();
+    }
+
+    public List<Payment> getAllFailedPayments() {
+        return paymentRepository.findAllFailedPayements();
     }
 }

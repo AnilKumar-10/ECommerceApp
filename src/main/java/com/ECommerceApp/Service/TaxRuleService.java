@@ -33,8 +33,8 @@ public class TaxRuleService {
     }
 
     // 2. Update existing tax rule
-    public TaxRule updateTaxRule(String id, TaxRule updated) {
-        TaxRule existing = taxRuleRepository.findById(id)
+    public TaxRule updateTaxRule(TaxRule updated) {
+        TaxRule existing = taxRuleRepository.findById(updated.getId())
                 .orElseThrow(() -> new TaxRuleNotFoundException("TaxRule not found"));
 
         existing.setCountry(updated.getCountry());
@@ -47,11 +47,12 @@ public class TaxRuleService {
     }
 
     // 3. Delete tax rule
-    public void deleteTaxRule(String id) {
+    public String deleteTaxRule(String id) {
         if (!taxRuleRepository.existsById(id)) {
             throw new TaxRuleNotFoundException("TaxRule not found");
         }
         taxRuleRepository.deleteById(id);
+        return "Deleted Successfully";
     }
 
     // 4. Get all tax rules (admin)

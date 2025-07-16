@@ -42,7 +42,7 @@ public class ProductSearchController {
             @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder,
             @RequestParam(name = "sortBy", required = false, defaultValue = "rating") String sortBy, HttpServletRequest httpServletRequest) {
         System.out.println("http url: "+httpServletRequest.getQueryString());
-        System.out.println("sort: "+sortOrder+"  soryby: "+sortBy);
+        System.out.println("sort: "+sortOrder+"  sortby: "+sortBy);
         List<ProductSearchResponseDto> productSearchDtos = new ArrayList<>();
         List<Product> products = productSearchService.searchProductsByCategoryNames(categories);
 

@@ -28,7 +28,7 @@ public class ProductController {
         return productService.createProductList(product);
     }
 
-    @GetMapping("/getprd/{id}")
+    @GetMapping("/getProduct/{id}")
     public ProductSearchResponseDto getProduct(@PathVariable String id){
         Product product = productService.getProductById(id);
         ProductSearchResponseDto productSearchResponseDto = new ProductSearchResponseDto();
@@ -36,12 +36,15 @@ public class ProductController {
         return productSearchResponseDto;
     }
 
-    @GetMapping("/get")
+    @GetMapping("/getAllProducts")
     public List<Product> get(){
         return productService.getAllProducts();
     }
 
 
+    public String deleteProduct(@PathVariable String productId){
+        return productService.deleteProduct(productId);
+    }
 
 
 }

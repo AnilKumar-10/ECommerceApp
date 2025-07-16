@@ -53,18 +53,19 @@ public class CategoryService {
     }
 
     // 6. Update category name or parent
-    public Category updateCategory(String id, Category updatedCategory) {
-        Category existing = getCategoryById(id);
+    public Category updateCategory(Category updatedCategory) {
+        Category existing = getCategoryById(updatedCategory.getId());
         existing.setName(updatedCategory.getName());
         existing.setParentId(updatedCategory.getParentId());
         return categoryRepository.save(existing);
     }
 
     // 7. Delete category by ID (and optionally all subcategories recursively)
-    public void deleteCategory(String id) {
+    public String  deleteCategory(String id) {
         Category category = getCategoryById(id);
         deleteSubCategoriesRecursively(id); // delete all its children recursively
         categoryRepository.deleteById(id);
+        return "Category and its sub Categories are deleted..";
     }
 
     private void deleteSubCategoriesRecursively(String parentId) {
@@ -163,6 +164,5 @@ public class CategoryService {
     }
 
 
-//    public boolean isRootCategory(String )
 
 }

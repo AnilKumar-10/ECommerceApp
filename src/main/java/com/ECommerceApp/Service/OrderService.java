@@ -75,7 +75,7 @@ public class OrderService {
             ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
-            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", order1.getBuyerId(), order1, shippingDetails);
+            emailService.sendOrderConfirmationEmail("sohailibrahim11223@gmail.com","Sohail", order1, shippingDetails);
         }
         return order1; // flow goes to the initiating payment is the paymode is upi
     }
@@ -199,4 +199,15 @@ public class OrderService {
         return Math.round(totalTax * 100.0)/100.0;
     }
 
+    public List<Order> getAllOrderByUserId(String userId) {
+        return orderRepository.findAllByBuyerId(userId);
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public List<Order> getAllPendingOrders() {
+        return orderRepository.findAllPendingOrders();
+    }
 }

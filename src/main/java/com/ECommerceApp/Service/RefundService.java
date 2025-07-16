@@ -2,6 +2,7 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.RaiseRefundRequestDto;
 import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
+import com.ECommerceApp.DTO.ReturnUpdate;
 import com.ECommerceApp.Exceptions.RefundNotFoundException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.RefundRepository;
@@ -31,6 +32,11 @@ public class RefundService {
     private ShippingService shippingService;
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private DeliveryService deliveryService;
+
 
     //1. Raising the refund request
     public RefundAndReturnResponseDTO requestRefund(RaiseRefundRequestDto refundRequestDto) {
@@ -44,7 +50,7 @@ public class RefundService {
         for(OrderItem item : orderItems){
             if(refundRequestDto.getProductIds().contains(item.getProductId())){
                 checkProductReturnable(item.getProductId(),order.getShippingId());
-                refundAmount += item.getPrice()* item.getQuantity() - item.getTax();
+                refundAmount += item.getPrice()* item.getQuantity() + item.getTax();
 
             }
         }
@@ -68,7 +74,7 @@ public class RefundService {
         DeliveryPerson deliveryPerson = returnService.assignReturnProductToDeliveryPerson(shippingDetails,refundRequestDto.getReason());
         // this will asign the delivery person to pick the items
         Refund refund1 = refundRepository.save(refund);
-        order.setFinalAmount(Math.round(totalAmount * 100.0) / 100.0);
+//        order.setFinalAmount(Math.round(totalAmount * 100.0) / 100.0);
         order.setRefundId(refund1.getRefundId());
         order.setReturned(true);
         orderService.saveOrder(order); // updates the total amount and the return id
@@ -97,19 +103,29 @@ public class RefundService {
         refund.setStatus("REJECTED");
         refund.setProcessedAt(new Date());
         refund.setReason(refund.getReason() + " | Rejected: " + reason);
-
+        //  sends the mail after the refund is rejected.
+        emailService.sendRefundRejectedEmail("iamanil3121@gmail.com",refund.getUserId(),refund.getOrderId());
         return refundRepository.save(refund);
     }
 
-    //4. Complete the refund after payment reversal (finance system or admin)
-    public Refund completeRefund(String refundId) {
-        Refund refund = getRefundById(refundId);
+    //4. Complete the refund
+    public Refund completeRefund(ReturnUpdate returnUpdate) {
+        Refund refund = getRefundsByOrderId(returnUpdate.getOrderId());
         if (!refund.getStatus().equals("APPROVED")) {
             throw new IllegalStateException("Only APPROVED refunds can be completed");
         }
         refund.setStatus("COMPLETED");
         refund.setProcessedAt(new Date());
-
+        Order order = orderService.getOrder(refund.getOrderId());
+        double amount = order.getFinalAmount();
+        double refundAmount = refund.getRefundAmount();
+        amount  = Math.round(amount * 100.0) / 100.0;
+        order.setFinalAmount(amount);
+        order.setRefundAmount(refundAmount);
+        Order order1 = orderService.saveOrder(order); // updating the final amount after the refund is completed.
+        emailService.sendReturnCompletedEmail("iamanil3121@gmail.com",order1.getBuyerId(),order1);
+        deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
+        // this will remove the return product details from the delivery persons to return fields.
         return refundRepository.save(refund);
     }
 

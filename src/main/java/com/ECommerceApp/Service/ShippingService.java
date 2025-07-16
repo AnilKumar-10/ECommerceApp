@@ -29,7 +29,8 @@ public class ShippingService {
     private OrderRepository orderRepository;
     @Autowired
     private AddressService addressService;
-
+    @Autowired
+    private EmailService emailService;
 
     public ShippingDetails createShippingDetails(Order order) {
         ShippingDetails shipping = new ShippingDetails();
@@ -72,6 +73,7 @@ public class ShippingService {
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new RuntimeException("Shipping record not found"));
         Order order = orderRepository.findById(shipping.getOrderId()).get();
+        System.out.println("order:"+order);
         String oldStatus = shipping.getStatus();
         String newValue = shippingUpdateDTO.getNewValue();
         if (!Objects.equals(oldStatus, newValue) &&
@@ -140,11 +142,12 @@ public class ShippingService {
         shippingUpdateDTO.setShippingId(deliveryUpdateDTO.getShippingId());
         shippingUpdateDTO.setNewValue(deliveryUpdateDTO.getNewValue());
         updateShippingStatus(shippingUpdateDTO); // to update the shipping status to delivered
-        updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to delivered.
+        Order order = updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to delivered.
         String deliveryPersonId = shippingRepo.findById(deliveryUpdateDTO.getShippingId()).get().getDeliveryPersonId();
         deliveryService.updateDeliveryCount(deliveryPersonId); // updates the count
         deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());
         // removes the order details from to deliver list
+        emailService.sendOrderDeliveredEmail("sohailibrahim11223@gmail.com","Sohail",order);
         return "Your order is delivered successfully please rate us..!";
     }
 
@@ -159,7 +162,7 @@ public class ShippingService {
     }
 
     // this updates the status of the ordered items delivered when the order is delivered.
-    public  void updateOrderItemsDeliveredStatus(ShippingUpdateDTO shippingUpdateDTO){
+    public  Order updateOrderItemsDeliveredStatus(ShippingUpdateDTO shippingUpdateDTO){
         ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
         Order order = orderRepository.findById(shippingDetails.getOrderId()).get();
         List<OrderItem> orderItems = new ArrayList<>();
@@ -170,7 +173,8 @@ public class ShippingService {
             item.setStatus("DELIVERED");
         }
         order.setOrderItems(orderItems);
-        orderRepository.save(order);
+        Order order1 = orderRepository.save(order);
+        return order1;
     }
 
 

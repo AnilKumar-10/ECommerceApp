@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Return Request Received</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { background-color: #f2f2f2; padding: 10px; border-radius: 5px; }
+        .info { margin-top: 20px; }
+        .info p { margin: 5px 0; }
+        .footer { margin-top: 30px; font-size: 14px; color: #777; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>Return Request Received</h2>
+</div>
+
+<p>Dear <strong th:text="${userId}">User</strong>,</p>
+
+<p>We have received your return request for order <strong>#<span th:text="${orderId}">ORDER123</span></strong>.</p>
+
+<div class="info">
+    <p><strong>Refund ID:</strong> <span th:text="${refundId}">REF123</span></p>
+    <p><strong>Payment ID:</strong> <span th:text="${paymentId}">PAY456</span></p>
+    <p><strong>Refund Amount:</strong> ₹<span th:text="${refundAmount}">999.00</span></p>
+    <p><strong>Reason:</strong> <span th:text="${reason}">Size issue</span></p>
+    <p><strong>Status:</strong> <span th:text="${status}">PENDING</span></p>
+    <p><strong>Requested At:</strong> <span th:text="${#dates.format(requestedAt, 'dd MMM yyyy HH:mm')}">01 Jan 2025</span></p>
+
+    <p th:if="${expectedPickUpDate != null}">
+        <strong>Expected Pick-up Date:</strong> <span th:text="${#dates.format(expectedPickUpDate, 'dd MMM yyyy')}">05 Jan 2025</span>
+    </p>
+
+    <p th:if="${deliveryPersonName != null}">
+        <strong>Delivery Person:</strong> <span th:text="${deliveryPersonName}">Suresh</span>
+    </p>
+
+</div>
+
+<div class="footer">
+    <p>Please make sure that you have all the product tags</p>
+    <p>We will notify you once your return is picked up and processed.</p>
+    <p>Thank you for shopping with us.</p>
+</div>
+
+</body>
+</html>

@@ -67,8 +67,8 @@ public class InvoiceService {
     }
 
     //.3. Get invoice by order ID
-    public Optional<Invoice> getInvoiceByOrderId(String orderId) {
-        return invoiceRepository.findByOrderId(orderId);
+    public Invoice getInvoiceByOrderId(String orderId) {
+        return invoiceRepository.findByOrderId(orderId).get();
     }
 
 

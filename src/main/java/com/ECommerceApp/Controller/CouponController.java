@@ -1,11 +1,12 @@
 package com.ECommerceApp.Controller;
 
+import com.ECommerceApp.Model.Category;
 import com.ECommerceApp.Model.Coupon;
 import com.ECommerceApp.Service.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class CouponController {
@@ -18,5 +19,18 @@ public class CouponController {
         return couponService.createCoupon(coupon);
     }
 
+    @GetMapping("/updateCoupon")
+    public Coupon updateCoupon(@RequestBody Coupon coupon){
+        return couponService.updateCoupon(coupon);
+    }
 
+    @GetMapping("/getCoupon/{couponCode}")
+    public Coupon getCoupon(@PathVariable String couponCode){
+        return couponService.getCouponById(couponCode);
+    }
+
+    @GetMapping("/getAllCoupons")
+    public List<Coupon> getAllCoupons(){
+        return couponService.getAllActiveCoupons();
+    }
 }
