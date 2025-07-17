@@ -2,6 +2,7 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.InitiatePaymentDto;
 import com.ECommerceApp.DTO.PaymentDto;
+import com.ECommerceApp.Exceptions.PaymentAmountMissMatchException;
 import com.ECommerceApp.Exceptions.PaymentNotFoundException;
 import com.ECommerceApp.Model.Order;
 import com.ECommerceApp.Model.Payment;
@@ -28,7 +29,7 @@ public class PaymentService {
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
         if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
-            throw new RuntimeException("Amount to be paid is not matched");
+            throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
         }
         long nextId = sequenceGeneratorService.getNextSequence("paymentId");
         payment.setId(String.valueOf(nextId)); // If id is String
@@ -63,7 +64,7 @@ public class PaymentService {
         payment.setStatus("FAILED");
         payment.setTransactionTime(new Date());
         paymentRepository.save(payment);
-        // Mark order failed too
+        // Mark order as failed
         orderService.markOrderAsPaymentFailed(payment.getOrderId());
         return payment;
     }
@@ -79,7 +80,7 @@ public class PaymentService {
 
 
     public Payment getPaymentById(String paymentId){
-        return paymentRepository.findById(paymentId).get();
+        return paymentRepository.findById(paymentId).orElseThrow(()-> new PaymentNotFoundException("Payment not found"));
     }
 
     public List<Payment> getAllFailedPayments() {

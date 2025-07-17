@@ -2,7 +2,8 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.RaiseRefundRequestDto;
 import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
-import com.ECommerceApp.DTO.ReturnUpdate;
+import com.ECommerceApp.DTO.ReturnUpdateRequest;
+import com.ECommerceApp.Exceptions.OrderCancellationExpiredException;
 import com.ECommerceApp.Exceptions.RefundNotFoundException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.RefundRepository;
@@ -11,8 +12,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-
-import java.net.Authenticator;
 import java.util.*;
 
 @Service
@@ -109,7 +108,7 @@ public class RefundService {
     }
 
     //4. Complete the refund
-    public Refund completeRefund(ReturnUpdate returnUpdate) {
+    public Refund completeRefund(ReturnUpdateRequest returnUpdate) {
         Refund refund = getRefundsByOrderId(returnUpdate.getOrderId());
         if (!refund.getStatus().equals("APPROVED")) {
             throw new IllegalStateException("Only APPROVED refunds can be completed");
@@ -123,7 +122,7 @@ public class RefundService {
         order.setFinalAmount(amount);
         order.setRefundAmount(refundAmount);
         Order order1 = orderService.saveOrder(order); // updating the final amount after the refund is completed.
-        emailService.sendReturnCompletedEmail("iamanil3121@gmail.com",order1.getBuyerId(),order1);
+        emailService.sendReturnCompletedEmail("honey290702@gmail.com",order1.getBuyerId(),order1);
         deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
         // this will remove the return product details from the delivery persons to return fields.
         return refundRepository.save(refund);
@@ -204,6 +203,42 @@ public class RefundService {
             return result.getModificationLogs().get(0).getModifiedAt();
         }
         return null;
+    }
+
+
+
+    // ORDER CANCELLATION
+
+    // to cancel the order
+    public Order cancelOrder(String orderId,String cancelReason){
+        Order order = orderService.getOrder(orderId);
+        if(order.getOrderStatus().equalsIgnoreCase("SHIPPED")){
+            throw new OrderCancellationExpiredException("Order cannot be cancelled because the cancellation time is expired.!");
+        }
+        order.setOrderStatus("CANCELLED");
+        order.setCancelReason(cancelReason);
+        order.setCancelled(true);
+        Order order1 = orderService.saveOrder(order);
+        if(order.getPaymentMethod().equalsIgnoreCase("UPI")){
+            Refund refund = refundOverOrderCancellation(order1);
+            emailService.sendOrderCancellationEmail(order1,"Anil","iamanil3121@gmail.com");
+        }
+        return order1;
+    }
+
+
+
+    public Refund refundOverOrderCancellation(Order order){
+        Refund refund = new Refund();
+        refund.setOrderId(order.getId());
+        refund.setRefundAmount(order.getFinalAmount());
+        refund.setStatus("APPROVED");
+        refund.setReason(order.getCancelReason());
+        refund.setUserId(order.getBuyerId());
+        refund.setRequestedAt(order.getCancellationTime());
+        refund.setProcessedAt(new Date());
+        return refundRepository.save(refund);
+
     }
 
 }

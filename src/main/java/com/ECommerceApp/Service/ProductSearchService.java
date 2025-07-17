@@ -1,5 +1,7 @@
 package com.ECommerceApp.Service;
 
+import com.ECommerceApp.DTO.ProductSearchResponseDto;
+import com.ECommerceApp.Exceptions.ProductNotFoundException;
 import com.ECommerceApp.Model.Category;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Repository.CategoryRepository;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,26 +82,39 @@ public class ProductSearchService {
 
 
 
-    public List<Product> searchProductsByCategoryNames(List<String> inputNames) {
+    public List<Product> searchProductsByCategoryNames(List<String> inputNames,String brand) {
 //        System.out.println("in search : "+inputNames);
         List<List<String>> requiredIdGroups = resolveCategoryIdGroups(inputNames);
         // If no matching groups found, return empty
 //        System.out.println("requ: "+requiredIdGroups);
-        if (requiredIdGroups.isEmpty()) return Collections.emptyList();
+        if (requiredIdGroups.isEmpty())  throw
+                new ProductNotFoundException("The product you are trying is not present try to search categories like Clothes, Footwear, Electronics etc");
 
         List<Product> allMatchingProducts = new ArrayList<>();
         for (List<String> requiredIds : requiredIdGroups) {
             // Find products that contain all IDs in this group
-            allMatchingProducts.addAll(
-                    productRepository.findByCategoryIdsContainingAll(requiredIds)
-            );
+//            allMatchingProducts.addAll(
+//                    productRepository.findByCategoryIdsContainingAll(requiredIds)
+//            );
+            //=======
+            if (brand != null && !brand.isBlank()) {
+                allMatchingProducts.addAll(
+                        productRepository.findByCategoryIdsContainingAllAndBrandIgnoreCase(requiredIds, brand)
+                );
+            } else {
+                allMatchingProducts.addAll(
+                        productRepository.findByCategoryIdsContainingAll(requiredIds)
+                );
+            }
         }
         return new ArrayList<>(new HashSet<>(allMatchingProducts));
     }
 
 
 
-
+    public List<ProductSearchResponseDto> getProductByBrand(String brandName){
+        return productRepository.findByBrandIgnoreCase(brandName);
+    }
 
 
 }

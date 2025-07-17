@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.ProductRequest;
 import com.ECommerceApp.DTO.ProductSearchResponseDto;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Service.ProductService;
+import jdk.jfr.Frequency;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,14 @@ public class ProductController {
     }
 
 
+    @PutMapping("/updateProduct")
+    public Product updateProduct(@RequestBody ProductRequest product){
+        return productService.updateProduct(product);
+    }
+
+
+
+    @GetMapping("/deleteProduct/{productId}")
     public String deleteProduct(@PathVariable String productId){
         return productService.deleteProduct(productId);
     }

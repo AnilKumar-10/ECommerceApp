@@ -8,15 +8,13 @@ import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.OrderService;
 import com.ECommerceApp.Service.PaymentService;
 import com.ECommerceApp.Service.ShippingService;
-import com.mongodb.internal.connection.DefaultDnsSrvRecordMonitorFactory;
-import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-public class DeliveryController {
+public class DeliveryController { // admin, delivery person
 
     @Autowired
     private OrderService orderService;

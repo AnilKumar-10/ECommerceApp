@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-public class AddressController {
+public class AddressController { // everyone
 
     @Autowired
     private AddressService addressService;
@@ -29,8 +29,8 @@ public class AddressController {
     }
 
     @GetMapping("/allAddress")
-    public List<Address> getAddressess(){
-        return addressService.getAllAddressess();
+    public List<Address> getAddresses(){
+        return addressService.getAllAddresses();
     }
 
     @PutMapping("/updateAddress")
@@ -38,7 +38,7 @@ public class AddressController {
         return addressService.updateAddress("",address);
     }
 
-
+    @DeleteMapping("/deleteAddress/{addressId}")
     public String deleteAddress(@PathVariable String addressId){
         return addressService.deleteAddress(addressId);
     }

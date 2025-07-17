@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-public class CategoryController {
+public class CategoryController { // admin,seller
 
     @Autowired
     private CategoryService categoryService;

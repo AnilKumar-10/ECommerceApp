@@ -59,8 +59,8 @@ public class ProductService{
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + id));
     }
 
-    public Product updateProduct(String id, ProductRequest request) {
-        Product existing = getProductById(id);
+    public Product updateProduct(ProductRequest request) {
+        Product existing = getProductById(request.getId());
         BeanUtils.copyProperties(request,existing);
 //        existing.setName(request.getName());
 //        existing.setDescription(request.getDescription());
@@ -110,22 +110,6 @@ public class ProductService{
                 .mapToInt(Review::getRating)
                 .sum();
         return total / reviews.size();
-    }
-
-
-    public double getAverageSellerProductRating(String sellerId) {
-        List<Product> products = productRepository.findBySellerId(sellerId);
-        if (products.isEmpty()) {
-            return 0.0;
-        }
-        double sum = products.stream()
-                .filter(p -> p.getRating() != 0.0)
-                .mapToDouble(Product::getRating)
-                .sum();
-        long count = products.stream()
-                .filter(p -> p.getRating() != 0.0)
-                .count();
-        return count == 0 ? 0.0 : sum / count;
     }
 
     public double getProductPrice(String id){

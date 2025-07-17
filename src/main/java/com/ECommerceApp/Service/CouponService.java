@@ -69,7 +69,7 @@ public class CouponService {
         }
 
         int usageCount = couponUsageRepository.countByCouponCodeAndUserId(code, userId);
-        if (usageCount >= coupon.getMaxUsagePerUser()) {
+        if (usageCount > coupon.getMaxUsagePerUser()) {
             throw new InValidCouponException("Coupon usage limit exceeded for this user");
         }
         return coupon;
@@ -94,5 +94,15 @@ public class CouponService {
         usage.setUserId(userId);
         usage.setUsedAt(new Date());
         couponUsageRepository.save(usage);
+    }
+
+    public String  createCouponsList(List<Coupon> coupons) {
+        int c=0;
+        for(Coupon coupon : coupons){
+            couponRepository.save(coupon);
+            c++;
+        }
+        return "Insertion of coupons are done successfully: "+c;
+
     }
 }

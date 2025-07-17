@@ -22,16 +22,19 @@ public class Order {
     private double finalAmount;
     private String  refundId;
     private Double refundAmount;
-    private String orderStatus;         // PLACED, CONFIRMED, PACKED, SHIPPED, IN_TRANSIT,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
+    private String orderStatus;         // PLACED, CONFIRMED,SHIPPED,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
     private String paymentMethod;       // UPI, CARD, COD
     private String paymentStatus;       // PENDING, SUCCESS, FAILED
-    private String paymentId;           // Link to Payment if online
+    private String paymentId;           // Link to Payment class
     private Date orderDate;
     private boolean isCancelled;
     private String cancelReason;
     private Date cancellationTime;
     private boolean isReturned = false;
     private String shippingId;
+
+
+    private String upiId;
 }
 
 

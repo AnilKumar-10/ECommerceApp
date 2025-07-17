@@ -4,6 +4,7 @@ import com.ECommerceApp.Exceptions.ReviewNotFountException;
 import com.ECommerceApp.Exceptions.UnknowUserReviewException;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Model.Review;
+import com.ECommerceApp.Model.Users;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.ReviewRepository;
 import com.ECommerceApp.Repository.UsersRepository;
@@ -62,7 +63,7 @@ public class ReviewService {
         }
         Review saved = reviewRepository.save(review);
 
-        updateProductRating(review.getProductId()); // ← update average
+        updateProductRating(review.getProductId()); //  updates average rating of that product.
 
         return saved;
     }
@@ -75,6 +76,10 @@ public class ReviewService {
         if (product != null) {
             product.setRating(roundedValue);
             productRepository.save(product);
+            Users user = usersRepository.findById(product.getSellerId()).get();
+            user.setRating(getAverageSellerProductRating(user.getId()));
+            // this will update the seller's avg rating when new rating is added to their products.
+            usersRepository.save(user);
         }
     }
 
@@ -93,4 +98,21 @@ public class ReviewService {
         reviewRepository.deleteByUserId(userId);
         return "Review is deleted successfully";
     }
+
+    public double getAverageSellerProductRating(String sellerId) {
+        List<Product> products = productRepository.findBySellerId(sellerId);
+        if (products.isEmpty()) {
+            return 0.0;
+        }
+        double sum = products.stream()
+                .filter(p -> p.getRating() != 0.0)
+                .mapToDouble(Product::getRating)
+                .sum();
+        long count = products.stream()
+                .filter(p -> p.getRating() != 0.0)
+                .count();
+        return count == 0 ? 0.0 : Math.round((sum/count) * 10.0) / 10.0;
+    }
+
+
 }

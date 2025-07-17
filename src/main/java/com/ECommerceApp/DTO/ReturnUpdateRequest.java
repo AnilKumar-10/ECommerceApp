@@ -3,7 +3,7 @@ package com.ECommerceApp.DTO;
 import lombok.Data;
 
 @Data
-public class ReturnUpdate {
+public class ReturnUpdateRequest {
     private String deliveryPersonId;
     private boolean picked;
     private String orderId;

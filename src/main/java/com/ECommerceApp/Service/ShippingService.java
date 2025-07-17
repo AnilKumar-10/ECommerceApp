@@ -31,6 +31,9 @@ public class ShippingService {
     private AddressService addressService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private DeliveryHistoryService deliveryHistoryService;
+
 
     public ShippingDetails createShippingDetails(Order order) {
         ShippingDetails shipping = new ShippingDetails();
@@ -71,13 +74,14 @@ public class ShippingService {
     public ShippingDetails updateShippingStatus(ShippingUpdateDTO shippingUpdateDTO) {
         System.out.println("inside update shipping stats: "+shippingUpdateDTO);
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
-                .orElseThrow(() -> new RuntimeException("Shipping record not found"));
+                .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
         Order order = orderRepository.findById(shipping.getOrderId()).get();
         System.out.println("order:"+order);
         String oldStatus = shipping.getStatus();
         String newValue = shippingUpdateDTO.getNewValue();
-        if (!Objects.equals(oldStatus, newValue) &&
-                (!"REQUESTED_TO_RETURN".equals(oldStatus) || "RETURNED".equals(newValue))) {
+        if (!Objects.equals(oldStatus, newValue)
+                && (!"REQUESTED_TO_RETURN".equals(oldStatus) || "RETURNED".equals(newValue))
+                && !order.getOrderStatus().equalsIgnoreCase("CANCELLED")) {
             shipping.setStatus(shippingUpdateDTO.getNewValue());
             order.setOrderStatus(shippingUpdateDTO.getNewValue());
             addLog(shipping, "status", oldStatus, shippingUpdateDTO.getNewValue(), shippingUpdateDTO.getUpdateBy());
@@ -145,9 +149,11 @@ public class ShippingService {
         Order order = updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to delivered.
         String deliveryPersonId = shippingRepo.findById(deliveryUpdateDTO.getShippingId()).get().getDeliveryPersonId();
         deliveryService.updateDeliveryCount(deliveryPersonId); // updates the count
-        deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());
+//      here we have to update the delivery history
+        deliveryHistoryService.insertDelivery(order.getId(),deliveryPersonId);
         // removes the order details from to deliver list
-        emailService.sendOrderDeliveredEmail("sohailibrahim11223@gmail.com","Sohail",order);
+        deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());
+        emailService.sendOrderDeliveredEmail("honey290702@gmail.com","Anil",order);
         return "Your order is delivered successfully please rate us..!";
     }
 

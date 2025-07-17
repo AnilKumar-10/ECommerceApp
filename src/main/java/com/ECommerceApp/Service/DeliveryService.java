@@ -60,7 +60,7 @@ public class DeliveryService {
 
 
     public DeliveryPerson getDeliveryPerson(String id){
-        return deliveryRepository.findById(id).get();
+        return deliveryRepository.findById(id).orElseThrow(()->new DeliveryNotFoundException("No deliveryPerson found with id: "+id));
     }
 
     // assigning the packages to the delivery person
@@ -71,6 +71,7 @@ public class DeliveryService {
         deliveryItems.setAddress(addressService.getAddressById(order.getAddressId()));
         deliveryItems.setShippingId(order.getShippingId());
         deliveryItems.setOrderId(order.getId());
+
         deliveryItems.setPaymentMode(order.getPaymentMethod());
         deliveryItems.setAmountToPay(order.getPaymentMethod().equalsIgnoreCase("COD")? order.getFinalAmount() : 0.0);
         deliveryItems.setUserName(userService.getUserById(order.getBuyerId()).getName());
@@ -113,7 +114,7 @@ public class DeliveryService {
 
     public String  deleteDeliveryMan(String id){
         if(!deliveryRepository.existsById(id)){
-            throw new DeliveryNotFoundException("There is no delivery man present with that id");
+            throw new DeliveryNotFoundException("There is no delivery man present with that id: "+id);
         }
         deliveryRepository.deleteById(id);
         return "Deleted Successfully";

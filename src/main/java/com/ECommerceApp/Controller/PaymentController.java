@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-public class PaymentController {
+public class PaymentController { //user
 
     @Autowired
     private PaymentService paymentService;

@@ -3,7 +3,6 @@ package com.ECommerceApp.Service;
 import com.ECommerceApp.Exceptions.UserNotFoundException;
 import com.ECommerceApp.Model.Users;
 import com.ECommerceApp.Repository.UsersRepository;
-import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,11 +28,12 @@ public class UserService {
     public String registerUsers(List<Users> users){
         int c=0;
         for(Users user:users){
+            validateUserForRoles(user);
             user.setCreatedAt(new Date());
             usersRepository.save(user);
             c++;
         }
-        return "done"+c;
+        return "users registration is done: "+c;
     }
 
 
@@ -105,8 +105,7 @@ public class UserService {
     private void validateUserForRoles(Users user) {
         List<String> roles = Arrays.asList(user.getRoles());
         if (roles.contains("SELLER")) {
-            double rating = productService.getAverageSellerProductRating(user.getId());
-            user.setRating(rating);
+            user.setRating(0.0);
             validateSellerFields(user);
         }
         else {

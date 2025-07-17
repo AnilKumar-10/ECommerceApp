@@ -63,7 +63,7 @@ public class AddressService {
         return "Deleted successfully";
     }
 
-    public List<Address> getAllAddressess() {
+    public List<Address> getAllAddresses() {
         return addressRepository.findAll();
     }
 }

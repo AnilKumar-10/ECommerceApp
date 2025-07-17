@@ -3,10 +3,12 @@ package com.ECommerceApp.Service;
 import com.ECommerceApp.DTO.DeliveryUpdateDTO;
 import com.ECommerceApp.DTO.PlaceOrderDto;
 import com.ECommerceApp.DTO.StockLogModificationDTO;
+import com.ECommerceApp.Exceptions.OrderCancellationExpiredException;
 import com.ECommerceApp.Exceptions.OrderNotFoundException;
 import com.ECommerceApp.Exceptions.ProductOutOfStockException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.OrderRepository;
+import org.apache.naming.factory.ResourceEnvFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -75,7 +77,7 @@ public class OrderService {
             ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
-            emailService.sendOrderConfirmationEmail("sohailibrahim11223@gmail.com","Sohail", order1, shippingDetails);
+            emailService.sendOrderConfirmationEmail("honey290702@gmail.com","Anil", order1, shippingDetails);
         }
         return order1; // flow goes to the initiating payment is the paymode is upi
     }
@@ -122,7 +124,7 @@ public class OrderService {
         ShippingDetails shippingDetails = shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
         updateStockLogAfterOrderConfirmed(orderId); // after the order is confirmed the stock details get updated.
         cartService.removeOrderedItemsFromCart(order1); // this will remove the ordered items from the cart.
-        emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", order1.getBuyerId(), order1,shippingDetails);
+        emailService.sendOrderConfirmationEmail("honey290702@gmail.com", order1.getBuyerId(), order1,shippingDetails);
 
     }
 
@@ -159,7 +161,8 @@ public class OrderService {
     }
 
     public Order getOrder(String id){
-        return orderRepository.findById(id).get();
+
+        return orderRepository.findById(id).orElseThrow(()-> new OrderNotFoundException("There is no order found with id: "+id));
     }
 
     public void updateCODPaymentStatus(DeliveryUpdateDTO deliveryUpdateDTO){
@@ -210,4 +213,6 @@ public class OrderService {
     public List<Order> getAllPendingOrders() {
         return orderRepository.findAllPendingOrders();
     }
+
+
 }

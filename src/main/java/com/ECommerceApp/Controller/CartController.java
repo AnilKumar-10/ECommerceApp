@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class  CartController {
+public class  CartController { //buyer
 
     @Autowired
     private ProductService productService;
@@ -20,10 +20,10 @@ public class  CartController {
     public Cart insertCart(@RequestBody CartItem items){
         items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
         System.out.println(items);
-        return cartService.addItemToCart("USER1018",items);
+        return cartService.addItemToCart("USER1039",items);
     }
 
-    @GetMapping("/getcart/{id}")
+    @GetMapping("/getCart/{id}")
     public Cart getCart(@PathVariable String id){
         return cartService.getCartByBuyerId(id);
     }
@@ -34,7 +34,7 @@ public class  CartController {
     }
 
     @DeleteMapping("/removeCartItem")
-    public Cart removeItemFromCart(@PathVariable String itemNo){
+    public Cart removeItemFromCart(@PathVariable String itemNo){ // we get userid from jwt
         return cartService.removeOneItemFromCart("",itemNo);
     }
 

@@ -186,7 +186,7 @@ public class EmailService {
 //            context.setVariable("reason", reason);
 
             // Process HTML template
-            String htmlContent = templateEngine.process("refund-rejected-email", context);
+            String htmlContent = templateEngine.process("ReturnRejected.html", context);
 
             // Set email content
             helper.setText(htmlContent, true); // true = HTML
@@ -197,6 +197,29 @@ public class EmailService {
         } catch (MessagingException e) {
             System.err.println("Failed to send refund rejected email: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+
+    public void sendOrderCancellationEmail(Order order, String userName, String toEmail) {
+        try {
+
+            Context context = new Context();
+            context.setVariable("userName", userName);
+            context.setVariable("order", order);
+
+            String htmlContent = templateEngine.process("OrderCancellation.html", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Order Cancellation - " + order.getId());
+            helper.setText(htmlContent, true); // true for HTML content
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send order cancellation email to " + toEmail, e);
         }
     }
 

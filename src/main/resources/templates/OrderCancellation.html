@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Cancellation</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px;">
+<div style="max-width: 650px; margin: auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h2 style="color: #d9534f;">Order Cancellation Confirmation</h2>
+
+    <p>Hello <strong th:text="${userName}">Customer</strong>,</p>
+
+    <p>We would like to inform you that your order has been successfully <strong>cancelled</strong>.</p>
+
+    <h3 style="margin-top: 20px;">Order Summary</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td><strong>Order ID:</strong></td>
+            <td th:text="${order.id}">ORD123456</td>
+        </tr>
+        <tr>
+            <td><strong>Order Date:</strong></td>
+            <td th:text="${#dates.format(order.orderDate, 'dd MMM yyyy HH:mm')}">12 Jul 2025</td>
+        </tr>
+        <tr>
+            <td><strong>Cancellation Time:</strong></td>
+            <td th:text="${#dates.format(order.cancellationTime, 'dd MMM yyyy HH:mm')}">13 Jul 2025</td>
+        </tr>
+        <tr>
+            <td><strong>Cancelled Reason:</strong></td>
+            <td th:text="${order.cancelReason}">Changed my mind</td>
+        </tr>
+        <tr>
+            <td><strong>Payment Mode:</strong></td>
+            <td th:text="${order.paymentMethod}">UPI</td>
+        </tr>
+        <tr th:if="${order.paymentMethod != 'COD'}">
+            <td><strong>Payment Status:</strong></td>
+            <td th:text="${order.paymentStatus}">SUCCESS</td>
+        </tr>
+        <tr th:if="${order.paymentMethod != 'COD'}">
+            <td><strong>Payment ID:</strong></td>
+            <td th:text="${order.paymentId}">PAY567890</td>
+        </tr>
+        <tr>
+            <td><strong>Order Total:</strong></td>
+            <td>₹<span th:text="${order.finalAmount}">499.00</span></td>
+        </tr>
+    </table>
+
+    <!-- Show Refund Section only if paymentMethod is UPI and paymentStatus is SUCCESS -->
+    <div th:if="${order.paymentMethod == 'UPI' and order.paymentStatus == 'SUCCESS'}" style="margin-top: 30px;">
+        <h3 style="color: #5cb85c;">Refund Information</h3>
+        <p>
+            A refund of ₹<strong th:text="${order.refundAmount}">499.00</strong> will be processed to your UPI ID:
+            <strong th:text="${order.upiId}">user@upi</strong>.
+        </p>
+        <p>
+            Your refund will be credited within <strong>5–7 business days</strong>. You can track refund status using the Refund ID:
+            <strong th:text="${order.refundId}">REF123456</strong>.
+        </p>
+    </div>
+
+    <!-- COD Message -->
+    <div th:if="${order.paymentMethod == 'COD'}" style="margin-top: 30px;">
+        <p>
+            Since you chose <strong>Cash on Delivery (COD)</strong> as your payment method, no refund is applicable for this order.
+        </p>
+    </div>
+
+    <p style="margin-top: 40px;">If you have any questions or need assistance, please reach out to our support team.</p>
+
+    <p>Thank you for choosing us.</p>
+    <p><strong>The E-Commerce Team</strong></p>
+</div>
+</body>
+</html>

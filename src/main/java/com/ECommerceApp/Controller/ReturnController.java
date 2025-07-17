@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller;
 
 import com.ECommerceApp.DTO.RaiseRefundRequestDto;
 import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
-import com.ECommerceApp.DTO.ReturnUpdate;
+import com.ECommerceApp.DTO.ReturnUpdateRequest;
 import com.ECommerceApp.Model.DeliveryPerson;
 import com.ECommerceApp.Model.Refund;
 import com.ECommerceApp.Service.DeliveryService;
@@ -31,7 +31,7 @@ public class ReturnController {
 
 
     @PostMapping("/updateReturn")
-    public Refund updateReturn(@RequestBody ReturnUpdate returnUpdate){
+    public Refund updateReturn(@RequestBody ReturnUpdateRequest returnUpdate){
         if(returnUpdate.isPicked()){
             returnService.updateReturnSuccess(returnUpdate.getOrderId());
             DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(returnUpdate.getDeliveryPersonId());

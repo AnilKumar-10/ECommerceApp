@@ -10,7 +10,7 @@ import java.awt.datatransfer.Clipboard;
 import java.util.List;
 
 @RestController
-public class OrderController {
+public class OrderController { //user
 
     @Autowired
     private OrderService orderService;
@@ -30,11 +30,12 @@ public class OrderController {
         return orderService.getAllOrderByUserId(userId);
     }
 
-    @GetMapping("/getAllorders")
+    @GetMapping("/getAllOrders")
     public List<Order> getAllOrders(){
         return orderService.getAllOrders();
     }
 
+    @GetMapping("/getPendingOrders")
     public List<Order> getAllPendingOrders(){
         return orderService.getAllPendingOrders();
     }

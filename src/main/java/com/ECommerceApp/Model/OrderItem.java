@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class OrderItem {
     private String productId;
+    private String name;
     private int quantity;
     private String size;
     private String color;

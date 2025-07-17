@@ -20,8 +20,6 @@ public class ProductSearchController {
     @Autowired
     private ProductSearchService productSearchService;
 
-
-
     @GetMapping("/product/{name}")
     public List<ProductSearchResponseDto> getProductByCategoryName(@PathVariable String name){
         List<Product> products = productSearchService.getProductsByCategoryName(name);
@@ -37,14 +35,22 @@ public class ProductSearchController {
 
 
     @GetMapping("/search")
+//    http://localhost:9090/search?categories=Shirts&orderBy=desc
+//    http://localhost:9090/search?categories=Shirts&sortOrder=desc&sortBy=rating
+//    http://localhost:9090/search?categories=Footwear,Women&brand=Nike&sortOrder=desc&sortBy=rating
     public List<ProductSearchResponseDto> searchProductsByCategoryNames(
             @RequestParam List<String> categories,
+            @RequestParam(name = "brand", required = false) String brand,
             @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder,
-            @RequestParam(name = "sortBy", required = false, defaultValue = "rating") String sortBy, HttpServletRequest httpServletRequest) {
-        System.out.println("http url: "+httpServletRequest.getQueryString());
-        System.out.println("sort: "+sortOrder+"  sortby: "+sortBy);
+            @RequestParam(name = "sortBy", required = false) String sortBy,
+            HttpServletRequest httpServletRequest) {
+
+        System.out.println("http url: " + httpServletRequest.getQueryString());
+        System.out.println("sortOrder: " + sortOrder + "  sortby: " + sortBy + "  brand: " + brand);
+
         List<ProductSearchResponseDto> productSearchDtos = new ArrayList<>();
-        List<Product> products = productSearchService.searchProductsByCategoryNames(categories);
+
+        List<Product> products = productSearchService.searchProductsByCategoryNames(categories, brand);
 
         for (Product product : products) {
             ProductSearchResponseDto dto = new ProductSearchResponseDto();
@@ -64,9 +70,12 @@ public class ProductSearchController {
         }
 
         productSearchDtos.sort(comparator);
-
         return productSearchDtos;
     }
 
+    @GetMapping("/searchBrand/{brandName}")
+    public List<ProductSearchResponseDto> getProductByBrand(@PathVariable String brandName) {
+        return productSearchService.getProductByBrand(brandName);
+    }
 
 }

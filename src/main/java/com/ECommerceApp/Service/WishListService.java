@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 @Service
 public class WishListService {
+
     @Autowired
     private WishListRepository wishlistRepository;
     @Autowired
@@ -93,11 +94,12 @@ public class WishListService {
     }
 
     // 6. Clear entire wishlist
-    public void clearWishlist(String buyerId) {
+    public String clearWishlist(String buyerId) {
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
         wishlist.setItems(new ArrayList<>());
         wishlist.setUpdatedAt(new Date());
         wishlistRepository.save(wishlist);
+        return "the wish list is empty now.";
     }
 
 

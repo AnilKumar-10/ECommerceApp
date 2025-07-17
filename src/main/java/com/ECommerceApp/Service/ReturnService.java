@@ -56,7 +56,7 @@ public class ReturnService {
             }
         }
         deliveryPerson.getToReturnItems().add(productReturnDto);
-//        System.out.println("indide the return service assignReturnProductToDeliveryPerson class wiht :"+deliveryPerson);
+//        System.out.println("indide the return service assignReturnProductToDeliveryPerson class with :"+deliveryPerson);
         return deliveryService.updateDeliveryPerson(deliveryPerson);
     }
 
@@ -68,7 +68,7 @@ public class ReturnService {
         refundAndReturnResponseDTO.setDeliveryPersonName(deliveryPerson.getName());
         refundAndReturnResponseDTO.setProductPicked(false);
         refundAndReturnResponseDTO.setExpectedPickUpDate(getExpectedDate(refund1.getRequestedAt()));
-        emailService.sendReturnRequestedEmail("sohailibrahim11223@gmail.com",refundAndReturnResponseDTO);
+        emailService.sendReturnRequestedEmail("honey290702@gmail.com",refundAndReturnResponseDTO);
         return refundAndReturnResponseDTO;
     }
 
