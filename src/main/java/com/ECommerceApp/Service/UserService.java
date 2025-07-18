@@ -1,8 +1,10 @@
 package com.ECommerceApp.Service;
 
+import com.ECommerceApp.DTO.UserRegistrationDTO;
 import com.ECommerceApp.Exceptions.UserNotFoundException;
 import com.ECommerceApp.Model.Users;
 import com.ECommerceApp.Repository.UsersRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,21 +18,19 @@ public class UserService {
     @Autowired
     private ProductService productService;
 
-    public Users registerUser(Users user) {
-        validateUserForRoles(user);
-
+    public Users registerUser(UserRegistrationDTO user) {
+        Users users = new Users();
+        BeanUtils.copyProperties(user,users);
+        validateUserForRoles(users);
         user.setActive(true);
         user.setCreatedAt(new Date());
-
-        return usersRepository.save(user);
+        return usersRepository.save(users);
     }
 
-    public String registerUsers(List<Users> users){
+    public String registerUsers(List<UserRegistrationDTO> users){
         int c=0;
-        for(Users user:users){
-            validateUserForRoles(user);
-            user.setCreatedAt(new Date());
-            usersRepository.save(user);
+        for(UserRegistrationDTO user:users){
+            usersRepository.save(registerUser(user));
             c++;
         }
         return "users registration is done: "+c;

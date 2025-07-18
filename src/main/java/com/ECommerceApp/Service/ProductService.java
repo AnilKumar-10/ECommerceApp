@@ -1,6 +1,6 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.ProductRequest;
+import com.ECommerceApp.DTO.ProductCreationDto;
 import com.ECommerceApp.Exceptions.ProductNotFoundException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.ProductRepository;
@@ -23,7 +23,7 @@ public class ProductService{
     @Autowired
     private ReviewService reviewService;
 
-    public Product createProduct(ProductRequest request) {
+    public Product createProduct(ProductCreationDto request) {
 //        Product product = mapToEntity(request);
         Product product = new Product();
         BeanUtils.copyProperties(request,product);
@@ -34,10 +34,10 @@ public class ProductService{
         return productRepository.save(product);
     }
 
-    public String  createProductList(List<ProductRequest> products){
+    public String  createProductList(List<ProductCreationDto> products){
         int count = 0;
 
-        for(ProductRequest product : products){
+        for(ProductCreationDto product : products){
             Product p = new Product();
             BeanUtils.copyProperties(product,p);
             productRepository.save(p);
@@ -59,7 +59,7 @@ public class ProductService{
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + id));
     }
 
-    public Product updateProduct(ProductRequest request) {
+    public Product updateProduct(ProductCreationDto request) {
         Product existing = getProductById(request.getId());
         BeanUtils.copyProperties(request,existing);
 //        existing.setName(request.getName());

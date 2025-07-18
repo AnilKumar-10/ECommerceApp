@@ -1,8 +1,10 @@
 package com.ECommerceApp.Service;
 
+import com.ECommerceApp.DTO.TaxRuleCreationDTO;
 import com.ECommerceApp.Exceptions.TaxRuleNotFoundException;
 import com.ECommerceApp.Model.TaxRule;
 import com.ECommerceApp.Repository.TaxRuleRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,15 +17,16 @@ public class TaxRuleService {
     private TaxRuleRepository taxRuleRepository;
 
     // 1. Create new tax rule
-    public TaxRule createOneTaxRule(TaxRule rule) {
-        return taxRuleRepository.save(rule);
+    public TaxRule createOneTaxRule(TaxRuleCreationDTO rule) {
+        TaxRule taxRule = new TaxRule();
+        BeanUtils.copyProperties(rule,taxRule);
+        return taxRuleRepository.save(taxRule);
     }
 
-    public String  createMultiTaxRules(List<TaxRule> taxRules) {
+    public String  createMultiTaxRules(List<TaxRuleCreationDTO> taxRules) {
         int count = 0;
-
-        for(TaxRule rule : taxRules){
-            taxRuleRepository.save(rule);
+        for(TaxRuleCreationDTO rule : taxRules){
+            taxRuleRepository.save(createOneTaxRule(rule));
             count++;
         }
         if(count==taxRules.size()){
@@ -33,15 +36,16 @@ public class TaxRuleService {
     }
 
     // 2. Update existing tax rule
-    public TaxRule updateTaxRule(TaxRule updated) {
+    public TaxRule updateTaxRule(TaxRuleCreationDTO updated) {
         TaxRule existing = taxRuleRepository.findById(updated.getId())
                 .orElseThrow(() -> new TaxRuleNotFoundException("TaxRule not found"));
 
-        existing.setCountry(updated.getCountry());
-        existing.setState(updated.getState());
-        existing.setCategoryId(updated.getCategoryId());
-        existing.setTaxRate(updated.getTaxRate());
-        existing.setActive(updated.isActive());
+        BeanUtils.copyProperties(updated,existing);
+//        existing.setCountry(updated.getCountry());
+//        existing.setState(updated.getState());
+//        existing.setCategoryId(updated.getCategoryId());
+//        existing.setTaxRate(updated.getTaxRate());
+//        existing.setActive(updated.isActive());
 
         return taxRuleRepository.save(existing);
     }

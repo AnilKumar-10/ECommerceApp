@@ -3,11 +3,17 @@ package com.ECommerceApp.Controller;
 import com.ECommerceApp.DTO.StockLogModificationDTO;
 import com.ECommerceApp.Model.StockLog;
 import com.ECommerceApp.Service.StockLogService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class StockLogController {
@@ -15,22 +21,23 @@ public class StockLogController {
     @Autowired
     private StockLogService stockLogService;
 
-
-    @PostMapping("/updateStock")
-    public StockLog insertStock(@RequestBody StockLogModificationDTO stockLogModificationDTO){
-        return stockLogService.modifyStock(stockLogModificationDTO);
+    // this will insert is the stock is previously not available, updates if already available
+    @PostMapping("/updateStock") // seller
+    public ResponseEntity<?> insertStock(@Valid @RequestBody StockLogModificationDTO stockLogModificationDTO){
+        return ResponseEntity.ok(stockLogService.modifyStock(stockLogModificationDTO));
     }
 
-    @PostMapping("/insertStockLogs")
-    public List<StockLog> insertStockLogs(@RequestBody List<StockLogModificationDTO> stockLogModificationDTOS){
+    @PostMapping("/insertStockLogs")//seller
+    public ResponseEntity<?> insertStockLogs(@Valid @RequestBody List<@Valid StockLogModificationDTO> stockLogModificationDTOS){
         List<StockLog> stockLogs = new ArrayList<>();
         for(StockLogModificationDTO stockLogModificationDTO : stockLogModificationDTOS){
             stockLogs.add(stockLogService.modifyStock(stockLogModificationDTO));
         }
-        return stockLogs;
+        return ResponseEntity.ok(stockLogs);
     }
 
-    @GetMapping("/getStockLogByProduct/{productId}")
+
+    @GetMapping("/getStockLogByProduct/{productId}") //seller,admin.
     public StockLog getStockLogByProduct(@PathVariable String productId){
         return stockLogService.getByProductId(productId);
     }

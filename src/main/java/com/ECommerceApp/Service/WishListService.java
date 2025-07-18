@@ -19,7 +19,6 @@ public class WishListService {
     private WishListRepository wishlistRepository;
     @Autowired
     private ProductRepository productRepository; // optional for validation
-
     @Autowired
     private CartService cartService;
 

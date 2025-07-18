@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Cancellation Notice</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; }
+        .container { padding: 20px; border: 1px solid #ccc; border-radius: 10px; max-width: 600px; margin: auto; background-color: #f9f9f9; }
+        h2 { color: #d9534f; }
+        .info { margin-top: 20px; }
+        .info p { margin: 5px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Order Cancellation Notice</h2>
+    <p>Dear Delivery Partner,</p>
+
+    <p>This is to inform you that the following order has been <strong>cancelled</strong> and does not require delivery:</p>
+
+    <div class="info">
+        <p><strong>Order ID:</strong> <span th:text="${deliveryItem.orderId}">ORDER123</span></p>
+        <p><strong>Shipping ID:</strong> <span th:text="${deliveryItem.shippingId}">SHIP123</span></p>
+        <p><strong>Customer Name:</strong> <span th:text="${deliveryItem.userName}">John Doe</span></p>
+        <p><strong>Delivery Address:</strong>
+            <span th:text="${deliveryItem.address.street} + ', ' + ${deliveryItem.address.city} + ', ' + ${deliveryItem.address.state} + ', ' + ${deliveryItem.address.zipCode}">123 Main St, City, State, ZIP</span>
+        </p>
+        <p><strong>Payment Mode:</strong> <span th:text="${deliveryItem.paymentMode}">COD</span></p>
+        <p><strong>Amount To Collect:</strong> ₹<span th:text="${deliveryItem.amountToPay}">500.00</span></p>
+    </div>
+
+    <p>Since the order is no longer valid, please disregard any instructions related to its delivery.</p>
+
+    <p>Thank you for your prompt attention to this matter.</p>
+
+    <p>Best regards,
+        <br><strong>Delivery Management Team</strong></p>
+</div>
+</body>
+</html>

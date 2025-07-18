@@ -8,8 +8,8 @@ import java.util.Date;
 
 @Data
 //@Document
-public class    CartItem {
-    private int  itemId;         // Add this field
+public class CartItem {
+    private int  itemId;         // this field add after it is moved to cart.
     private String productId;
     private int quantity;
     private double price;

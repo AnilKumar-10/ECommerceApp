@@ -78,4 +78,10 @@ public class ProductSearchController {
         return productSearchService.getProductByBrand(brandName);
     }
 
+    @GetMapping("/viewAll")
+    public List<ProductSearchResponseDto> getAllProducts(){
+        return productSearchService.getAllProducts();
+
+    }
+
 }

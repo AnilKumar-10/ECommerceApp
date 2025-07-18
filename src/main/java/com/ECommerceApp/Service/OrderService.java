@@ -57,11 +57,14 @@ public class OrderService {
         order.setBuyerId(orderDto.getUserId());
         String addressId = getAddress(orderDto.getUserId(),orderDto.getAddressType());
         order.setAddressId(addressId);
-        order.setCouponId(orderDto.getCoupon());
         order.setOrderDate(new Date());
         double amount = getTotalAmount(orderDto);
         order.setTotalAmount(amount);
-        double discountAmount = getCouponDiscount(orderDto,amount);
+        double discountAmount =0;
+        if(orderDto.getCoupon()!=null){
+            order.setCouponId(orderDto.getCoupon());
+            discountAmount = getCouponDiscount(orderDto,amount);
+        }
         order.setDiscount(discountAmount);
         double tax = calculateTaxForOrder(order,addressId);
         order.setTax(tax);
@@ -77,7 +80,7 @@ public class OrderService {
             ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
-            emailService.sendOrderConfirmationEmail("honey290702@gmail.com","Anil", order1, shippingDetails);
+            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com","Anil", order1, shippingDetails);
         }
         return order1; // flow goes to the initiating payment is the paymode is upi
     }
@@ -124,7 +127,7 @@ public class OrderService {
         ShippingDetails shippingDetails = shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
         updateStockLogAfterOrderConfirmed(orderId); // after the order is confirmed the stock details get updated.
         cartService.removeOrderedItemsFromCart(order1); // this will remove the ordered items from the cart.
-        emailService.sendOrderConfirmationEmail("honey290702@gmail.com", order1.getBuyerId(), order1,shippingDetails);
+        emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", order1.getBuyerId(), order1,shippingDetails);
 
     }
 

@@ -2,9 +2,12 @@ package com.ECommerceApp.Controller;
 
 import com.ECommerceApp.Model.Category;
 import com.ECommerceApp.Service.CategoryService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+
 
 @RestController
 public class CategoryController { // admin,seller
@@ -13,13 +16,13 @@ public class CategoryController { // admin,seller
     private CategoryService categoryService;
 
     @PostMapping("/createCategory")
-    public Category insertCategory(@RequestBody Category category){
-        return categoryService.createCategory(category);
+    public ResponseEntity<?> insertCategory(@Valid @RequestBody Category category){
+        return ResponseEntity.ok(categoryService.createCategory(category));
     }
 
     @PostMapping("/createCategories")
-    public String  insertCategories(@RequestBody List<Category> categories){
-        return categoryService.createCategoryList(categories);
+    public ResponseEntity<?>  insertCategories(@Valid @RequestBody List<@Valid Category> categories){
+        return ResponseEntity.ok(categoryService.createCategoryList(categories));
     }
 
     @GetMapping("/getCategory/{categoryId}")
@@ -34,8 +37,8 @@ public class CategoryController { // admin,seller
 
 
     @PutMapping("/updateCategory")
-    public Category updateCategory(@RequestBody Category category){
-        return categoryService.updateCategory(category);
+    public ResponseEntity<?> updateCategory(@Valid @RequestBody Category category){
+        return ResponseEntity.ok(categoryService.updateCategory(category));
     }
 
     @DeleteMapping("/deleteCategory/{categoryId}")

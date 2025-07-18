@@ -1,11 +1,18 @@
 package com.ECommerceApp.Controller;
 
+import com.ECommerceApp.DTO.TaxRuleCreationDTO;
 import com.ECommerceApp.Model.TaxRule;
 import com.ECommerceApp.Service.TaxRuleService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class TaxController {
@@ -15,18 +22,23 @@ public class TaxController {
 
 
     @PostMapping("/createTaxrules")
-    public String  createTax(@RequestBody List<TaxRule> rule){
-        return taxRuleService.createMultiTaxRules(rule);
+    public ResponseEntity<?>  createTax(@Valid @RequestBody List<TaxRuleCreationDTO> rule, BindingResult result){
+        if (result.hasErrors()) {
+            Map<String, String> errors = result.getFieldErrors().stream()
+                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+            return ResponseEntity.badRequest().body(errors);
+        }
+        return ResponseEntity.ok(taxRuleService.createMultiTaxRules(rule));
     }
 
     @PostMapping("/createTaxRule")
-    public TaxRule createTacRule(@RequestBody TaxRule rule){
+    public TaxRule createTacRule(@RequestBody TaxRuleCreationDTO rule){
         return taxRuleService.createOneTaxRule(rule);
     }
 
     @PutMapping("/updateTaxRule")
-    public TaxRule updateTaxRule(@RequestBody TaxRule rule){
-        return taxRuleService.updateTaxRule(rule);
+    public ResponseEntity<?> updateTaxRule(@Valid @RequestBody TaxRuleCreationDTO rule){
+        return ResponseEntity.ok(taxRuleService.updateTaxRule(rule));
     }
 
     @DeleteMapping("/deleteTaxRule/{ruleId}")

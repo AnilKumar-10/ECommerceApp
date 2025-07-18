@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Low Stock Alert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fcfcfc;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 24px;
+            background-color: #ffffff;
+        }
+
+        h2 {
+            color: #d9534f;
+        }
+
+        .section {
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .stock-info {
+            background-color: #f9f9f9;
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .highlight {
+            color: #d9534f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>⚠️ Low Stock Alert for Your Product</h2>
+
+    <p>Dear Seller,</p>
+    <p>We noticed that the stock for one of your products is running low. Please review the details below and take necessary actions to restock it promptly.</p>
+
+    <div class="section stock-info">
+        <div><span class="section-title">Product ID:</span> <span th:text="${stockLog.productId}">PRODUCT_ID</span></div>
+        <div><span class="section-title">Seller ID:</span> <span th:text="${stockLog.sellerId}">SELLER_ID</span></div>
+        <div><span class="section-title">Current Quantity:</span> <span class="highlight" th:text="${stockLog.currentQuantity}">5</span></div>
+        <div><span class="section-title">Last Updated:</span> <span th:text="${#dates.format(stockLog.timestamp, 'dd MMM yyyy HH:mm')}">01 Jan 2025 13:00</span></div>
+    </div>
+
+    <p class="section">
+        To avoid delays in customer orders or listing visibility, we recommend updating your stock immediately.
+    </p>
+
+    <p class="section">
+        Thank you for selling with us!
+    </p>
+
+    <div class="footer">
+        — E-Commerce Support Team
+    </div>
+</div>
+</body>
+</html>

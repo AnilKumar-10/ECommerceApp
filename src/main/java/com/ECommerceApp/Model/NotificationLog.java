@@ -8,12 +8,11 @@ import java.util.Date;
 
 @Document
 @Data
-public class Notification {
+public class NotificationLog {
     @Id
     private String id;
     private String userId;
     private String message;
-    private String type; // "ORDER", "PROMO","Delivery" etc.
-    private boolean isRead;
+    private String type; // "ORDER", "ALERT","Delivery" etc.
     private Date createdAt;
 }

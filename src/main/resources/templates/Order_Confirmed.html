@@ -22,7 +22,7 @@
     <h3>Shipping Details:</h3>
     <p><strong>Courier:</strong> <span th:text="${courierName}">Delhivery</span></p>
     <p><strong>Tracking ID:</strong> <span th:text="${trackingId}">TRK123456</span></p>
-    <p><strong>Expected Delivery Date:</strong> <span th:text="${expectedDate}">2025-07-18</span></p>
+    <p><strong>Expected Delivery Date:</strong> <span th:text="${#dates.format(expectedDate, 'dd MMM yyyy')}">2025-07-18</span></p>
     <p><strong>Delivery Address:</strong><br/>
         <span th:text="${address.street}">4-56, Main Road</span>,
         <span th:text="${address.city}">Guntur</span>,

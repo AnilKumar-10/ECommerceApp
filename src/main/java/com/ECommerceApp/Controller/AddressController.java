@@ -1,11 +1,18 @@
 package com.ECommerceApp.Controller;
 
+import com.ECommerceApp.DTO.AddressRegistrationDto;
 import com.ECommerceApp.Model.Address;
 import com.ECommerceApp.Service.AddressService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class AddressController { // everyone
@@ -14,13 +21,13 @@ public class AddressController { // everyone
     private AddressService addressService;
 
     @PostMapping("/insertAddress")
-    public Address insertUserAddress(@RequestBody Address address){
-        return  addressService.createAddress(address);
+    public ResponseEntity<?> insertUserAddress(@Valid  @RequestBody AddressRegistrationDto address){
+        return  ResponseEntity.ok(addressService.createAddress(address));
     }
 
     @PostMapping("/insertAddresses")
-    public String  insertUsersAddress(@RequestBody List<Address> address){
-        return addressService.createAddresses(address);
+    public ResponseEntity<?>  insertUsersAddress(@Valid @RequestBody List<@Valid AddressRegistrationDto> address){
+        return ResponseEntity.ok(addressService.createAddresses(address));
     }
 
     @GetMapping("/getAddress/{id}")
@@ -34,8 +41,8 @@ public class AddressController { // everyone
     }
 
     @PutMapping("/updateAddress")
-    public Address updateAddress(@RequestBody Address address){
-        return addressService.updateAddress("",address);
+    public ResponseEntity<?> updateAddress(@Valid @RequestBody Address address){
+        return ResponseEntity.ok(addressService.updateAddress("",address));
     }
 
     @DeleteMapping("/deleteAddress/{addressId}")

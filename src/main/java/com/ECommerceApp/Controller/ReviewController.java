@@ -1,8 +1,11 @@
 package com.ECommerceApp.Controller;
 
+import com.ECommerceApp.DTO.ReviewCreationDto;
 import com.ECommerceApp.Model.Review;
 import com.ECommerceApp.Service.ReviewService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,8 +17,8 @@ public class ReviewController {
     private ReviewService reviewService;
 
     @PostMapping("/postReview")
-    public Review postReview(@RequestBody Review review){ // user
-        return reviewService.addReview(review);
+    public ResponseEntity<?> postReview(@Valid @RequestBody ReviewCreationDto review){
+        return ResponseEntity.ok(reviewService.addReview(review));
     }
 
     @GetMapping("/getProductReview/{id}")
@@ -24,8 +27,8 @@ public class ReviewController {
     }
 
     @PutMapping("/updateReview")
-    public Review updateReview(@RequestBody Review review){ // done by user
-        return reviewService.updateReview(review);
+    public ResponseEntity<?> updateReview(@Valid @RequestBody Review review){ // done by user
+        return ResponseEntity.ok(reviewService.updateReview(review));
     }
 
     @DeleteMapping("/deleteUsersReview/{userId}")

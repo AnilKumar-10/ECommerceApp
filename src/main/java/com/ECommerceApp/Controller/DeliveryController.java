@@ -1,5 +1,6 @@
 package com.ECommerceApp.Controller;
 
+import com.ECommerceApp.DTO.DeliveryPersonRegistrationDto;
 import com.ECommerceApp.DTO.DeliveryPersonResponseDto;
 import com.ECommerceApp.DTO.DeliveryUpdateDTO;
 import com.ECommerceApp.DTO.PaymentDto;
@@ -8,10 +9,17 @@ import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.OrderService;
 import com.ECommerceApp.Service.PaymentService;
 import com.ECommerceApp.Service.ShippingService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class DeliveryController { // admin, delivery person
@@ -27,18 +35,18 @@ public class DeliveryController { // admin, delivery person
 
 
     @PostMapping("/insertDelivery")
-    public DeliveryPerson insertDelivery(@RequestBody DeliveryPerson deliveryPerson){
-        return  deliveryService.register(deliveryPerson);
+    public ResponseEntity<?> insertDelivery(@Valid @RequestBody DeliveryPersonRegistrationDto deliveryPerson ){
+        return  ResponseEntity.ok(deliveryService.register(deliveryPerson));
     }
 
     @PostMapping("/insertDeliveries")
-    public String  insertDeliveryPersons(@RequestBody List<DeliveryPerson> deliveryPerson){
-        return  deliveryService.registerPersons(deliveryPerson);
+    public ResponseEntity<?>  insertDeliveryPersons(@Valid @RequestBody List<@Valid  DeliveryPersonRegistrationDto> deliveryPerson){
+        return  ResponseEntity.ok(deliveryService.registerPersons(deliveryPerson));
     }
 
 
     @PostMapping("/updateDelivery")
-    public String updateDelivery(@RequestBody DeliveryUpdateDTO deliveryUpdateDTO){
+    public ResponseEntity<?> updateDelivery(@Valid @RequestBody DeliveryUpdateDTO deliveryUpdateDTO){
         if(orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod().equalsIgnoreCase("COD")){
             System.out.println("inside the if of update: "+deliveryUpdateDTO);
             PaymentDto paymentDto = new PaymentDto();
@@ -48,7 +56,7 @@ public class DeliveryController { // admin, delivery person
             paymentService.confirmCODPayment(paymentDto); // updating the payment success details
             orderService.updateCODPaymentStatus(deliveryUpdateDTO);// updating the order payment status
         }
-        return shippingService.updateDeliveryStatus(deliveryUpdateDTO);
+        return ResponseEntity.ok(shippingService.updateDeliveryStatus(deliveryUpdateDTO));
     }
 
     @DeleteMapping("/deleteDeliveryPerson/{id}")

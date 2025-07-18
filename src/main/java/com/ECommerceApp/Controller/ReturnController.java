@@ -9,6 +9,7 @@ import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.RefundService;
 import com.ECommerceApp.Service.ReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,5 +43,10 @@ public class ReturnController {
         returnService.updateReturnFailed(returnUpdate.getOrderId());
         Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
         return refundService.rejectRefund(refund.getRefundId(),"Product Damaged.");
+    }
+
+    @PostMapping("/cancelOrder/{orderId}")
+    public void cancelOrder(@PathVariable String orderId){
+        refundService.cancelOrder(orderId,"Ordered by mistake");
     }
 }

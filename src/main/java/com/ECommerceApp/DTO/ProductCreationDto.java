@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 @Component
 @Data
-public class ProductRequest {
+public class ProductCreationDto {
 
     private String id;
 
@@ -26,6 +26,7 @@ public class ProductRequest {
     @Min(value = 0, message = "Stock cannot be negative")
     private int stock;
 
+    @NotBlank(message = "Brand must be provided")
     private String brand;
 
     @NotBlank(message = "Return policy must be provided")

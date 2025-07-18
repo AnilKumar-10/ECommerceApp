@@ -122,6 +122,7 @@ public class CartService {
             if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
                 BeanUtils.copyProperties(item,orderItem); // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
+                orderItem.setName(productService.getProductById(item.getProductId()).getName());
                 items.add(orderItem);
 //                removeItemFromCart(userId,item.getProductId());
             }

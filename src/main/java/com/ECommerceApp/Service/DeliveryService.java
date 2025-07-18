@@ -28,6 +28,8 @@ public class DeliveryService {
     private UserService userService;
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private EmailService emailService;
 
     // Assign delivery person by address match
     public DeliveryPerson assignDeliveryPerson(String deliveryAddress) {
@@ -45,14 +47,21 @@ public class DeliveryService {
         return null;
     }
 
-    public DeliveryPerson register(DeliveryPerson deliveryPerson){
+    public DeliveryPerson register(DeliveryPersonRegistrationDto deliveryPersonRegistrationDto){
+        DeliveryPerson deliveryPerson  = new DeliveryPerson();
+        BeanUtils.copyProperties(deliveryPersonRegistrationDto,deliveryPerson);
+        deliveryPerson.setToReturnItems(new ArrayList<>());
+        deliveryPerson.setToDeliveryItems(new ArrayList<>());
+        deliveryPerson.setToDeliveryCount(0);
+        deliveryPerson.setDeliveredCount(0);
+        deliveryPerson.setActive(true);
         return deliveryRepository.save(deliveryPerson);
     }
 
-    public String  registerPersons(List<DeliveryPerson> deliveryPerson){
+    public String  registerPersons(List<DeliveryPersonRegistrationDto> deliveryPerson){
         int c=0;
-        for(DeliveryPerson person: deliveryPerson){
-            deliveryRepository.save(person);
+        for(DeliveryPersonRegistrationDto person: deliveryPerson){
+            deliveryRepository.save(register(person));
             c++;
         }
         return "inserted: "+c;
@@ -79,6 +88,8 @@ public class DeliveryService {
             deliveryPerson.setToDeliveryItems(new ArrayList<>());
         }
         deliveryPerson.getToDeliveryItems().add(deliveryItems);
+        // sending the mail to delivery partner about the order is assigned to deliver
+        emailService.sendOrderAssignedToDeliveryPerson("iamanil3121@gmail.com",deliveryItems,deliveryPerson.getName(),deliveryPerson.getId());
         return deliveryRepository.save(deliveryPerson);
     }
 
@@ -140,5 +151,14 @@ public class DeliveryService {
         BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
         return deliveryPersonResponseDto;
     }
+
+
+    public void updateDeliveryCountAfterOrderCancellation(String deliveryPersonId){
+        DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
+        deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
+        updateDeliveryPerson(deliveryPerson); // updating the delivery counts of the delivered person.
+
+    }
+
 
 }

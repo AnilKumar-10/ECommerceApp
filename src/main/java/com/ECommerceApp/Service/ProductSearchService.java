@@ -6,7 +6,9 @@ import com.ECommerceApp.Model.Category;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Repository.CategoryRepository;
 import com.ECommerceApp.Repository.ProductRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -117,4 +119,14 @@ public class ProductSearchService {
     }
 
 
+    public List<ProductSearchResponseDto> getAllProducts() {
+        List<Product> products = productService.getAllProducts();
+        List<ProductSearchResponseDto> productSearchResponseDtos = new ArrayList<>();
+        for(Product product : products){
+            ProductSearchResponseDto productSearchResponseDto = new ProductSearchResponseDto();
+            BeanUtils.copyProperties(product,productSearchResponseDto);
+            productSearchResponseDtos.add(productSearchResponseDto);
+        }
+        return productSearchResponseDtos;
+    }
 }

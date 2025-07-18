@@ -153,10 +153,9 @@ public class ShippingService {
         deliveryHistoryService.insertDelivery(order.getId(),deliveryPersonId);
         // removes the order details from to deliver list
         deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());
-        emailService.sendOrderDeliveredEmail("honey290702@gmail.com","Anil",order);
+        emailService.sendOrderDeliveredEmail("iamanil3121@gmail.com","Anil",order);
         return "Your order is delivered successfully please rate us..!";
     }
-
 
 
     public ShippingDetails getByShippingId(String shippingId){

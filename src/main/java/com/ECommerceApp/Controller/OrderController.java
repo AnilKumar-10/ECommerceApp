@@ -39,4 +39,10 @@ public class OrderController { //user
     public List<Order> getAllPendingOrders(){
         return orderService.getAllPendingOrders();
     }
+
+
+
+//    public void cancelOrder(@PathVariable String orderId){
+//        orderService.
+//    }
 }

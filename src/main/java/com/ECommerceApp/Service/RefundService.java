@@ -1,8 +1,6 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.RaiseRefundRequestDto;
-import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
-import com.ECommerceApp.DTO.ReturnUpdateRequest;
+import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Exceptions.OrderCancellationExpiredException;
 import com.ECommerceApp.Exceptions.RefundNotFoundException;
 import com.ECommerceApp.Model.*;
@@ -102,7 +100,7 @@ public class RefundService {
         refund.setStatus("REJECTED");
         refund.setProcessedAt(new Date());
         refund.setReason(refund.getReason() + " | Rejected: " + reason);
-        //  sends the mail after the refund is rejected.
+        //  sends the mail after the refund request is rejected.
         emailService.sendRefundRejectedEmail("iamanil3121@gmail.com",refund.getUserId(),refund.getOrderId());
         return refundRepository.save(refund);
     }
@@ -122,7 +120,7 @@ public class RefundService {
         order.setFinalAmount(amount);
         order.setRefundAmount(refundAmount);
         Order order1 = orderService.saveOrder(order); // updating the final amount after the refund is completed.
-        emailService.sendReturnCompletedEmail("honey290702@gmail.com",order1.getBuyerId(),order1);
+        emailService.sendReturnCompletedEmail("iamanil3121@gmail.com",order1.getBuyerId(),order1);
         deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
         // this will remove the return product details from the delivery persons to return fields.
         return refundRepository.save(refund);
@@ -208,8 +206,6 @@ public class RefundService {
 
 
     // ORDER CANCELLATION
-
-    // to cancel the order
     public Order cancelOrder(String orderId,String cancelReason){
         Order order = orderService.getOrder(orderId);
         if(order.getOrderStatus().equalsIgnoreCase("SHIPPED")){
@@ -218,11 +214,19 @@ public class RefundService {
         order.setOrderStatus("CANCELLED");
         order.setCancelReason(cancelReason);
         order.setCancelled(true);
+        order.setCancellationTime(new Date());
         Order order1 = orderService.saveOrder(order);
         if(order.getPaymentMethod().equalsIgnoreCase("UPI")){
             Refund refund = refundOverOrderCancellation(order1);
-            emailService.sendOrderCancellationEmail(order1,"Anil","iamanil3121@gmail.com");
         }
+        deliveryService.removeDeliveredOrderFromToDeliveryItems(shippingService.getShippingByOrderId(orderId).getDeliveryPersonId(),orderId);
+        deliveryService.updateDeliveryCountAfterOrderCancellation(shippingService.getShippingByOrderId(orderId).getDeliveryPersonId());
+        // sends the mail about the order cancellation to user
+        emailService.sendOrderCancellationEmail(order1,"Anil","iamanil3121@gmail.com");
+        // sends the mail to the delivery person who the order delivery is assigned about the order cancellation.
+        DeliveryPersonResponseDto deliveryPerson =deliveryService.getDeliveryPersonByOrderId(orderId);
+        emailService.sendOrderCancellationToDelivery("iamanil3121@gmail.com",
+                deliveryPerson.getToDeliveryItems().getFirst(),deliveryPerson.getId());
         return order1;
     }
 

@@ -1,20 +1,23 @@
 package com.ECommerceApp.Exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-
-// You may import your exception classes from your package here
-// import com.yourpackage.exceptions.*;
+import java.util.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private ResponseEntity<ExceptionResponse> buildResponse(Exception ex, HttpStatus status, String path) {
-        ExceptionResponse response = new ExceptionResponse(status.value(), status.getReasonPhrase(), ex.getMessage(), path, LocalDateTime.now());
-        return new ResponseEntity<>(response, status);
+    // handles all the invalid fields that are provided at the insertion time.
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + " : " + error.getDefaultMessage())
+                .toList();
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler({
@@ -33,7 +36,6 @@ public class GlobalExceptionHandler {
             ShippingDetailsNotFoundException.class,
             ShippingNotFoundException.class,
             TaxRuleNotFoundException.class,
-            UnknowUserReviewException.class,
             UserNotFoundException.class
     })
     public ResponseEntity<ExceptionResponse> handleNotFoundExceptions(Exception ex, HttpServletRequest request) {
@@ -42,13 +44,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             InValidCouponException.class,
+            UnknowUserReviewException.class,
             ProductOutOfStockException.class
     })
     public ResponseEntity<ExceptionResponse> handleBadRequestExceptions(Exception ex, HttpServletRequest request) {
         return buildResponse(ex, HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
 
-    // Generic fallback
+
+    @ExceptionHandler(MailSendException.class)
+    public ResponseEntity<ExceptionResponse> handleMailSendException(MailSendException ex, HttpServletRequest request) {
+        return buildResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+    }
+
+    private ResponseEntity<ExceptionResponse> buildResponse(Exception ex, HttpStatus status, String path) {
+        ExceptionResponse response = new ExceptionResponse(status.value(), status.getReasonPhrase(), ex.getMessage(), path, LocalDateTime.now());
+        return new ResponseEntity<>(response, status);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleGenericException(Exception ex, HttpServletRequest request) {
         return buildResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());

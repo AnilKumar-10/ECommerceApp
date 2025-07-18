@@ -20,6 +20,8 @@ public class StockLogService {
     private StockLogRepository stockLogRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private EmailService emailService;
 
     public StockLog modifyStock(StockLogModificationDTO modification) {
         // 1. Find existing stock log or create a new one
@@ -62,6 +64,11 @@ public class StockLogService {
         product.setStock(newQuantity);
         product.setAvailable(newQuantity > 0);
         productRepository.save(product);
+        if(newQuantity <= 10){
+            // this will send the notification to the seller when Product Stock is Low.
+            emailService.sendLowStockAlertToSeller("iamanil3121@gmail.com",updatedLog);
+        }
+
         return updatedLog;
     }
 

@@ -1,5 +1,6 @@
 package com.ECommerceApp.Service;
 
+import com.ECommerceApp.DTO.ReviewCreationDto;
 import com.ECommerceApp.Exceptions.ReviewNotFountException;
 import com.ECommerceApp.Exceptions.UnknowUserReviewException;
 import com.ECommerceApp.Model.Product;
@@ -8,6 +9,7 @@ import com.ECommerceApp.Model.Users;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.ReviewRepository;
 import com.ECommerceApp.Repository.UsersRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,16 +54,18 @@ public class ReviewService {
 
     }
 
-    public Review addReview(Review review) {
-        review.setCreatedAt(new Date());
-        review.setUpdatedAt(new Date());
+    public Review addReview(ReviewCreationDto review) {
+        Review review1 = new Review();
+        BeanUtils.copyProperties(review,review1);
+        review1.setCreatedAt(new Date());
+        review1.setUpdatedAt(new Date());
         if(usersRepository.existsById(review.getUserId())){
-            review.setVerifiedBuyer(true);
+            review1.setVerifiedBuyer(true);
         }
         else{
             throw new UnknowUserReviewException("User is not verified ");
         }
-        Review saved = reviewRepository.save(review);
+        Review saved = reviewRepository.save(review1);
 
         updateProductRating(review.getProductId()); //  updates average rating of that product.
 

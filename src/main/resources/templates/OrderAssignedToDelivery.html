@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Order Assigned</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            background-color: #f9f9f9;
+        }
+
+        .header {
+            text-align: center;
+            background-color: #007BFF;
+            padding: 15px;
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .details {
+            padding: 15px;
+        }
+
+        .details p {
+            margin: 10px 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>New Delivery Assignment</h2>
+    </div>
+
+    <div class="details">
+        <p>Hello<span th:text="${ReceiverName}">Customer</span>,</p>
+        <p>You have been assigned a new order for delivery. Please find the details below:</p>
+
+        <p><strong>Shipping ID:</strong> <span th:text="${deliveryItem.shippingId}">SHIPPING_ID</span></p>
+        <p><strong>Order ID:</strong> <span th:text="${deliveryItem.orderId}">ORDER_ID</span></p>
+        <p><strong>Customer Name:</strong> <span th:text="${deliveryItem.userName}">USER_NAME</span></p>
+        <p><strong>Shipping Address:</strong><br/>
+            <span th:text="${deliveryItem.address.street}">Street</span>,
+            <span th:text="${deliveryItem.address.city}">City</span><br/>
+            <span th:text="${deliveryItem.address.state}">State</span> -
+            <span th:text="${deliveryItem.address.zipCode}">ZIP</span><br/>
+            <span th:text="${deliveryItem.address.country}">Country</span>
+        </p>
+
+        <p><strong>Payment Mode:</strong> <span th:text="${deliveryItem.paymentMode}">PAYMENT_MODE</span></p>
+        <p><strong>Amount to Collect:</strong> ₹<span th:text="${deliveryItem.amountToPay}">AMOUNT</span></p>
+    </div>
+
+    <div class="footer">
+        <p>Please ensure timely and safe delivery. Thank you!</p>
+        <p>— E-Commerce Logistics Team</p>
+    </div>
+</div>
+</body>
+</html>
