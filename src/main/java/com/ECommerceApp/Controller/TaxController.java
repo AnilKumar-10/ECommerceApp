@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-public class TaxController {
+public class TaxController { //admin
 
     @Autowired
     private TaxRuleService taxRuleService;

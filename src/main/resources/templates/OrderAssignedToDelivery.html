@@ -61,10 +61,11 @@
         <p><strong>Order ID:</strong> <span th:text="${deliveryItem.orderId}">ORDER_ID</span></p>
         <p><strong>Customer Name:</strong> <span th:text="${deliveryItem.userName}">USER_NAME</span></p>
         <p><strong>Shipping Address:</strong><br/>
+            <span th:text="${deliveryItem.address.phoneNo}">Phone</span>
             <span th:text="${deliveryItem.address.street}">Street</span>,
             <span th:text="${deliveryItem.address.city}">City</span><br/>
             <span th:text="${deliveryItem.address.state}">State</span> -
-            <span th:text="${deliveryItem.address.zipCode}">ZIP</span><br/>
+            <span th:text="${deliveryItem.address.postalCode}">ZIP</span><br/>
             <span th:text="${deliveryItem.address.country}">Country</span>
         </p>
 

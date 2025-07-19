@@ -100,10 +100,12 @@ public class DeliveryService {
 
 
     public void removeDeliveredOrderFromToDeliveryItems(String deliveryPersonId, String orderId) {
+        System.out.println("inside it");
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
         Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("OrderId").is(orderId)));
         System.out.println("inside remove delivery orders: "+query+"  =  "+update);
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
+        System.out.println("exit");
     }
 
 
@@ -146,9 +148,12 @@ public class DeliveryService {
 
 
     public DeliveryPersonResponseDto getDeliveryPersonByOrderId(String orderId){
+        System.out.println("inside deliveryservice: "+orderId);
         DeliveryPerson deliveryPerson = deliveryRepository.findByOrderId(orderId).get();
+        System.out.println(deliveryPerson);
         DeliveryPersonResponseDto deliveryPersonResponseDto = new DeliveryPersonResponseDto();
         BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
+        System.out.println(deliveryPersonResponseDto);
         return deliveryPersonResponseDto;
     }
 

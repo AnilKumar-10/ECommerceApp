@@ -1,6 +1,7 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.DeliveryItems;
+import com.ECommerceApp.DTO.ProductReturnDto;
 import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
 import com.ECommerceApp.Exceptions.MailSendException;
 import com.ECommerceApp.Repository.NotificationLogRepository;
@@ -319,6 +320,31 @@ public class EmailService {
             throw new RuntimeException("Failed to send low stock email", e);
         }
     }
+
+
+    public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnDto returnDto,String userId) {
+        try {
+            Context context = new Context();
+            context.setVariable("deliveryPerson", deliveryPerson);
+            context.setVariable("returnDto ", returnDto);
+
+            String htmlContent = templateEngine.process("ReturnOrderDelivery.html", context);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+            helper.setTo(toEmail);
+            helper.setSubject("Return Pickup Assigned - Order " + returnDto.getOrderId());
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+
+            saveLogDetails(userId,"Return Pickup Assigned - Order " + returnDto.getOrderId(),"RETURN  ");
+        } catch (MessagingException e) {
+            throw new MailSendException("Failed to send return pickup notification to delivery person"+e);
+        }
+    }
+
 
     // storing all the email log details.
     public void saveLogDetails(String userId,String subject,String type){

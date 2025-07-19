@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class ReturnController {
+public class ReturnController {  // buyer
 
     @Autowired
     private RefundService refundService;
@@ -35,8 +35,8 @@ public class ReturnController {
     public Refund updateReturn(@RequestBody ReturnUpdateRequest returnUpdate){
         if(returnUpdate.isPicked()){
             returnService.updateReturnSuccess(returnUpdate.getOrderId());
-            DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(returnUpdate.getDeliveryPersonId());
-            deliveryPerson.getToReturnItems();
+//            DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(returnUpdate.getDeliveryPersonId());
+//            deliveryPerson.getToReturnItems();
 
             return refundService.completeRefund(returnUpdate);
         }

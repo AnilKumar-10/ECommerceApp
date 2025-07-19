@@ -152,6 +152,7 @@ public class ShippingService {
 //      here we have to update the delivery history
         deliveryHistoryService.insertDelivery(order.getId(),deliveryPersonId);
         // removes the order details from to deliver list
+        System.out.println("near remove delivered itms");
         deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());
         emailService.sendOrderDeliveredEmail("iamanil3121@gmail.com","Anil",order);
         return "Your order is delivered successfully please rate us..!";

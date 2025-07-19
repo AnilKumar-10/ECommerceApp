@@ -10,6 +10,7 @@ public class Address {
     @Id
     private String id;
     private String userId;
+    private String phoneNo;
     private String street;
     private String city;
     private String state;

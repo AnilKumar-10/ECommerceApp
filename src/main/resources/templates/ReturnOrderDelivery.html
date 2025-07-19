@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Product Return Notification</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h2 { color: #d9534f; }
+        .container { border: 1px solid #ccc; padding: 20px; }
+        .section { margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Product Return Notification</h2>
+    <p>Hello Delivery Partner,</p>
+    <p>The following products are scheduled for return pickup:</p>
+
+    <div class="section">
+        <strong>Order ID:</strong> <span th:text="${returnDto.orderId}"></span><br>
+        <strong>User Name:</strong> <span th:text="${returnDto.userName}"></span><br>
+        <strong>Reason for Return:</strong> <span th:text="${returnDto.reason}"></span><br>
+        <strong>Product Picked:</strong>
+        <span th:text="${returnDto.productPicked} ? 'Yes' : 'No'"></span>
+    </div>
+
+    <div class="section">
+        <h4>Return Address</h4>
+        <p>
+            Phone: <span th:text="${returnDto.address.phoneNo}"></span><br>
+            <span th:text="${returnDto.address.Street}"></span><br>
+            <span th:text="${returnDto.address.City}"></span>,
+            <span th:text="${returnDto.address.State}"></span> -
+            <span th:text="${returnDto.address.postalCode}"></span><br>
+        </p>
+    </div>
+
+    <div class="section">
+        <h4>Products to Pick Up</h4>
+        <table>
+            <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${#numbers.sequence(0, returnDto.productsId.size() - 1)}">
+                <td th:text="${returnDto.productsId[i]}"></td>
+                <td th:text="${returnDto.productsName[i]}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Please ensure safe pickup and update the status accordingly.</p>
+    <p>Thank you!</p>
+</div>
+</body>
+</html>

@@ -10,7 +10,7 @@ import java.awt.datatransfer.Clipboard;
 import java.util.List;
 
 @RestController
-public class OrderController { //user
+public class OrderController { //user from service classes
 
     @Autowired
     private OrderService orderService;

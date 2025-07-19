@@ -6,13 +6,10 @@ import com.ECommerceApp.Service.AddressService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 @RestController
 public class AddressController { // everyone
@@ -20,17 +17,17 @@ public class AddressController { // everyone
     @Autowired
     private AddressService addressService;
 
-    @PostMapping("/insertAddress")
+    @PostMapping("/insertAddress")//all users
     public ResponseEntity<?> insertUserAddress(@Valid  @RequestBody AddressRegistrationDto address){
         return  ResponseEntity.ok(addressService.createAddress(address));
     }
 
-    @PostMapping("/insertAddresses")
+    @PostMapping("/insertAddresses")//all users
     public ResponseEntity<?>  insertUsersAddress(@Valid @RequestBody List<@Valid AddressRegistrationDto> address){
         return ResponseEntity.ok(addressService.createAddresses(address));
     }
 
-    @GetMapping("/getAddress/{id}")
+    @GetMapping("/getAddress/{id}")  // all users
     public List<Address> getUserAddress(@PathVariable String id){
         return addressService.getAddressesByUserId(id);
     }

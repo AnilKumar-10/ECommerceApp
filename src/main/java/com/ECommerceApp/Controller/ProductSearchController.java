@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 @RestController
-public class ProductSearchController {
+public class ProductSearchController { // everyone
 
     @Autowired
     private ProductSearchService productSearchService;

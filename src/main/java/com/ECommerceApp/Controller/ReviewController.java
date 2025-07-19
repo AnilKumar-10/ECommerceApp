@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-public class ReviewController {
+public class ReviewController { // buyyer
 
     @Autowired
     private ReviewService reviewService;

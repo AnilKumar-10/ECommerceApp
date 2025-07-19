@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-public class ProductController {
+public class ProductController { // admin, seller
 
     @Autowired
     private ProductService productService;

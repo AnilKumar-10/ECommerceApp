@@ -76,7 +76,7 @@ public class RefundService {
         order.setReturned(true);
         orderService.saveOrder(order); // updates the total amount and the return id
         approveRefund(refund1.getRefundId(),"admin");
-        return returnService.getRefundAndReturnRepsonce(deliveryPerson,refund1); // this will return the refund and return details of the product
+        return returnService.getRefundAndReturnResponce(deliveryPerson,refund1); // this will return the refund and return details of the product
     }
 
     //2. Approve the refund request (admin) if the reason is genuine
@@ -219,14 +219,17 @@ public class RefundService {
         if(order.getPaymentMethod().equalsIgnoreCase("UPI")){
             Refund refund = refundOverOrderCancellation(order1);
         }
+        System.out.println("inside before");
+        DeliveryPersonResponseDto deliveryPerson =deliveryService.getDeliveryPersonByOrderId(orderId);
+        System.out.println("inside order cancel: "+deliveryPerson);
+        // sends the mail to the delivery person who the order delivery is assigned about the order cancellation.
+        emailService.sendOrderCancellationToDelivery("iamanil3121@gmail.com",
+                deliveryPerson.getToDeliveryItems().getFirst(),deliveryPerson.getId());
         deliveryService.removeDeliveredOrderFromToDeliveryItems(shippingService.getShippingByOrderId(orderId).getDeliveryPersonId(),orderId);
         deliveryService.updateDeliveryCountAfterOrderCancellation(shippingService.getShippingByOrderId(orderId).getDeliveryPersonId());
         // sends the mail about the order cancellation to user
         emailService.sendOrderCancellationEmail(order1,"Anil","iamanil3121@gmail.com");
-        // sends the mail to the delivery person who the order delivery is assigned about the order cancellation.
-        DeliveryPersonResponseDto deliveryPerson =deliveryService.getDeliveryPersonByOrderId(orderId);
-        emailService.sendOrderCancellationToDelivery("iamanil3121@gmail.com",
-                deliveryPerson.getToDeliveryItems().getFirst(),deliveryPerson.getId());
+
         return order1;
     }
 

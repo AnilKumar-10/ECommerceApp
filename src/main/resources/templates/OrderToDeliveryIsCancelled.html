@@ -23,7 +23,7 @@
         <p><strong>Shipping ID:</strong> <span th:text="${deliveryItem.shippingId}">SHIP123</span></p>
         <p><strong>Customer Name:</strong> <span th:text="${deliveryItem.userName}">John Doe</span></p>
         <p><strong>Delivery Address:</strong>
-            <span th:text="${deliveryItem.address.street} + ', ' + ${deliveryItem.address.city} + ', ' + ${deliveryItem.address.state} + ', ' + ${deliveryItem.address.zipCode}">123 Main St, City, State, ZIP</span>
+            <span th:text="${deliveryItem.address.street} + ', ' + ${deliveryItem.address.city} + ', ' + ${deliveryItem.address.state} + ', ' + ${deliveryItem.address.postalCode}">123 Main St, City, State, ZIP</span>
         </p>
         <p><strong>Payment Mode:</strong> <span th:text="${deliveryItem.paymentMode}">COD</span></p>
         <p><strong>Amount To Collect:</strong> ₹<span th:text="${deliveryItem.amountToPay}">500.00</span></p>

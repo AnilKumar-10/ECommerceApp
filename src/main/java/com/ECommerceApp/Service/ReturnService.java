@@ -27,6 +27,9 @@ public class ReturnService {
     private StockLogService stockLogService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private AddressService addressService;
+
 
     public ShippingDetails updateShippingStatusForRefundAndReturn(String orderId){
 
@@ -34,34 +37,39 @@ public class ReturnService {
         Order order = orderService.getOrder(orderId);
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy("ADMIN");
-        shippingUpdateDTO.setNewValue("REQUESTED_TO_RETURNED");
+        shippingUpdateDTO.setNewValue("REQUESTED_TO_RETURN");
         ShippingDetails  shippingDetails = shippingService.updateShippingStatus(shippingUpdateDTO);
 //        System.out.println("indide the return service class with : "+shippingDetails);
         return shippingDetails;
     }
 
     public DeliveryPerson assignReturnProductToDeliveryPerson(ShippingDetails shippingDetails,String reason){
-//        System.out.println("indide the return assignReturnProductToDeliveryPerson");
+        System.out.println("indide the return assignReturnProductToDeliveryPerson");
         DeliveryPerson deliveryPerson =  deliveryService.getDeliveryPerson(shippingDetails.getDeliveryPersonId());
-//        System.out.println("indide the return assignReturnProductToDeliveryPerson with delivery: "+deliveryPerson);
+        System.out.println("indide the return assignReturnProductToDeliveryPerson with delivery: "+deliveryPerson);
+        Order order = orderService.getOrder(shippingDetails.getOrderId());
         ProductReturnDto productReturnDto = new ProductReturnDto();
-        DeliveryItems deliveryItems = new DeliveryItems();
-        for(DeliveryItems item : deliveryPerson.getToDeliveryItems()){
-            if(shippingDetails.getId().equalsIgnoreCase(item.getShippingId())){
-                productReturnDto.setProductPicked(false);
-                productReturnDto.setAddress(item.getAddress());
-                productReturnDto.setOrderId(item.getOrderId());
-                productReturnDto.setUserName(item.getUserName());
-                productReturnDto.setReason(reason);
+        productReturnDto.setProductPicked(false);
+        productReturnDto.setReason(reason);
+        productReturnDto.setOrderId(order.getId());
+        productReturnDto.setUserName(userService.getUserById(order.getBuyerId()).getName());
+        productReturnDto.setAddress(addressService.getAddressById(shippingDetails.getDeliveryAddress().getId()));
+        for(OrderItem orderItem : order.getOrderItems()){
+            if(orderItem.getStatus().equalsIgnoreCase("REQUESTED_TO_RETURN")){
+                productReturnDto.getProductsId().add(orderItem.getProductId());
+                productReturnDto.getProductsName().add(orderItem.getName());
+
             }
         }
         deliveryPerson.getToReturnItems().add(productReturnDto);
-//        System.out.println("indide the return service assignReturnProductToDeliveryPerson class with :"+deliveryPerson);
+        System.out.println("indide the return service assignReturnProductToDeliveryPerson class with :"+deliveryPerson);
+        // here we have to send the product return details to the delivery person.
+        emailService.sendReturnProductNotificationMail("iamanil3121@gmail.com",deliveryPerson,productReturnDto,order.getBuyerId());
         return deliveryService.updateDeliveryPerson(deliveryPerson);
     }
 
 
-    public RefundAndReturnResponseDTO getRefundAndReturnRepsonce(DeliveryPerson deliveryPerson, Refund refund1) {
+    public RefundAndReturnResponseDTO getRefundAndReturnResponce(DeliveryPerson deliveryPerson, Refund refund1) {
 
         RefundAndReturnResponseDTO refundAndReturnResponseDTO = new RefundAndReturnResponseDTO();
         BeanUtils.copyProperties(refund1,refundAndReturnResponseDTO);
@@ -101,7 +109,7 @@ public class ReturnService {
 //        System.out.println("inside updateorderitems before : "+orderItems);
         for(OrderItem orderItem:orderItems){
 //            System.out.println("inside for with orderIten: "+orderItem.getStatus());
-            if(orderItem.getStatus().equals("REQUEST_T0_RETURN")){
+            if(orderItem.getStatus().equals("REQUESTED_TO_RETURN")){
                 orderItem.setStatus("RETURNED");
             }
         }
@@ -141,7 +149,7 @@ public class ReturnService {
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         for(OrderItem orderItem : orderItems){
             if(refundRequestDto.getProductIds().contains(orderItem.getProductId())){
-                orderItem.setStatus("REQUEST_T0_RETURN");
+                orderItem.setStatus("REQUESTED_TO_RETURN");
             }
         }
         order.setOrderItems(orderItems);

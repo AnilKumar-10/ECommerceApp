@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-public class StockLogController {
+public class StockLogController { // admin, seller
 
     @Autowired
     private StockLogService stockLogService;
