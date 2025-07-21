@@ -1,6 +1,7 @@
 package com.ECommerceApp.Model;
 
 import com.ECommerceApp.DTO.DeliveryItems;
+import com.ECommerceApp.DTO.ExchangeDeliveryItems;
 import com.ECommerceApp.DTO.ProductReturnDto;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -21,5 +22,6 @@ public class DeliveryPerson {
     private List<String> assignedAreas; // Areas/zones they deliver to
     private List<DeliveryItems> toDeliveryItems;
     private List<ProductReturnDto> toReturnItems;
+    private List<ExchangeDeliveryItems> toExchangeItems;
 }
 

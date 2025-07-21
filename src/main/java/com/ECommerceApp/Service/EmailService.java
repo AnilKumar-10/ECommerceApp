@@ -65,7 +65,7 @@ public class EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            System.out.println("The Email is sent successfully  to: "+toEmail);
+            System.out.println("Order Confirmation Email is sent successfully  to: "+toEmail);
 
             saveLogDetails(order.getBuyerId(),"Your Order #" + order.getId() + " is Confirmed" ,"ORDER");
 
@@ -140,7 +140,7 @@ public class EmailService {
 
             // Send the mail
             mailSender.send(message);
-            System.out.println("mail sent successfully to "+toEmail);
+            System.out.println("Return request mail sent successfully to "+toEmail);
 
             saveLogDetails(dto.getUserId(),"Your Return Request for Order #" + dto.getOrderId(),"REFUND" );
 
@@ -175,7 +175,7 @@ public class EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            System.out.println("mail send to: "+toEmail);
+            System.out.println("Return Completed mail send to: "+toEmail);
 
             saveLogDetails(order.getBuyerId(), "Your Return is Completed – Refund Processing","REFUND");
 
@@ -230,7 +230,7 @@ public class EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            System.out.println("Email sent successfully to: "+toEmail);
+            System.out.println("Order cancellation Email sent successfully to: "+toEmail);
 
             saveLogDetails(order.getBuyerId(), "Order Cancellation - " + order.getId(),"ORDER" );
 
@@ -256,7 +256,7 @@ public class EmailService {
             helper.setSubject("New Order Assigned for Delivery");
             helper.setText(htmlContent, true);
             mailSender.send(mimeMessage);
-            System.out.println("Email sent successfully to: "+toEmail);
+            System.out.println("Order assigned to delivery Email sent successfully to: "+toEmail);
 
             saveLogDetails(deliveryPersonId,"New Order Assigned for Delivery","ORDER");
 
@@ -281,7 +281,7 @@ public class EmailService {
             helper.setText(body, true);
 
             mailSender.send(message);
-            System.out.println("Email sent successfully to: "+deliveryEmail);
+            System.out.println("Delivery cancellation Email sent successfully to: "+deliveryEmail);
 
             saveLogDetails(deliveryPersonId,"Order Cancelled – No Delivery Required for Order: " + deliveryItem.getOrderId(),"ORDER");
 
@@ -340,6 +340,8 @@ public class EmailService {
             mailSender.send(mimeMessage);
 
             saveLogDetails(userId,"Return Pickup Assigned - Order " + returnDto.getOrderId(),"RETURN  ");
+
+            System.out.println("Return assigned mail to delivery sent successfully: "+toEmail);
         } catch (MessagingException e) {
             throw new MailSendException("Failed to send return pickup notification to delivery person"+e);
         }
@@ -350,5 +352,37 @@ public class EmailService {
     public void saveLogDetails(String userId,String subject,String type){
         notificationLogService.saveNotification(userId, subject, type);
     }
+
+
+
+    // to send the user otp while resetting the password.
+    public void sendOtpEmail(String toEmail, String userName, String otp) {
+        try {
+            // Prepare the email context
+            Context context = new Context();
+            context.setVariable("userName", userName);
+            context.setVariable("otp", otp);
+
+            // Process the Thymeleaf template
+            String htmlContent = templateEngine.process("OtpMail.html", context);
+
+            // Build the email
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Your OTP to Reset Password");
+            helper.setText(htmlContent, true); // true for HTML content
+
+            mailSender.send(mimeMessage);
+            System.out.println("OTP mail sent successfully to " + toEmail);
+
+        } catch (MessagingException e) {
+            System.err.println("Failed to send OTP email: " + e.getMessage());
+            // Handle/log exception or throw custom exception
+        }
+    }
+
+
 
 }

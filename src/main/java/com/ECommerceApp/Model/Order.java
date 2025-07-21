@@ -1,5 +1,6 @@
 package com.ECommerceApp.Model;
 
+import com.ECommerceApp.DTO.ExchangeDetails;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,7 +26,7 @@ public class Order {
     private String orderStatus;         // PLACED, CONFIRMED,SHIPPED,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
     private String paymentMethod;       // UPI, CARD, COD
     private String paymentStatus;       // PENDING, SUCCESS, FAILED
-    private String paymentId;           // Link to Payment class
+    private String paymentId;
     private Date orderDate;
     private boolean isCancelled;
     private String cancelReason;
@@ -35,6 +36,7 @@ public class Order {
 
 
     private String upiId;
+    private ExchangeDetails exchangeDetails;
 }
 
 

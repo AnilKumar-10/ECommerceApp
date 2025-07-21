@@ -1,9 +1,6 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.RaiseRefundRequestDto;
-import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
-import com.ECommerceApp.DTO.ReturnUpdateRequest;
-import com.ECommerceApp.Model.DeliveryPerson;
+import com.ECommerceApp.DTO.*;
 import com.ECommerceApp.Model.Refund;
 import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.RefundService;
@@ -35,9 +32,6 @@ public class ReturnController {  // buyer
     public Refund updateReturn(@RequestBody ReturnUpdateRequest returnUpdate){
         if(returnUpdate.isPicked()){
             returnService.updateReturnSuccess(returnUpdate.getOrderId());
-//            DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(returnUpdate.getDeliveryPersonId());
-//            deliveryPerson.getToReturnItems();
-
             return refundService.completeRefund(returnUpdate);
         }
         returnService.updateReturnFailed(returnUpdate.getOrderId());
@@ -48,5 +42,10 @@ public class ReturnController {  // buyer
     @PostMapping("/cancelOrder/{orderId}")
     public void cancelOrder(@PathVariable String orderId){
         refundService.cancelOrder(orderId,"Ordered by mistake");
+    }
+
+    @PostMapping("/RequestReturnExchange")
+    public ProductExchangeResponse exchangeProduct(@RequestBody ProductExchangeRequest productExchangeDto){
+        return returnService.exchangeRequest(productExchangeDto);
     }
 }

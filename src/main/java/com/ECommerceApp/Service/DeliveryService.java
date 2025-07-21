@@ -37,12 +37,13 @@ public class DeliveryService {
         String address = addressService.getAddressById(deliveryAddress).getCity();
         System.out.println("city: "+address);
         for (DeliveryPerson person : allPersons) {
+            if(person.isActive()){
             for (String area : person.getAssignedAreas()) {
                 System.out.println("city: "+address+"  ===>   "+area);
                 if (area.toLowerCase().equalsIgnoreCase(address.toLowerCase())) {
                     return person;
                 }
-            }
+            }}
         }
         return null;
     }
@@ -102,7 +103,7 @@ public class DeliveryService {
     public void removeDeliveredOrderFromToDeliveryItems(String deliveryPersonId, String orderId) {
         System.out.println("inside it");
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
-        Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("OrderId").is(orderId)));
+        Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("orderId").is(orderId)));
         System.out.println("inside remove delivery orders: "+query+"  =  "+update);
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
         System.out.println("exit");

@@ -69,7 +69,9 @@ public class CartService {
     }
 
     public void removeOrderedItemsFromCart(Order order) {
+        System.out.println("inside removecartitem");
         String userId = order.getBuyerId();
+        System.out.println("user id: "+userId);
         List<OrderItem> orderItems = order.getOrderItems();
         // Get the Cart
         Cart cart = getCartByBuyerId(userId);
@@ -78,13 +80,18 @@ public class CartService {
         }
         List<CartItem> cartItems = cart.getItems();
         // Create a filtered list excluding ordered items
+        System.out.println("carts: "+cartItems);
         List<CartItem> updatedCartItems = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
+            System.out.println("inside for1: "+cartItem);
             boolean matched = false;
             for (OrderItem orderItem : orderItems) {
+                System.out.println("inside for2: "+orderItem+"  :  "+cartItem);
+                System.out.println( "before "+cartItem.getSize()==(orderItem.getSize()));
                 if (cartItem.getProductId().equals(orderItem.getProductId())
                         && cartItem.getSize().equals(orderItem.getSize())
                         && cartItem.getColor().equals(orderItem.getColor())) {
+                    System.out.println("inside if");
                     matched = true;
                     cart.setTotalAmount(cart.getTotalAmount() - orderItem.getPrice());
                     break;

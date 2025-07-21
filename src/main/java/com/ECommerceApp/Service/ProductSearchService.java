@@ -8,11 +8,17 @@ import com.ECommerceApp.Repository.CategoryRepository;
 import com.ECommerceApp.Repository.ProductRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+
+
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -119,14 +125,18 @@ public class ProductSearchService {
     }
 
 
-    public List<ProductSearchResponseDto> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        List<ProductSearchResponseDto> productSearchResponseDtos = new ArrayList<>();
-        for(Product product : products){
-            ProductSearchResponseDto productSearchResponseDto = new ProductSearchResponseDto();
-            BeanUtils.copyProperties(product,productSearchResponseDto);
-            productSearchResponseDtos.add(productSearchResponseDto);
+    public Page<ProductSearchResponseDto> getAllProducts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> productPage = productRepository.findAll(pageable); // Update this call
+
+        List<ProductSearchResponseDto> dtoList = new ArrayList<>();
+        for (Product product : productPage.getContent()) {
+            ProductSearchResponseDto dto = new ProductSearchResponseDto();
+            BeanUtils.copyProperties(product, dto);
+            dtoList.add(dto);
         }
-        return productSearchResponseDtos;
+
+        return new PageImpl<>(dtoList, pageable, productPage.getTotalElements());
     }
+
 }

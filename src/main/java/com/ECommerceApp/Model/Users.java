@@ -21,6 +21,7 @@ public class Users {
     private String gender;
     private boolean isActive;
     private Date createdAt;
+    private String upiId;
 
     // Seller-specific fields (nullable for non-sellers)
     private Double rating;

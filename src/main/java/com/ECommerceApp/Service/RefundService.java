@@ -33,7 +33,8 @@ public class RefundService {
     private EmailService emailService;
     @Autowired
     private DeliveryService deliveryService;
-
+    @Autowired
+    private StockLogService stockLogService;
 
     //1. Raising the refund request
     public RefundAndReturnResponseDTO requestRefund(RaiseRefundRequestDto refundRequestDto) {
@@ -76,7 +77,7 @@ public class RefundService {
         order.setReturned(true);
         orderService.saveOrder(order); // updates the total amount and the return id
         approveRefund(refund1.getRefundId(),"admin");
-        return returnService.getRefundAndReturnResponce(deliveryPerson,refund1); // this will return the refund and return details of the product
+        return returnService. getRefundAndReturnResponce(deliveryPerson,refund1); // this will return the refund and return details of the product
     }
 
     //2. Approve the refund request (admin) if the reason is genuine
@@ -121,8 +122,9 @@ public class RefundService {
         order.setRefundAmount(refundAmount);
         Order order1 = orderService.saveOrder(order); // updating the final amount after the refund is completed.
         emailService.sendReturnCompletedEmail("iamanil3121@gmail.com",order1.getBuyerId(),order1);
-        deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
         // this will remove the return product details from the delivery persons to return fields.
+        deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
+//        returnService.updateStockLogAfterOrderCancellation(order1.getId()); // we have to update the stock log  after the order cancellation.
         return refundRepository.save(refund);
     }
 
@@ -229,7 +231,7 @@ public class RefundService {
         deliveryService.updateDeliveryCountAfterOrderCancellation(shippingService.getShippingByOrderId(orderId).getDeliveryPersonId());
         // sends the mail about the order cancellation to user
         emailService.sendOrderCancellationEmail(order1,"Anil","iamanil3121@gmail.com");
-
+        returnService.updateStockLogAfterOrderCancellation(orderId); // this will update the stock after the order is cancelled.
         return order1;
     }
 

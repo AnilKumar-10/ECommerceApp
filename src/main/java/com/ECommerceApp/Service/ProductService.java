@@ -6,7 +6,10 @@ import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.ProductRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+
+import org.springframework.data.domain.Pageable;
 
 import java.util.Date;
 import java.util.List;
@@ -117,7 +120,7 @@ public class ProductService{
         return product.getPrice();
     }
 
-    // return the porducts that contain any of the given category
+    // return the products that contain any of the given category
     public List<Product> getProductContainsAnyCategory(List<String> allCategoryIds){
         return productRepository.findByCategoryIdsIn(allCategoryIds);
     }
@@ -126,5 +129,11 @@ public class ProductService{
     public List<Product> getProductContainsAllCategory(List<String> allCategoryIds){
         return productRepository.findByCategoryIdsContainingAll(allCategoryIds);
     }
+
+
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
+    }
+
 
 }

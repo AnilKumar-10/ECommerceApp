@@ -40,7 +40,7 @@ public class StockLogService {
         int change = modification.getQuantityChanged();
         String action = modification.getAction().toUpperCase();
 
-        if (action.equals("ADD") || action.equals("RETURNED")) {
+        if (action.equals("ADD") || action.equals("RETURNED") || action.equals("CANCELLED")) {
             change = Math.abs(change); // Ensure positive change
         } else if (action.equals("SOLD")) {
             change = -Math.abs(change); // Ensure negative change

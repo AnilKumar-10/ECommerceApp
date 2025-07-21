@@ -6,6 +6,7 @@ import com.ECommerceApp.Service.ProductSearchService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -79,9 +80,14 @@ public class ProductSearchController { // everyone
     }
 
     @GetMapping("/viewAll")
-    public List<ProductSearchResponseDto> getAllProducts(){
-        return productSearchService.getAllProducts();
-
+//  viewAll?page=1&size=5
+//  the size decides the no of objects to be displayed in the page.
+    public Page<ProductSearchResponseDto> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        System.out.println(page+" : "+size);
+        return productSearchService.getAllProducts(page, size);
     }
+
 
 }
