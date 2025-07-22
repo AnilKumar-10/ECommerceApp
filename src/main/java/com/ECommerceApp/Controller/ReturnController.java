@@ -6,6 +6,7 @@ import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.RefundService;
 import com.ECommerceApp.Service.ReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +24,7 @@ public class ReturnController {  // buyer
 
 
     @PostMapping("/requestRefund")
-    public RefundAndReturnResponseDTO raiseRefundReq(@RequestBody RaiseRefundRequestDto refundRequestDto){
+    public RefundAndReturnResponse raiseRefundReq(@RequestBody RaiseRefundRequest refundRequestDto){
         return refundService.requestRefund(refundRequestDto);
     }
 
@@ -45,7 +46,19 @@ public class ReturnController {  // buyer
     }
 
     @PostMapping("/RequestReturnExchange")
-    public ProductExchangeResponse exchangeProduct(@RequestBody ProductExchangeRequest productExchangeDto){
+    public ExchangeInfo exchangeProduct(@RequestBody ProductExchangeRequest productExchangeDto){
         return returnService.exchangeRequest(productExchangeDto);
     }
+
+
+    @PostMapping("/updateExchange")
+    public ResponseEntity<?> exchangeUpdate(@RequestBody  ExchangeUpdateRequest exchangeUpdateRequest){
+        System.out.println("asd: "+exchangeUpdateRequest);
+        if(exchangeUpdateRequest.isExchanged()){
+            System.out.println("inside");
+            return  ResponseEntity.ok(returnService.updateExchangeSuccess(exchangeUpdateRequest.getOrderId(),exchangeUpdateRequest.getDeliveryPersonId()));
+        }
+        return ResponseEntity.ok("Something went wrong");
+    }
+
 }

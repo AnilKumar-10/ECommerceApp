@@ -1,13 +1,12 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.ProductCreationDto;
-import com.ECommerceApp.DTO.ProductSearchResponseDto;
+import com.ECommerceApp.DTO.ProductCreationRequest;
+import com.ECommerceApp.DTO.ProductSearchResponse;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.convert.ValueConverter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -24,7 +23,7 @@ public class ProductController { // admin, seller
     private ProductService productService;
 
     @PostMapping("/insertProduct")
-    public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductCreationDto product, BindingResult result){
+    public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductCreationRequest product, BindingResult result){
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
@@ -34,14 +33,14 @@ public class ProductController { // admin, seller
     }
 
     @PostMapping("/insertProducts")
-    public ResponseEntity<?>  insertProducts(@Valid @RequestBody List<@Valid  ProductCreationDto> product){
+    public ResponseEntity<?>  insertProducts(@Valid @RequestBody List<@Valid ProductCreationRequest> product){
         return ResponseEntity.ok(productService.createProductList(product));
     }
 
     @GetMapping("/getProduct/{id}")
-    public ProductSearchResponseDto getProduct(@PathVariable String id){
+    public ProductSearchResponse getProduct(@PathVariable String id){
         Product product = productService.getProductById(id);
-        ProductSearchResponseDto productSearchResponseDto = new ProductSearchResponseDto();
+        ProductSearchResponse productSearchResponseDto = new ProductSearchResponse();
         BeanUtils.copyProperties(product,productSearchResponseDto);
         return productSearchResponseDto;
     }
@@ -53,7 +52,7 @@ public class ProductController { // admin, seller
 
 
     @PutMapping("/updateProduct")
-    public ResponseEntity<?> updateProduct(@Valid @RequestBody ProductCreationDto product){
+    public ResponseEntity<?> updateProduct(@Valid @RequestBody ProductCreationRequest product){
         return ResponseEntity.ok(productService.updateProduct(product));
     }
 

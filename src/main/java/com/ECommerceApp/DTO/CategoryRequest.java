@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Document
 @Data
-public class CategoryRequestDto {
+public class CategoryRequest {
 
     @Id
     private String id;

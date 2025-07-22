@@ -5,12 +5,9 @@ import lombok.Data;
 import java.util.Date;
 
 import jakarta.validation.constraints.*;
-import lombok.Data;
-
-import java.util.Date;
 
 @Data
-public class StockLogModificationDTO {
+public class StockLogModification {
 
     @NotBlank(message = "Product ID is required")
     private String productId;

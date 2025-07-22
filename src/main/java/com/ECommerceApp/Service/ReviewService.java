@@ -1,6 +1,6 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.ReviewCreationDto;
+import com.ECommerceApp.DTO.ReviewCreationRequest;
 import com.ECommerceApp.Exceptions.ReviewNotFountException;
 import com.ECommerceApp.Exceptions.UnknowUserReviewException;
 import com.ECommerceApp.Model.Product;
@@ -54,7 +54,7 @@ public class ReviewService {
 
     }
 
-    public Review addReview(ReviewCreationDto review) {
+    public Review addReview(ReviewCreationRequest review) {
         Review review1 = new Review();
         BeanUtils.copyProperties(review,review1);
         review1.setCreatedAt(new Date());

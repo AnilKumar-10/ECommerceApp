@@ -1,7 +1,7 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.DeliveryUpdateDTO;
-import com.ECommerceApp.DTO.ShippingUpdateDTO;
+import com.ECommerceApp.DTO.DeliveryUpdate;
+import com.ECommerceApp.DTO.ShippingUpdateRequest;
 import com.ECommerceApp.Exceptions.DeliveryNotFoundException;
 import com.ECommerceApp.Exceptions.ShippingDetailsNotFoundException;
 import com.ECommerceApp.Model.*;
@@ -71,7 +71,7 @@ public class ShippingService {
     }
 
     // 2. Update shipping status
-    public ShippingDetails updateShippingStatus(ShippingUpdateDTO shippingUpdateDTO) {
+    public ShippingDetails updateShippingStatus(ShippingUpdateRequest shippingUpdateDTO) {
         System.out.println("inside update shipping stats: "+shippingUpdateDTO);
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
@@ -91,7 +91,7 @@ public class ShippingService {
     }
 
     // 3. Update courier name or tracking ID
-    public ShippingDetails updateCourierDetails(ShippingUpdateDTO shippingUpdateDTO) {
+    public ShippingDetails updateCourierDetails(ShippingUpdateRequest shippingUpdateDTO) {
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
 
@@ -140,8 +140,8 @@ public class ShippingService {
     }
 
 
-    public String updateDeliveryStatus(DeliveryUpdateDTO deliveryUpdateDTO){
-        ShippingUpdateDTO shippingUpdateDTO  = new ShippingUpdateDTO();
+    public String updateDeliveryStatus(DeliveryUpdate deliveryUpdateDTO){
+        ShippingUpdateRequest shippingUpdateDTO  = new ShippingUpdateRequest();
         shippingUpdateDTO.setUpdateBy(deliveryUpdateDTO.getUpdateBy());
         shippingUpdateDTO.setShippingId(deliveryUpdateDTO.getShippingId());
         shippingUpdateDTO.setNewValue(deliveryUpdateDTO.getNewValue());
@@ -168,7 +168,7 @@ public class ShippingService {
     }
 
     // this updates the status of the ordered items delivered when the order is delivered.
-    public  Order updateOrderItemsDeliveredStatus(ShippingUpdateDTO shippingUpdateDTO){
+    public  Order updateOrderItemsDeliveredStatus(ShippingUpdateRequest shippingUpdateDTO){
         ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
         Order order = orderRepository.findById(shippingDetails.getOrderId()).get();
         List<OrderItem> orderItems = new ArrayList<>();

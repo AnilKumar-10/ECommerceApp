@@ -1,12 +1,11 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.AddressRegistrationDto;
+import com.ECommerceApp.DTO.AddressRegistrationRequest;
 import com.ECommerceApp.Exceptions.AddressNotFoundException;
 import com.ECommerceApp.Model.Address;
 import com.ECommerceApp.Repository.AddressRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,15 +18,15 @@ public class AddressService {
     private UserService userService;
 
     // inserting the new address
-    public Address createAddress(AddressRegistrationDto address) {
+    public Address createAddress(AddressRegistrationRequest address) {
         Address address1 = new Address();
         BeanUtils.copyProperties(address,address1);
         return addressRepository.save(address1);
     }
 
-    public String  createAddresses(List<AddressRegistrationDto> addresses) {
+    public String  createAddresses(List<AddressRegistrationRequest> addresses) {
         int c=0;
-        for(AddressRegistrationDto address:addresses){
+        for(AddressRegistrationRequest address:addresses){
             addressRepository.save(createAddress(address));
             c++;
         }

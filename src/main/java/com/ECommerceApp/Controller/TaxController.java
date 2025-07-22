@@ -1,6 +1,6 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.TaxRuleCreationDTO;
+import com.ECommerceApp.DTO.TaxRuleCreationRequest;
 import com.ECommerceApp.Model.TaxRule;
 import com.ECommerceApp.Service.TaxRuleService;
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ public class TaxController { //admin
 
 
     @PostMapping("/createTaxrules")
-    public ResponseEntity<?>  createTax(@Valid @RequestBody List<TaxRuleCreationDTO> rule, BindingResult result){
+    public ResponseEntity<?>  createTax(@Valid @RequestBody List<TaxRuleCreationRequest> rule, BindingResult result){
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream()
                     .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
@@ -32,12 +32,12 @@ public class TaxController { //admin
     }
 
     @PostMapping("/createTaxRule")
-    public TaxRule createTacRule(@RequestBody TaxRuleCreationDTO rule){
+    public TaxRule createTacRule(@RequestBody TaxRuleCreationRequest rule){
         return taxRuleService.createOneTaxRule(rule);
     }
 
     @PutMapping("/updateTaxRule")
-    public ResponseEntity<?> updateTaxRule(@Valid @RequestBody TaxRuleCreationDTO rule){
+    public ResponseEntity<?> updateTaxRule(@Valid @RequestBody TaxRuleCreationRequest rule){
         return ResponseEntity.ok(taxRuleService.updateTaxRule(rule));
     }
 

@@ -1,6 +1,6 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.AddressRegistrationDto;
+import com.ECommerceApp.DTO.AddressRegistrationRequest;
 import com.ECommerceApp.Model.Address;
 import com.ECommerceApp.Service.AddressService;
 import jakarta.validation.Valid;
@@ -18,12 +18,12 @@ public class AddressController { // everyone
     private AddressService addressService;
 
     @PostMapping("/insertAddress")//all users
-    public ResponseEntity<?> insertUserAddress(@Valid  @RequestBody AddressRegistrationDto address){
+    public ResponseEntity<?> insertUserAddress(@Valid  @RequestBody AddressRegistrationRequest address){
         return  ResponseEntity.ok(addressService.createAddress(address));
     }
 
     @PostMapping("/insertAddresses")//all users
-    public ResponseEntity<?>  insertUsersAddress(@Valid @RequestBody List<@Valid AddressRegistrationDto> address){
+    public ResponseEntity<?>  insertUsersAddress(@Valid @RequestBody List<@Valid AddressRegistrationRequest> address){
         return ResponseEntity.ok(addressService.createAddresses(address));
     }
 

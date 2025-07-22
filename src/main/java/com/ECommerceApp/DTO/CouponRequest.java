@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Document
 @Data
-public class CouponRequestDto {
+public class CouponRequest {
 
     @Id
     private String id;

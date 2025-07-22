@@ -3,7 +3,7 @@ package com.ECommerceApp.DTO;
 import lombok.Data;
 
 @Data
-public class PaymentDto {
+public class PaymentRequest {
     String paymentId;
     String transactionId;
     String status;

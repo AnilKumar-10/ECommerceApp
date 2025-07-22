@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class DeliveryPersonRegistrationDto {
+public class DeliveryPersonRegistrationRequest {
     @NotBlank(message = "ID is required")
     private String id; // Optional: can be null during creation
 

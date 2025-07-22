@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.DTO.ProductSearchResponseDto;
+import com.ECommerceApp.DTO.ProductSearchResponse;
 import com.ECommerceApp.Model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +17,7 @@ public interface ProductRepository extends MongoRepository<Product,String> {
     List<Product> findByCategoryIdsContainingAll(List<String> categoryIds);
 
     @Query("{ 'brand': { $regex: ?0, $options: 'i' } }")
-    List<ProductSearchResponseDto> findByBrandIgnoreCase(String brandName);
+    List<ProductSearchResponse> findByBrandIgnoreCase(String brandName);
 
     @Query("{ 'categoryIds': { $all: ?0 }, 'brand': { $regex: ?1, $options: 'i' } }")
     List<Product> findByCategoryIdsAndBrandIgnoreCase(List<String> categoryIds, String brand);

@@ -11,12 +11,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DeliveryService {
@@ -48,7 +46,7 @@ public class DeliveryService {
         return null;
     }
 
-    public DeliveryPerson register(DeliveryPersonRegistrationDto deliveryPersonRegistrationDto){
+    public DeliveryPerson register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto){
         DeliveryPerson deliveryPerson  = new DeliveryPerson();
         BeanUtils.copyProperties(deliveryPersonRegistrationDto,deliveryPerson);
         deliveryPerson.setToReturnItems(new ArrayList<>());
@@ -59,9 +57,9 @@ public class DeliveryService {
         return deliveryRepository.save(deliveryPerson);
     }
 
-    public String  registerPersons(List<DeliveryPersonRegistrationDto> deliveryPerson){
+    public String  registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson){
         int c=0;
-        for(DeliveryPersonRegistrationDto person: deliveryPerson){
+        for(DeliveryPersonRegistrationRequest person: deliveryPerson){
             deliveryRepository.save(register(person));
             c++;
         }
@@ -125,6 +123,11 @@ public class DeliveryService {
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
     }
 
+    public void removeExchangeItemFromDeliveryPerson(String deliveryPersonId, String orderId) {
+        Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
+        Update update = new Update().pull("toExchangeItems", Query.query(Criteria.where("orderId").is(orderId)));
+        mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
+    }
 
     public String  deleteDeliveryMan(String id){
         if(!deliveryRepository.existsById(id)){
@@ -148,11 +151,11 @@ public class DeliveryService {
 //    }
 
 
-    public DeliveryPersonResponseDto getDeliveryPersonByOrderId(String orderId){
+    public DeliveryPersonResponse getDeliveryPersonByOrderId(String orderId){
         System.out.println("inside deliveryservice: "+orderId);
         DeliveryPerson deliveryPerson = deliveryRepository.findByOrderId(orderId).get();
         System.out.println(deliveryPerson);
-        DeliveryPersonResponseDto deliveryPersonResponseDto = new DeliveryPersonResponseDto();
+        DeliveryPersonResponse deliveryPersonResponseDto = new DeliveryPersonResponse();
         BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
         System.out.println(deliveryPersonResponseDto);
         return deliveryPersonResponseDto;

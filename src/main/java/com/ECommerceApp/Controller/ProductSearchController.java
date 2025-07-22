@@ -1,6 +1,6 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.ProductSearchResponseDto;
+import com.ECommerceApp.DTO.ProductSearchResponse;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Service.ProductSearchService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,12 +22,12 @@ public class ProductSearchController { // everyone
     private ProductSearchService productSearchService;
 
     @GetMapping("/product/{name}")
-    public List<ProductSearchResponseDto> getProductByCategoryName(@PathVariable String name){
+    public List<ProductSearchResponse> getProductByCategoryName(@PathVariable String name){
         List<Product> products = productSearchService.getProductsByCategoryName(name);
         System.out.println("products are: "+products);
-        List<ProductSearchResponseDto> productSearchDtos  = new ArrayList<>();
+        List<ProductSearchResponse> productSearchDtos  = new ArrayList<>();
         for(Product product : products){
-            ProductSearchResponseDto productSearchDto = new ProductSearchResponseDto();
+            ProductSearchResponse productSearchDto = new ProductSearchResponse();
             BeanUtils.copyProperties(product , productSearchDto);
             productSearchDtos.add(productSearchDto);
         }
@@ -39,7 +39,7 @@ public class ProductSearchController { // everyone
 //    http://localhost:9090/search?categories=Shirts&orderBy=desc
 //    http://localhost:9090/search?categories=Shirts&sortOrder=desc&sortBy=rating
 //    http://localhost:9090/search?categories=Footwear,Women&brand=Nike&sortOrder=desc&sortBy=rating
-    public List<ProductSearchResponseDto> searchProductsByCategoryNames(
+    public List<ProductSearchResponse> searchProductsByCategoryNames(
             @RequestParam List<String> categories,
             @RequestParam(name = "brand", required = false) String brand,
             @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder,
@@ -49,21 +49,21 @@ public class ProductSearchController { // everyone
         System.out.println("http url: " + httpServletRequest.getQueryString());
         System.out.println("sortOrder: " + sortOrder + "  sortby: " + sortBy + "  brand: " + brand);
 
-        List<ProductSearchResponseDto> productSearchDtos = new ArrayList<>();
+        List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
 
         List<Product> products = productSearchService.searchProductsByCategoryNames(categories, brand);
 
         for (Product product : products) {
-            ProductSearchResponseDto dto = new ProductSearchResponseDto();
+            ProductSearchResponse dto = new ProductSearchResponse();
             BeanUtils.copyProperties(product, dto);
             productSearchDtos.add(dto);
         }
 
-        Comparator<ProductSearchResponseDto> comparator;
+        Comparator<ProductSearchResponse> comparator;
         if ("rating".equalsIgnoreCase(sortBy)) {
-            comparator = Comparator.comparingDouble(ProductSearchResponseDto::getRating);
+            comparator = Comparator.comparingDouble(ProductSearchResponse::getRating);
         } else {
-            comparator = Comparator.comparingDouble(ProductSearchResponseDto::getPrice);
+            comparator = Comparator.comparingDouble(ProductSearchResponse::getPrice);
         }
 
         if ("desc".equalsIgnoreCase(sortOrder)) {
@@ -75,14 +75,14 @@ public class ProductSearchController { // everyone
     }
 
     @GetMapping("/searchBrand/{brandName}")
-    public List<ProductSearchResponseDto> getProductByBrand(@PathVariable String brandName) {
+    public List<ProductSearchResponse> getProductByBrand(@PathVariable String brandName) {
         return productSearchService.getProductByBrand(brandName);
     }
 
     @GetMapping("/viewAll")
 //  viewAll?page=1&size=5
 //  the size decides the no of objects to be displayed in the page.
-    public Page<ProductSearchResponseDto> getAllProducts(
+    public Page<ProductSearchResponse> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         System.out.println(page+" : "+size);

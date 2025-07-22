@@ -1,9 +1,9 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.DeliveryPersonRegistrationDto;
-import com.ECommerceApp.DTO.DeliveryPersonResponseDto;
-import com.ECommerceApp.DTO.DeliveryUpdateDTO;
-import com.ECommerceApp.DTO.PaymentDto;
+import com.ECommerceApp.DTO.DeliveryPersonRegistrationRequest;
+import com.ECommerceApp.DTO.DeliveryPersonResponse;
+import com.ECommerceApp.DTO.DeliveryUpdate;
+import com.ECommerceApp.DTO.PaymentRequest;
 import com.ECommerceApp.Model.DeliveryPerson;
 import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.OrderService;
@@ -29,21 +29,21 @@ public class DeliveryController { // admin, delivery person
 
 
     @PostMapping("/insertDelivery")
-    public ResponseEntity<?> insertDelivery(@Valid @RequestBody DeliveryPersonRegistrationDto deliveryPerson ){
+    public ResponseEntity<?> insertDelivery(@Valid @RequestBody DeliveryPersonRegistrationRequest deliveryPerson ){
         return  ResponseEntity.ok(deliveryService.register(deliveryPerson));
     }
 
     @PostMapping("/insertDeliveries")
-    public ResponseEntity<?>  insertDeliveryPersons(@Valid @RequestBody List<@Valid  DeliveryPersonRegistrationDto> deliveryPerson){
+    public ResponseEntity<?>  insertDeliveryPersons(@Valid @RequestBody List<@Valid DeliveryPersonRegistrationRequest> deliveryPerson){
         return  ResponseEntity.ok(deliveryService.registerPersons(deliveryPerson));
     }
 
 
     @PostMapping("/updateDelivery")
-    public ResponseEntity<?> updateDelivery(@Valid @RequestBody DeliveryUpdateDTO deliveryUpdateDTO){
+    public ResponseEntity<?> updateDelivery(@Valid @RequestBody DeliveryUpdate deliveryUpdateDTO){
         if(orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod().equalsIgnoreCase("COD")){
             System.out.println("inside the if of update: "+deliveryUpdateDTO);
-            PaymentDto paymentDto = new PaymentDto();
+            PaymentRequest paymentDto = new PaymentRequest();
             paymentDto.setPaymentId(deliveryUpdateDTO.getPaymentId());
             paymentDto.setTransactionId(orderService.generateTransactionIdForCOD());
             paymentDto.setStatus("SUCCESS");
@@ -64,7 +64,7 @@ public class DeliveryController { // admin, delivery person
     }
 
     @GetMapping("/getDelPersonByOrder/{orderId}")
-    public DeliveryPersonResponseDto getByOrderId(@PathVariable String orderId){
+    public DeliveryPersonResponse getByOrderId(@PathVariable String orderId){
         return deliveryService.getDeliveryPersonByOrderId(orderId);
     }
 

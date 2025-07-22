@@ -1,6 +1,6 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.TaxRuleCreationDTO;
+import com.ECommerceApp.DTO.TaxRuleCreationRequest;
 import com.ECommerceApp.Exceptions.TaxRuleNotFoundException;
 import com.ECommerceApp.Model.TaxRule;
 import com.ECommerceApp.Repository.TaxRuleRepository;
@@ -17,15 +17,15 @@ public class TaxRuleService {
     private TaxRuleRepository taxRuleRepository;
 
     // 1. Create new tax rule
-    public TaxRule createOneTaxRule(TaxRuleCreationDTO rule) {
+    public TaxRule createOneTaxRule(TaxRuleCreationRequest rule) {
         TaxRule taxRule = new TaxRule();
         BeanUtils.copyProperties(rule,taxRule);
         return taxRuleRepository.save(taxRule);
     }
 
-    public String  createMultiTaxRules(List<TaxRuleCreationDTO> taxRules) {
+    public String  createMultiTaxRules(List<TaxRuleCreationRequest> taxRules) {
         int count = 0;
-        for(TaxRuleCreationDTO rule : taxRules){
+        for(TaxRuleCreationRequest rule : taxRules){
             taxRuleRepository.save(createOneTaxRule(rule));
             count++;
         }
@@ -36,7 +36,7 @@ public class TaxRuleService {
     }
 
     // 2. Update existing tax rule
-    public TaxRule updateTaxRule(TaxRuleCreationDTO updated) {
+    public TaxRule updateTaxRule(TaxRuleCreationRequest updated) {
         TaxRule existing = taxRuleRepository.findById(updated.getId())
                 .orElseThrow(() -> new TaxRuleNotFoundException("TaxRule not found"));
 

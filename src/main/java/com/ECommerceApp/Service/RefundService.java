@@ -37,7 +37,7 @@ public class RefundService {
     private StockLogService stockLogService;
 
     //1. Raising the refund request
-    public RefundAndReturnResponseDTO requestRefund(RaiseRefundRequestDto refundRequestDto) {
+    public RefundAndReturnResponse requestRefund(RaiseRefundRequest refundRequestDto) {
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         if(!order.getOrderStatus().equals("DELIVERED")){
             throw new RuntimeException("The order must be delivered before the refund..");
@@ -222,7 +222,7 @@ public class RefundService {
             Refund refund = refundOverOrderCancellation(order1);
         }
         System.out.println("inside before");
-        DeliveryPersonResponseDto deliveryPerson =deliveryService.getDeliveryPersonByOrderId(orderId);
+        DeliveryPersonResponse deliveryPerson =deliveryService.getDeliveryPersonByOrderId(orderId);
         System.out.println("inside order cancel: "+deliveryPerson);
         // sends the mail to the delivery person who the order delivery is assigned about the order cancellation.
         emailService.sendOrderCancellationToDelivery("iamanil3121@gmail.com",

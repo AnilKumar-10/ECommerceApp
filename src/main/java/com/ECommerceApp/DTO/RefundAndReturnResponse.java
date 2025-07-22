@@ -4,7 +4,7 @@ import lombok.Data;
 
 import java.util.Date;
 @Data
-public class RefundAndReturnResponseDTO {
+public class RefundAndReturnResponse {
     private String refundId;
     private String userId;       // Reference to the user who requested the refund
     private String orderId;      // Reference to the original order

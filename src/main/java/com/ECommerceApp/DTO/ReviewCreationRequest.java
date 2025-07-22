@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 
 @Data
-public class ReviewCreationDto {
+public class ReviewCreationRequest {
 
     @Id
     private String id;

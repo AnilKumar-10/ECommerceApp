@@ -1,9 +1,10 @@
 package com.ECommerceApp.Controller;
-
-import com.ECommerceApp.DTO.InitiatePaymentDto;
-import com.ECommerceApp.DTO.PaymentDto;
+import com.ECommerceApp.DTO.InitiatePaymentRequest;
+import com.ECommerceApp.DTO.PaymentRequest;
+import com.ECommerceApp.DTO.ProductExchangeResponse;
 import com.ECommerceApp.Model.Payment;
 import com.ECommerceApp.Service.PaymentService;
+import com.ECommerceApp.Service.ReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,19 +18,21 @@ public class PaymentController { //user
 
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private ReturnService returnService;
 
     @PostMapping("/initUpiPay")
-    public Payment initiatePaymentDto(@RequestBody InitiatePaymentDto initiatePaymentDto){
+    public Payment initiatePaymentDto(@RequestBody InitiatePaymentRequest initiatePaymentDto){
         return paymentService.initiatePayment(initiatePaymentDto);
     }
 
     @PostMapping("/initCodPay")
-    public Payment initiateCODPay(@RequestBody InitiatePaymentDto initiatePaymentDto){
+    public Payment initiateCODPay(@RequestBody InitiatePaymentRequest initiatePaymentDto){
         return paymentService.initiatePayment(initiatePaymentDto);
     }
 
     @PostMapping("/pay")
-    public Payment pay(@RequestBody PaymentDto paymentDto){
+    public Payment pay(@RequestBody PaymentRequest paymentDto){
         return paymentDto.getStatus().equalsIgnoreCase("Success")?paymentService.confirmUPIPayment(paymentDto):paymentService.failPayment(paymentDto);
     }
 
@@ -42,4 +45,22 @@ public class PaymentController { //user
     public List<Payment> getFailedPayments(){
         return paymentService.getAllFailedPayments();
     }
+
+
+    @PostMapping("/initExchangePay")
+    public void initiateExchangePay(@RequestBody InitiatePaymentRequest initiatePaymentDto){
+        paymentService.initiateExchangePayment(initiatePaymentDto);
+    }
+
+    @PostMapping("/payExchange")
+    public ProductExchangeResponse payExchangeAmount(@RequestBody PaymentRequest paymentDto){
+        Payment payment =  paymentService.confirmUPIPaymentForExchange(paymentDto);
+        returnService.processExchangeAfterUpiPayDone(payment.getOrderId());
+        return returnService.getExchangeInformation(payment.getOrderId());
+    }
+    @PostMapping("/getExchangeInfo/{orderId}")
+    public ProductExchangeResponse getExchangeInfor(@PathVariable String  orderId){
+        return returnService.getExchangeInformation(orderId);
+    }
+
 }

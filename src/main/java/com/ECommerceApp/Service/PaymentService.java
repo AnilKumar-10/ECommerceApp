@@ -1,7 +1,7 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.InitiatePaymentDto;
-import com.ECommerceApp.DTO.PaymentDto;
+import com.ECommerceApp.DTO.InitiatePaymentRequest;
+import com.ECommerceApp.DTO.PaymentRequest;
 import com.ECommerceApp.Exceptions.PaymentAmountMissMatchException;
 import com.ECommerceApp.Exceptions.PaymentNotFoundException;
 import com.ECommerceApp.Model.Order;
@@ -24,7 +24,7 @@ public class PaymentService {
     private SequenceGeneratorService sequenceGeneratorService;
 
     // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
-    public Payment initiatePayment(InitiatePaymentDto initiatePaymentDto) {
+    public Payment initiatePayment(InitiatePaymentRequest initiatePaymentDto) {
         System.out.println("inside the initiate payment : "+initiatePaymentDto);
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
@@ -43,7 +43,7 @@ public class PaymentService {
     }
 
     // 2. Update payment on success
-    public Payment confirmUPIPayment(PaymentDto paymentDto) {
+    public Payment confirmUPIPayment(PaymentRequest paymentDto) {
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
@@ -57,7 +57,7 @@ public class PaymentService {
     }
 
     // 3. Update payment on failure
-    public Payment failPayment(PaymentDto paymentDto) {
+    public Payment failPayment(PaymentRequest paymentDto) {
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
@@ -69,7 +69,7 @@ public class PaymentService {
         return payment;
     }
 
-    public Payment confirmCODPayment(PaymentDto paymentDto) { // for COD payment
+    public Payment confirmCODPayment(PaymentRequest paymentDto) { // for COD payment
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
@@ -86,4 +86,43 @@ public class PaymentService {
     public List<Payment> getAllFailedPayments() {
         return paymentRepository.findAllFailedPayements();
     }
+
+
+    public Payment savePayment(Payment payment){
+        return paymentRepository.save(payment);
+    }
+
+
+
+    // for exchange payment.
+    public Payment initiateExchangePayment(InitiatePaymentRequest initiatePaymentDto) {
+        System.out.println("inside the initiate payment : "+initiatePaymentDto);
+        Payment payment = new Payment();
+        Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
+        if(order.getExchangeDetails().getExchangeDifferenceAmount()==initiatePaymentDto.getAmount()){
+            throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
+        }
+        long nextId = sequenceGeneratorService.getNextSequence("paymentId");
+        payment.setId(String.valueOf(nextId)); // If id is String
+        payment.setOrderId(initiatePaymentDto.getOrderId());
+        payment.setUserId(initiatePaymentDto.getUserId());
+        payment.setAmountPaid(initiatePaymentDto.getAmount());
+        payment.setPaymentMethod(initiatePaymentDto.getMethod());
+        payment.setStatus("PENDING");// because we dont know whether the payment will be done or not
+        payment.setTransactionTime(new Date());
+        return savePayment(payment);
+    }
+
+    public Payment confirmUPIPaymentForExchange(PaymentRequest paymentDto) {
+        Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+        payment.setTransactionId(paymentDto.getTransactionId());
+        payment.setStatus("SUCCESS");
+        payment.setTransactionTime(new Date());
+        paymentRepository.save(payment);
+        //call the payment succes method to assign the delivery
+        return payment;
+    }
+
+
 }

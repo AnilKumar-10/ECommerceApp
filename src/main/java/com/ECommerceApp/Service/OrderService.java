@@ -1,14 +1,12 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.DeliveryUpdateDTO;
-import com.ECommerceApp.DTO.PlaceOrderDto;
-import com.ECommerceApp.DTO.StockLogModificationDTO;
-import com.ECommerceApp.Exceptions.OrderCancellationExpiredException;
+import com.ECommerceApp.DTO.DeliveryUpdate;
+import com.ECommerceApp.DTO.PlaceOrderRequest;
+import com.ECommerceApp.DTO.StockLogModification;
 import com.ECommerceApp.Exceptions.OrderNotFoundException;
 import com.ECommerceApp.Exceptions.ProductOutOfStockException;
 import com.ECommerceApp.Model.*;
 import com.ECommerceApp.Repository.OrderRepository;
-import org.apache.naming.factory.ResourceEnvFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +40,7 @@ public class OrderService {
     @Autowired
     private EmailService emailService;
 
-    public Order createOrder(PlaceOrderDto orderDto){
+    public Order createOrder(PlaceOrderRequest orderDto){
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
         for(OrderItem item : orderItem){
             Product product = productService.getProductById(item.getProductId());
@@ -97,7 +95,7 @@ public class OrderService {
         return addressId;
     }
 
-    public double getCouponDiscount(PlaceOrderDto orderDto, double amount){
+    public double getCouponDiscount(PlaceOrderRequest orderDto, double amount){
         couponService.recordCouponUsage(orderDto.getCoupon(),orderDto.getUserId());// this is used to track the no of time the coupon is used by user
         Coupon coupon = couponService.validateCoupon(orderDto.getCoupon(),orderDto.getUserId(),amount);
         double discount = couponService.getDiscountAmount(coupon,amount);
@@ -105,7 +103,7 @@ public class OrderService {
     }
 
 
-    public double getTotalAmount(PlaceOrderDto orderDto){
+    public double getTotalAmount(PlaceOrderRequest orderDto){
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
         System.out.println(orderItem);
         double amount=0.0;
@@ -148,7 +146,7 @@ public class OrderService {
         Order order = getOrder(orderId);
         List<OrderItem> orderedProducts = order.getOrderItems();
         for(OrderItem orderItem : orderedProducts){
-            StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+            StockLogModification stockLogModificationDTO = new StockLogModification();
             stockLogModificationDTO.setAction("SOLD");
             stockLogModificationDTO.setModifiedAt(new Date());
             stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
@@ -164,11 +162,10 @@ public class OrderService {
     }
 
     public Order getOrder(String id){
-
         return orderRepository.findById(id).orElseThrow(()-> new OrderNotFoundException("There is no order found with id: "+id));
     }
 
-    public void updateCODPaymentStatus(DeliveryUpdateDTO deliveryUpdateDTO){
+    public void updateCODPaymentStatus(DeliveryUpdate deliveryUpdateDTO){
         Order order = getOrder(deliveryUpdateDTO.getOrderId());
         if(deliveryUpdateDTO.getPaymentStatus().equalsIgnoreCase("success")){
             order.setOrderStatus("DELIVERED");

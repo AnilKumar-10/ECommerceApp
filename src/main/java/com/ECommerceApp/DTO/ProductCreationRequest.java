@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 @Component
 @Data
-public class ProductCreationDto {
+public class ProductCreationRequest {
 
     private String id;
 

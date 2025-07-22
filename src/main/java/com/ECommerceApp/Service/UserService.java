@@ -1,6 +1,6 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.UserRegistrationDTO;
+import com.ECommerceApp.DTO.UserRegistrationRequest;
 import com.ECommerceApp.Exceptions.UserNotFoundException;
 import com.ECommerceApp.Model.Users;
 import com.ECommerceApp.Repository.UsersRepository;
@@ -18,7 +18,7 @@ public class UserService {
     @Autowired
     private ProductService productService;
 
-    public Users registerUser(UserRegistrationDTO user) {
+    public Users registerUser(UserRegistrationRequest user) {
         Users users = new Users();
         BeanUtils.copyProperties(user,users);
         validateUserForRoles(users);
@@ -27,9 +27,9 @@ public class UserService {
         return usersRepository.save(users);
     }
 
-    public String registerUsers(List<UserRegistrationDTO> users){
+    public String registerUsers(List<UserRegistrationRequest> users){
         int c=0;
-        for(UserRegistrationDTO user:users){
+        for(UserRegistrationRequest user:users){
             usersRepository.save(registerUser(user));
             c++;
         }

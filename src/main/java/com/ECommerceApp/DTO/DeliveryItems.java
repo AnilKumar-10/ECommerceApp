@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class DeliveryItems {
     private String shippingId;
-    private String OrderId;
+    private String orderId;
     private String userName;
     private Address address;
     private String paymentMode;

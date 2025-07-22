@@ -20,7 +20,7 @@ public class  CartController { //buyer
     public Cart insertCart(@RequestBody CartItem items){
         items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
         System.out.println(items);
-        return cartService.addItemToCart("USER1028",items); // userid is taken from the jwt token
+        return cartService.addItemToCart("USER1041",items); // userid is taken from the jwt token
     }
 
     @GetMapping("/getCart/{id}")

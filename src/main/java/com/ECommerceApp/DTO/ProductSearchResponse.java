@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ProductSearchResponseDto {
+public class ProductSearchResponse {
 
     private String Name;
     private String description;

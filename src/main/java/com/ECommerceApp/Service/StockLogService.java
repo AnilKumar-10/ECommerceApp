@@ -1,10 +1,9 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.StockLogModificationDTO;
+import com.ECommerceApp.DTO.StockLogModification;
 import com.ECommerceApp.Exceptions.ProductNotFoundException;
 import com.ECommerceApp.Model.Product;
 import com.ECommerceApp.Model.StockLog;
-import com.ECommerceApp.Model.StockLogModification;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.StockLogRepository;
 import org.springframework.beans.BeanUtils;
@@ -23,7 +22,7 @@ public class StockLogService {
     @Autowired
     private EmailService emailService;
 
-    public StockLog modifyStock(StockLogModificationDTO modification) {
+    public StockLog modifyStock(StockLogModification modification) {
         // 1. Find existing stock log or create a new one
         StockLog stockLog = stockLogRepository.findByProductIdAndSellerId(modification.getProductId(), modification.getSellerId())
                 .orElseGet(() -> {
@@ -72,8 +71,8 @@ public class StockLogService {
         return updatedLog;
     }
 
-    private StockLogModification getModificationLog(StockLogModificationDTO modification) {
-        StockLogModification modificationLog = new StockLogModification();
+    private com.ECommerceApp.Model.StockLogModification getModificationLog(StockLogModification modification) {
+        com.ECommerceApp.Model.StockLogModification modificationLog = new com.ECommerceApp.Model.StockLogModification();
         BeanUtils.copyProperties(modification,modificationLog);
         return modificationLog;
     }

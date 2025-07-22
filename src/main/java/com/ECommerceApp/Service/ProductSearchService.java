@@ -1,6 +1,6 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.ProductSearchResponseDto;
+import com.ECommerceApp.DTO.ProductSearchResponse;
 import com.ECommerceApp.Exceptions.ProductNotFoundException;
 import com.ECommerceApp.Model.Category;
 import com.ECommerceApp.Model.Product;
@@ -120,18 +120,18 @@ public class ProductSearchService {
 
 
 
-    public List<ProductSearchResponseDto> getProductByBrand(String brandName){
+    public List<ProductSearchResponse> getProductByBrand(String brandName){
         return productRepository.findByBrandIgnoreCase(brandName);
     }
 
 
-    public Page<ProductSearchResponseDto> getAllProducts(int page, int size) {
+    public Page<ProductSearchResponse> getAllProducts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productPage = productRepository.findAll(pageable); // Update this call
 
-        List<ProductSearchResponseDto> dtoList = new ArrayList<>();
+        List<ProductSearchResponse> dtoList = new ArrayList<>();
         for (Product product : productPage.getContent()) {
-            ProductSearchResponseDto dto = new ProductSearchResponseDto();
+            ProductSearchResponse dto = new ProductSearchResponse();
             BeanUtils.copyProperties(product, dto);
             dtoList.add(dto);
         }

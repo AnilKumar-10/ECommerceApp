@@ -1,12 +1,13 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.*;
+import com.ECommerceApp.DTO.StockLogModification;
 import com.ECommerceApp.Model.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.aggregation.BooleanOperators;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -34,10 +35,14 @@ public class ReturnService {
     private TaxRuleService taxRuleService;
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
+    @Autowired
+    private PaymentService paymentService;
 
     public ShippingDetails updateShippingStatusForRefundAndReturn(String orderId){
 
-        ShippingUpdateDTO shippingUpdateDTO = new ShippingUpdateDTO();
+        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         Order order = orderService.getOrder(orderId);
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy("ADMIN");
@@ -52,7 +57,7 @@ public class ReturnService {
         DeliveryPerson deliveryPerson =  deliveryService.getDeliveryPerson(shippingDetails.getDeliveryPersonId());
         System.out.println("indide the return assignReturnProductToDeliveryPerson with delivery: "+deliveryPerson);
         Order order = orderService.getOrder(shippingDetails.getOrderId());
-        ProductReturnDto productReturnDto = new ProductReturnDto();
+        ProductReturnRequest productReturnDto = new ProductReturnRequest();
         productReturnDto.setProductPicked(false);
         productReturnDto.setReason(reason);
         productReturnDto.setOrderId(order.getId());
@@ -73,9 +78,9 @@ public class ReturnService {
     }
 
 
-    public RefundAndReturnResponseDTO getRefundAndReturnResponce(DeliveryPerson deliveryPerson, Refund refund1) {
+    public RefundAndReturnResponse getRefundAndReturnResponce(DeliveryPerson deliveryPerson, Refund refund1) {
 
-        RefundAndReturnResponseDTO refundAndReturnResponseDTO = new RefundAndReturnResponseDTO();
+        RefundAndReturnResponse refundAndReturnResponseDTO = new RefundAndReturnResponse();
         BeanUtils.copyProperties(refund1,refundAndReturnResponseDTO);
         refundAndReturnResponseDTO.setDeliveryPersonName(deliveryPerson.getName());
         refundAndReturnResponseDTO.setProductPicked(false);
@@ -94,8 +99,8 @@ public class ReturnService {
     }
 
     public void updateReturnSuccess(String orderId){
-        ShippingUpdateDTO shippingUpdateDTO = new ShippingUpdateDTO();
         Order order = orderService.getOrder(orderId);
+        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy("ADMIN");
         shippingUpdateDTO.setNewValue("RETURNED");
@@ -113,7 +118,7 @@ public class ReturnService {
 //        System.out.println("inside updateorderitems before : "+orderItems);
         for(OrderItem orderItem:orderItems){
 //            System.out.println("inside for with orderIten: "+orderItem.getStatus());
-            if(orderItem.getStatus().equals("REQUESTED_TO_RETURN")){
+            if(orderItem.getStatus().equals("REQUESTED_TO_RETURN") ){
                 orderItem.setStatus("RETURNED");
             }
         }
@@ -124,7 +129,7 @@ public class ReturnService {
 
 
     public void updateReturnFailed(String orderId){
-        ShippingUpdateDTO shippingUpdateDTO = new ShippingUpdateDTO();
+        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         Order order = orderService.getOrder(orderId);
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy("ADMIN");
@@ -138,7 +143,7 @@ public class ReturnService {
         List<OrderItem> orderedProducts = order.getOrderItems();
         for(OrderItem orderItem : orderedProducts){
             if(orderItem.getStatus().equals("RETURNED")){
-                StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+                StockLogModification stockLogModificationDTO = new StockLogModification();
                 stockLogModificationDTO.setAction("RETURNED");
                 stockLogModificationDTO.setModifiedAt(new Date());
                 stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
@@ -155,7 +160,7 @@ public class ReturnService {
         List<OrderItem> orderedProducts = order.getOrderItems();
         for(OrderItem orderItem : orderedProducts){
             if(orderItem.getStatus()==null){
-                StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+                StockLogModification stockLogModificationDTO = new StockLogModification();
                 stockLogModificationDTO.setAction("CANCELLED");
                 stockLogModificationDTO.setModifiedAt(new Date());
                 stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
@@ -166,7 +171,7 @@ public class ReturnService {
         }
     }
 
-    public void updateOrderItemsForReturn(List<OrderItem> orderItems, RaiseRefundRequestDto refundRequestDto) {
+    public void updateOrderItemsForReturn(List<OrderItem> orderItems, RaiseRefundRequest refundRequestDto) {
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         for(OrderItem orderItem : orderItems){
             if(refundRequestDto.getProductIds().contains(orderItem.getProductId())){
@@ -178,8 +183,9 @@ public class ReturnService {
     }
 
 
-    public ProductExchangeResponse exchangeRequest(ProductExchangeRequest productExchangeDto){
+    public ExchangeInfo exchangeRequest(ProductExchangeRequest productExchangeDto){
         Order order = orderService.getOrder(productExchangeDto.getOrderId());
+        System.out.println("in exchange method; "+order);
         double oldPrice=0;
         for(OrderItem orderItem : order.getOrderItems()){
             if(orderItem.getProductId().equalsIgnoreCase(productExchangeDto.getProductIdToReplace())){
@@ -193,19 +199,21 @@ public class ReturnService {
         String rootCategoryId = categoryService.getRootCategoryId(product.getCategoryIds());
         double taxRate = taxRuleService.getApplicableTaxRate(rootCategoryId, shippingState);
 
+        // Adding the replacement product to the order items
         OrderItem item = new OrderItem();
         item.setProductId(productExchangeDto.getProductId());
-        item.setPrice(productService.getProductPrice(productExchangeDto.getProductId())*productExchangeDto.getQuantity());
+        item.setPrice(productService.getProductPrice(productExchangeDto.getProductId()) * productExchangeDto.getQuantity());
         item.setQuantity(productExchangeDto.getQuantity());
         item.setColor(productExchangeDto.getColor());
         item.setStatus("FOR_REPLACE");
         double tax = (item.getPrice() * taxRate) / 100;
         item.setTax(tax);
+        System.out.println("new item: "+item);
         order.getOrderItems().add(item);
-        double newPrice =item.getPrice()+item.getTax();
-        updateStockToReplace(item); // this will update stock of replaced product.
+        double newPrice = item.getPrice() + tax;
         double finalAmount = oldPrice - newPrice;
-
+        order.setFinalAmount(order.getFinalAmount() + finalAmount);
+        // Adding the exchange details to the order class.
         ExchangeDetails exchangeDetails = new ExchangeDetails();
         exchangeDetails.setReplacementProductId(productExchangeDto.getProductId());
         exchangeDetails.setReason(productExchangeDto.getReasonToReplace());
@@ -213,37 +221,71 @@ public class ReturnService {
         exchangeDetails.setPaymentStatus("PENDING");
         exchangeDetails.setOriginalPrice( oldPrice );
         exchangeDetails.setReplacementPrice(newPrice);
+        exchangeDetails.setCreatedAt(new Date());
+        String payType = oldPrice > newPrice ? "REFUNDABLE":"PAYABLE";
+        if(oldPrice-newPrice == 0){
+            exchangeDetails.setExchangeType("NO_DIFFERENCE");
+        }
+        if(payType.equalsIgnoreCase("REFUNDABLE")){
+            order.setRefundAmount(finalAmount);
+        }
+        exchangeDetails.setExchangeType(payType);
         exchangeDetails.setExchangeDifferenceAmount(finalAmount);
         order.setExchangeDetails(exchangeDetails);
-        Order order1 = orderService.saveOrder(order);
+        System.out.println("exchange details: "+exchangeDetails);
 
         // assign the exchange delivery person.
-        DeliveryPerson deliveryPerson = assignDeliveryForExchange(order1);
-        ProductExchangeResponse productExchangeResponse = new ProductExchangeResponse();
-        productExchangeResponse.setOrderId(order.getId());
-        productExchangeResponse.setProductIdToPick(productExchangeDto.getProductId());
-        productExchangeResponse.setProductIdToReplace(productExchangeDto.getProductIdToReplace());
-        productExchangeResponse.setAmount(order.getExchangeDetails().getExchangeDifferenceAmount());
-        productExchangeResponse.setExpectedReturnDate(calculateExpectedDate());
-        productExchangeResponse.setDeliveryPersonId(deliveryPerson.getId());
-        productExchangeResponse.setDeliveryPersonName(deliveryPerson.getName());
-        return productExchangeResponse;
-
+        if(exchangeDetails.getExchangeType().equalsIgnoreCase("NO_DIFFERENCE") || order.getPaymentMethod().equalsIgnoreCase("COD") || exchangeDetails.getExchangeType().equalsIgnoreCase("REFUNDABLE") ){
+            DeliveryPerson deliveryPerson =  assignDeliveryForExchange(order);
+            updateNewProductStockToReplace(item); // this will update stock of new product.
+            if (exchangeDetails.getExchangeType().equalsIgnoreCase("NO_DIFFERENCE")) {
+                order.getExchangeDetails().setPaymentMode("No payment needed");
+                order.getExchangeDetails().setPaymentStatus("SUCCESS");
+            }
+            System.out.println("delivery Person:"+deliveryPerson);
+        }
+        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
+        shippingUpdateDTO.setUpdateBy("ADMIN");
+        shippingUpdateDTO.setNewValue("REQUEST_TO_EXCHANGE");
+        shippingUpdateDTO.setShippingId(order.getShippingId());
+        shippingService.updateShippingStatus(shippingUpdateDTO); // this updates the shipping status for exchange.
+        ExchangeInfo exchangeInfo = new ExchangeInfo();
+        exchangeInfo.setAmount(finalAmount);
+        exchangeInfo.setAmountPayType(exchangeDetails.getExchangeType());
+        exchangeInfo.setProductIdToReplace(exchangeDetails.getReplacementProductId());
+        exchangeInfo.setOrderId(order.getId());
+        exchangeInfo.setPaymentMode(order.getPaymentMethod());
+        exchangeInfo.setProductIdToPick(productExchangeDto.getProductId());
+        orderService.saveOrder(order);
+        return exchangeInfo;
     }
 
-    private void updateStockAfterReplace(OrderItem item) {
-        StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
-        stockLogModificationDTO.setAction("RETURN");
-        stockLogModificationDTO.setModifiedAt(new Date());
-        stockLogModificationDTO.setQuantityChanged(item.getQuantity());
-        stockLogModificationDTO.setSellerId(productService.getProductById(item.getProductId()).getSellerId());
-        stockLogModificationDTO.setProductId(item.getProductId());
-        stockLogService.modifyStock(stockLogModificationDTO);
 
+    public ProductExchangeResponse processExchangeAfterUpiPayDone(String orderId){
+        Order order = orderService.getOrder(orderId);
+        ExchangeDetails exchangeDetails = order.getExchangeDetails();
+        exchangeDetails.setPaymentStatus("SUCCESS");
+        for(OrderItem orderItem : order.getOrderItems()){
+            if(orderItem.getStatus().equalsIgnoreCase("FOR_REPLACE")){
+                updateNewProductStockToReplace(orderItem);
+            }
+        }
+        orderService.saveOrder(order);
+        assignDeliveryForExchange(order); // assigning the delivery after the payment done.
+        return getExchangeInformation(orderId);
     }
 
-    public void updateStockToReplace(OrderItem item){
-        StockLogModificationDTO stockLogModificationDTO = new StockLogModificationDTO();
+
+    public void markExchangeCodPaymentSuccess(String orderId,String paymentId){
+        Order order = orderService.getOrder(orderId);
+        ExchangeDetails exchangeDetails = order.getExchangeDetails();
+        exchangeDetails.setPaymentStatus("SUCCESS");
+        orderService.saveOrder(order);
+    }
+
+    // here we update the new product stock.
+    public void updateNewProductStockToReplace(OrderItem item){
+        StockLogModification stockLogModificationDTO = new StockLogModification();
         stockLogModificationDTO.setAction("SOLD");
         stockLogModificationDTO.setModifiedAt(new Date());
         stockLogModificationDTO.setQuantityChanged(item.getQuantity());
@@ -253,20 +295,39 @@ public class ReturnService {
 
     }
 
-    public void updateStockExchangeSuccess(){
+    // here we update the stock of product replaced
+    public void updateStockAfterExchangeSuccess(String orderID){
+             Order order = orderService.getOrder(orderID);
+             List<OrderItem> orderItems = order.getOrderItems();
+             OrderItem orderItem = new OrderItem();
+             for(OrderItem item : orderItems){
+                 if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
+                     orderItem = item;
+                 }
+             }
+        StockLogModification stockLogModificationDTO = new StockLogModification();
+        stockLogModificationDTO.setAction("RETURNED");
+        stockLogModificationDTO.setModifiedAt(new Date());
+        stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
+        stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
+        stockLogModificationDTO.setProductId(orderItem.getProductId());
+        stockLogService.modifyStock(stockLogModificationDTO);
 
     }
 
 
     public DeliveryPerson assignDeliveryForExchange(Order order){
         DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(shippingService.getByShippingId(order.getShippingId()).getDeliveryPersonId());
+        if(deliveryPerson.getToExchangeItems().isEmpty()){
+            deliveryPerson.setToExchangeItems(new ArrayList<>());
+        }
         List<OrderItem> orderItems  = order.getOrderItems();
         ExchangeDeliveryItems exchangeDeliveryItems = new ExchangeDeliveryItems();
         for(OrderItem item : orderItems){
             if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
                 exchangeDeliveryItems.setProductIdToPick(item.getProductId());
             }
-            else if(item.getStatus().equalsIgnoreCase("REPLACE")){
+            if(item.getStatus().equalsIgnoreCase("FOR_REPLACE")){
                 exchangeDeliveryItems.setProductIdToReplace(item.getProductId());
             }
         }
@@ -280,7 +341,59 @@ public class ReturnService {
         exchangeDeliveryItems.setUserName(userService.getUserById(order.getBuyerId()).getName());
         deliveryPerson.getToExchangeItems().add(exchangeDeliveryItems);
         deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()+1);
+        System.out.println("deliveryPerson in assign: "+deliveryPerson);
         return  deliveryService.updateDeliveryPerson(deliveryPerson);
+    }
+
+
+
+    public ProductExchangeResponse getExchangeInformation(String orderId){
+        Order order = orderService.getOrder(orderId);
+        List<OrderItem> orderItems = order.getOrderItems();
+        String productToReplace="",productId="";
+        for(OrderItem item : orderItems){
+            if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
+                productToReplace = item.getProductId();
+            }
+            if(item.getStatus().equalsIgnoreCase("FOR_REPLACE")){
+                productId = item.getProductId();
+            }
+        }
+        DeliveryPerson deliveryPerson = deliveryService.getDeliveryPerson(shippingService.getByShippingId(order.getShippingId()).getDeliveryPersonId());
+        System.out.println("delivery person:"+deliveryPerson);
+        ProductExchangeResponse productExchangeResponse = new ProductExchangeResponse();
+        productExchangeResponse.setOrderId(order.getId());
+        productExchangeResponse.setProductIdToPick(productToReplace);
+        productExchangeResponse.setProductIdToReplace(productId);
+        productExchangeResponse.setAmountPayType(order.getExchangeDetails().getExchangeType());
+        productExchangeResponse.setAmount(order.getExchangeDetails().getExchangeDifferenceAmount());
+        productExchangeResponse.setExpectedReturnDate(calculateExpectedDate());
+        productExchangeResponse.setDeliveryPersonId(deliveryPerson.getId());
+        productExchangeResponse.setDeliveryPersonName(deliveryPerson.getName());
+        return productExchangeResponse;
+    }
+
+
+
+    public Order updateExchangeSuccess(String orderId,String deliveryPersonId){
+        Order order = orderService.getOrder(orderId);
+        updateStockAfterExchangeSuccess(orderId);// updating the stock of returned object.
+        for(OrderItem orderItem : order.getOrderItems()){
+            if(orderItem.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
+                orderItem.setStatus("EXCHANGE_RETURNED");
+            }
+            if(orderItem.getStatus().equalsIgnoreCase("FOR_REPLACE")){
+                orderItem.setStatus("EXCHANGE_DELIVERED");
+            }
+        }
+        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
+        shippingUpdateDTO.setShippingId(order.getShippingId());
+        shippingUpdateDTO.setUpdateBy("ADMIN");
+        shippingUpdateDTO.setNewValue("RETURNED");
+        shippingService.updateShippingStatus(shippingUpdateDTO);
+        deliveryService.removeExchangeItemFromDeliveryPerson(deliveryPersonId,orderId);
+        order.getExchangeDetails().setUpdatedAt(new Date());
+        return orderService.saveOrder(order);
     }
 
 

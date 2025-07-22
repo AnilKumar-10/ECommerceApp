@@ -3,7 +3,7 @@ package com.ECommerceApp.DTO;
 import lombok.Data;
 
 @Data
-public class    DeliveryUpdateDTO {
+public class DeliveryUpdate {
     private String orderId;
     private String paymentId; // for cod
     private String paymentStatus; // for cod

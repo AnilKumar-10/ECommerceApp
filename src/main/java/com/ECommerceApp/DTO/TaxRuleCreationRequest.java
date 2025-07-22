@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
-public class TaxRuleCreationDTO {
+public class TaxRuleCreationRequest {
 
     @NotBlank(message = "Id is required")
     private String id;

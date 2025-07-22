@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Document
 @Data
-public class AddressRegistrationDto {
+public class AddressRegistrationRequest {
 
     @Id
     private String id;

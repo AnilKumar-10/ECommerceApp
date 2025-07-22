@@ -1,7 +1,7 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.DeliveryItems;
-import com.ECommerceApp.DTO.DeliveryPersonResponseDto;
+import com.ECommerceApp.DTO.DeliveryPersonResponse;
 import com.ECommerceApp.Model.DeliveryHistory;
 import com.ECommerceApp.Repository.DeliveryHistoryRepository;
 import org.springframework.beans.BeanUtils;
@@ -19,7 +19,7 @@ public class DeliveryHistoryService {
     private DeliveryService deliveryService;
 
     public void insertDelivery(String orderId, String deliveryPersonId){
-        DeliveryPersonResponseDto deliveryPersonResponseDto = deliveryService.getDeliveryPersonByOrderId(orderId);
+        DeliveryPersonResponse deliveryPersonResponseDto = deliveryService.getDeliveryPersonByOrderId(orderId);
         DeliveryItems deliveryItems = deliveryPersonResponseDto.getToDeliveryItems().getFirst();
         DeliveryHistory deliveryHistory = new DeliveryHistory();
         BeanUtils.copyProperties(deliveryItems,deliveryHistory);

@@ -2,19 +2,13 @@ package com.ECommerceApp.DTO;
 
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
-public class ProductExchangeResponse {
-
+public class ExchangeInfo {
     private String orderId;
     private String productIdToPick;
     private String productIdToReplace;
     private double amount;
     private String amountPayType;
-    private String deliveryPersonId;
-    private String deliveryPersonName;
-    private Date expectedReturnDate;
-
+    private String paymentMode;
 
 }

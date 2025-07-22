@@ -1,10 +1,9 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.DeliveryItems;
-import com.ECommerceApp.DTO.ProductReturnDto;
-import com.ECommerceApp.DTO.RefundAndReturnResponseDTO;
+import com.ECommerceApp.DTO.ProductReturnRequest;
+import com.ECommerceApp.DTO.RefundAndReturnResponse;
 import com.ECommerceApp.Exceptions.MailSendException;
-import com.ECommerceApp.Repository.NotificationLogRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -16,10 +15,8 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import com.ECommerceApp.Model.*;
 
-import javax.xml.parsers.SAXParser;
+import com.ECommerceApp.Model.*;
 
 @Service
 public class EmailService {
@@ -110,7 +107,7 @@ public class EmailService {
     }
 
 
-    public void sendReturnRequestedEmail(String toEmail, RefundAndReturnResponseDTO dto) {
+    public void sendReturnRequestedEmail(String toEmail, RefundAndReturnResponse dto) {
         try {
             // Prepare the context for Thymeleaf
             Context context = new Context();
@@ -322,7 +319,7 @@ public class EmailService {
     }
 
 
-    public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnDto returnDto,String userId) {
+    public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnRequest returnDto, String userId) {
         try {
             Context context = new Context();
             context.setVariable("deliveryPerson", deliveryPerson);

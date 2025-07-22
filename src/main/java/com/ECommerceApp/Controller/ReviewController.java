@@ -1,6 +1,6 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.ReviewCreationDto;
+import com.ECommerceApp.DTO.ReviewCreationRequest;
 import com.ECommerceApp.Model.Review;
 import com.ECommerceApp.Service.ReviewService;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ public class ReviewController { // buyyer
     private ReviewService reviewService;
 
     @PostMapping("/postReview")
-    public ResponseEntity<?> postReview(@Valid @RequestBody ReviewCreationDto review){
+    public ResponseEntity<?> postReview(@Valid @RequestBody ReviewCreationRequest review){
         return ResponseEntity.ok(reviewService.addReview(review));
     }
 

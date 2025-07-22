@@ -1,12 +1,11 @@
 package com.ECommerceApp.Controller;
 
-import com.ECommerceApp.DTO.PlaceOrderDto;
+import com.ECommerceApp.DTO.PlaceOrderRequest;
 import com.ECommerceApp.Model.Order;
 import com.ECommerceApp.Service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.datatransfer.Clipboard;
 import java.util.List;
 
 @RestController
@@ -16,7 +15,7 @@ public class OrderController { //user from service classes
     private OrderService orderService;
 
     @PostMapping("/placeOrder")
-    public Order placeOrder(@RequestBody PlaceOrderDto orderDto){
+    public Order placeOrder(@RequestBody PlaceOrderRequest orderDto){
         return orderService.createOrder(orderDto);
     }
 
