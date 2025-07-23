@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.Coupon;
+import Coupon;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 

@@ -1,8 +1,8 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.AddressRegistrationRequest;
-import com.ECommerceApp.Exceptions.AddressNotFoundException;
-import com.ECommerceApp.Model.Address;
+import com.ECommerceApp.DTO.User.AddressRegistrationRequest;
+import com.ECommerceApp.Exceptions.User.AddressNotFoundException;
+import com.ECommerceApp.Model.User.Address;
 import com.ECommerceApp.Repository.AddressRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,15 +1,16 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Exceptions.CategoryNotFoundException;
-import com.ECommerceApp.Exceptions.RootCategoryNotFoundException;
-import com.ECommerceApp.Model.Category;
+import com.ECommerceApp.Exceptions.Product.CategoryNotFoundException;
+import com.ECommerceApp.Exceptions.Product.RootCategoryNotFoundException;
+import Category;
 import com.ECommerceApp.Repository.CategoryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.*;
-
+@Slf4j
 @Service
 public class CategoryService {
     @Autowired
@@ -44,7 +45,9 @@ public class CategoryService {
 
     // 4. Get subcategories of a parent
     public List<Category> getSubCategories(String parentId) {
-        return categoryRepository.findByParentId(parentId);
+        List<Category> categories = categoryRepository.findByParentId(parentId);
+        log.info("The subCategories of: "+parentId+" are: "+categories);
+        return categories;
     }
 
     // 5. Get root categories (parentId = null)
@@ -62,6 +65,7 @@ public class CategoryService {
 
     // 7. Delete category by ID (and optionally all subcategories recursively)
     public String  deleteCategory(String id) {
+        log.warn("deleting the category: "+id);
         Category category = getCategoryById(id);
         deleteSubCategoriesRecursively(id); // delete all its children recursively
         categoryRepository.deleteById(id);
@@ -70,6 +74,7 @@ public class CategoryService {
 
     private void deleteSubCategoriesRecursively(String parentId) {
         List<Category> subcategories = getSubCategories(parentId);
+        log.warn("deleting the sub categories of: "+parentId+" ( "+subcategories+" )");
         for (Category sub : subcategories) {
             deleteSubCategoriesRecursively(sub.getId());
             categoryRepository.deleteById(sub.getId());
@@ -91,6 +96,7 @@ public class CategoryService {
             current = categoryRepository.findById(current.getParentId()).orElse(null);
         }
         Collections.reverse(hierarchy);
+        log.info("The category hierarchy of: "+categoryId+" is  "+hierarchy);
         return hierarchy;
     }
 
@@ -154,7 +160,7 @@ public class CategoryService {
                 queue.add(sub.getId());
             }
         }
-
+        log.info("All sub categories of the root : "+rootId+" is :"+result);
         return result;
     }
 

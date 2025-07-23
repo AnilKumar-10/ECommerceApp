@@ -1,21 +1,21 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Exceptions.InvoiceNotFoundException;
-import com.ECommerceApp.Exceptions.PaymentNotFoundException;
-import com.ECommerceApp.Model.Invoice;
-import com.ECommerceApp.Model.Order;
-import com.ECommerceApp.Model.Payment;
+import com.ECommerceApp.Exceptions.Payment.InvoiceNotFoundException;
+import com.ECommerceApp.Exceptions.Payment.PaymentNotFoundException;
+import Invoice;
+import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.Repository.InvoiceRepository;
 import com.ECommerceApp.Repository.OrderRepository;
 import com.ECommerceApp.Repository.PaymentRepository;
-import com.ECommerceApp.Repository.ProductRepository;
-import org.springframework.beans.InvalidPropertyException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class InvoiceService {
 
@@ -31,10 +31,12 @@ public class InvoiceService {
 
     public Invoice generateInvoice(String orderId) {
         // Validate order
+        log.info("Generating the invoice for order: "+orderId);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         if (!"SUCCESS".equalsIgnoreCase(order.getPaymentStatus())) {
+            log.warn("The payment must be success in order to generate the invoice");
             throw new IllegalStateException("Invoice can only be generated after successful payment");
         }
 
@@ -56,7 +58,7 @@ public class InvoiceService {
         invoice.setPaymentMode(order.getPaymentMethod());
         invoice.setAmount(payment.getAmountPaid());
         invoice.setIssuedAt(new Date());
-
+        log.info("invoice is generated");
         return invoiceRepository.save(invoice);
     }
 

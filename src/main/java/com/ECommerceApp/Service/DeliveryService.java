@@ -1,10 +1,13 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.*;
-import com.ECommerceApp.Exceptions.DeliveryNotFoundException;
-import com.ECommerceApp.Model.DeliveryPerson;
-import com.ECommerceApp.Model.Order;
+import com.ECommerceApp.DTO.Delivery.DeliveryItems;
+import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
+import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
+import com.ECommerceApp.Exceptions.Delivery.DeliveryNotFoundException;
+import com.ECommerceApp.Model.Delivery.DeliveryPerson;
+import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Repository.DeliveryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class DeliveryService {
     @Autowired
@@ -31,6 +35,7 @@ public class DeliveryService {
 
     // Assign delivery person by address match
     public DeliveryPerson assignDeliveryPerson(String deliveryAddress) {
+        log.info("Assigning the delivery Person to delivery the Order");
         List<DeliveryPerson> allPersons = deliveryRepository.findAll();
         String address = addressService.getAddressById(deliveryAddress).getCity();
         System.out.println("city: "+address);
@@ -39,10 +44,12 @@ public class DeliveryService {
             for (String area : person.getAssignedAreas()) {
                 System.out.println("city: "+address+"  ===>   "+area);
                 if (area.toLowerCase().equalsIgnoreCase(address.toLowerCase())) {
+                    log.info("The person to deliver is : "+person);
                     return person;
                 }
             }}
         }
+        log.info("There is no delivery agent available for that address: "+deliveryAddress);
         return null;
     }
 
@@ -54,10 +61,11 @@ public class DeliveryService {
         deliveryPerson.setToDeliveryCount(0);
         deliveryPerson.setDeliveredCount(0);
         deliveryPerson.setActive(true);
+        log.info("Delivery person registration is success: "+deliveryPerson);
         return deliveryRepository.save(deliveryPerson);
     }
 
-    public String  registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson){
+    public String registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson){
         int c=0;
         for(DeliveryPersonRegistrationRequest person: deliveryPerson){
             deliveryRepository.save(register(person));
@@ -74,6 +82,7 @@ public class DeliveryService {
     // assigning the packages to the delivery person
     public DeliveryPerson assignProductsToDelivery(String deliveryPersonId,Order order){
         System.out.println("inside the assignProductsToDelivery: "+deliveryPersonId);
+        log.info("Assigning the products to be delivered to the delivery person");
         DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
         DeliveryItems deliveryItems = new DeliveryItems();
         deliveryItems.setAddress(addressService.getAddressById(order.getAddressId()));
@@ -88,6 +97,7 @@ public class DeliveryService {
         }
         deliveryPerson.getToDeliveryItems().add(deliveryItems);
         // sending the mail to delivery partner about the order is assigned to deliver
+        log.info("sending the mail to the about the Order is assigned to the delivery to : "+deliveryPersonId);
         emailService.sendOrderAssignedToDeliveryPerson("iamanil3121@gmail.com",deliveryItems,deliveryPerson.getName(),deliveryPerson.getId());
         return deliveryRepository.save(deliveryPerson);
     }
@@ -99,16 +109,15 @@ public class DeliveryService {
 
 
     public void removeDeliveredOrderFromToDeliveryItems(String deliveryPersonId, String orderId) {
-        System.out.println("inside it");
+        log.info("Removing the delivered orders from the delivery agent: "+deliveryPersonId);
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
         Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("orderId").is(orderId)));
-        System.out.println("inside remove delivery orders: "+query+"  =  "+update);
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
-        System.out.println("exit");
     }
 
 
     public void updateDeliveryCount(String deliveryPersonId){
+        log.info("Updating the delivery count after delivery done");
         DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
         deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
         deliveryPerson.setDeliveredCount(deliveryPerson.getDeliveredCount()+1);
@@ -118,12 +127,14 @@ public class DeliveryService {
 
 
     public void removeReturnItemFromDeliveryPerson(String deliveryPersonId, String orderId) {
+        log.info("Removing the to return items after the return delivery is success.");
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
         Update update = new Update().pull("toReturnItems", Query.query(Criteria.where("orderId").is(orderId)));
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
     }
 
     public void removeExchangeItemFromDeliveryPerson(String deliveryPersonId, String orderId) {
+        log.info("Removing the to Exchange items after the exchange delivery is success.");
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
         Update update = new Update().pull("toExchangeItems", Query.query(Criteria.where("orderId").is(orderId)));
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
@@ -152,22 +163,21 @@ public class DeliveryService {
 
 
     public DeliveryPersonResponse getDeliveryPersonByOrderId(String orderId){
-        System.out.println("inside deliveryservice: "+orderId);
+        log.info("Getting the delivery person by order id: "+orderId);
+        System.out.println("inside delivery service: "+orderId);
         DeliveryPerson deliveryPerson = deliveryRepository.findByOrderId(orderId).get();
         System.out.println(deliveryPerson);
         DeliveryPersonResponse deliveryPersonResponseDto = new DeliveryPersonResponse();
         BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
-        System.out.println(deliveryPersonResponseDto);
+        log.info("the delivery man with order: "+orderId+ "  :  "+deliveryPersonResponseDto);
         return deliveryPersonResponseDto;
     }
 
 
     public void updateDeliveryCountAfterOrderCancellation(String deliveryPersonId){
+        log.info("Updating the delivery Count after the order is cancelled : "+deliveryPersonId);
         DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
         deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
         updateDeliveryPerson(deliveryPerson); // updating the delivery counts of the delivered person.
-
     }
-
-
 }

@@ -1,18 +1,19 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.InitiatePaymentRequest;
-import com.ECommerceApp.DTO.PaymentRequest;
-import com.ECommerceApp.Exceptions.PaymentAmountMissMatchException;
-import com.ECommerceApp.Exceptions.PaymentNotFoundException;
-import com.ECommerceApp.Model.Order;
-import com.ECommerceApp.Model.Payment;
+import com.ECommerceApp.DTO.Payment.InitiatePaymentRequest;
+import com.ECommerceApp.DTO.Payment.PaymentRequest;
+import com.ECommerceApp.Exceptions.Payment.PaymentAmountMissMatchException;
+import com.ECommerceApp.Exceptions.Payment.PaymentNotFoundException;
+import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.Repository.PaymentRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-
+@Slf4j
 @Service
 public class PaymentService {
 
@@ -25,6 +26,7 @@ public class PaymentService {
 
     // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
     public Payment initiatePayment(InitiatePaymentRequest initiatePaymentDto) {
+        log.info("Initating the online payment for order ");
         System.out.println("inside the initiate payment : "+initiatePaymentDto);
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
@@ -44,6 +46,7 @@ public class PaymentService {
 
     // 2. Update payment on success
     public Payment confirmUPIPayment(PaymentRequest paymentDto) {
+        log.info("making the payment success after initialize");
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
@@ -58,6 +61,7 @@ public class PaymentService {
 
     // 3. Update payment on failure
     public Payment failPayment(PaymentRequest paymentDto) {
+        log.warn("the online payment is failed");
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
 
@@ -70,6 +74,7 @@ public class PaymentService {
     }
 
     public Payment confirmCODPayment(PaymentRequest paymentDto) { // for COD payment
+        log.info("making the COD payment done by the delivery agent");
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
@@ -96,6 +101,7 @@ public class PaymentService {
 
     // for exchange payment.
     public Payment initiateExchangePayment(InitiatePaymentRequest initiatePaymentDto) {
+        log.info("Initialize the exchange online payment for order: "+initiatePaymentDto.getOrderId());
         System.out.println("inside the initiate payment : "+initiatePaymentDto);
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
@@ -114,6 +120,7 @@ public class PaymentService {
     }
 
     public Payment confirmUPIPaymentForExchange(PaymentRequest paymentDto) {
+        log.info( " Confirm the exchange COD payment for order: ");
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());

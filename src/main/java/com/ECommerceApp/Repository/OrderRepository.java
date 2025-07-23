@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.Order;
+import com.ECommerceApp.Model.Order.Order;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 

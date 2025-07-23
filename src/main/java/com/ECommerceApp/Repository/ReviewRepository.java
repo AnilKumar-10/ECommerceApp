@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.Review;
+import com.ECommerceApp.Model.Product.Review;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 

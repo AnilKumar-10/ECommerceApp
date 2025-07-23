@@ -1,11 +1,12 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.ProductSearchResponse;
-import com.ECommerceApp.Exceptions.ProductNotFoundException;
-import com.ECommerceApp.Model.Category;
-import com.ECommerceApp.Model.Product;
+import com.ECommerceApp.DTO.Product.ProductSearchResponse;
+import com.ECommerceApp.Exceptions.Product.ProductNotFoundException;
+import Category;
+import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Repository.CategoryRepository;
 import com.ECommerceApp.Repository.ProductRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.*;
 
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class ProductSearchService {
 
@@ -35,6 +36,7 @@ public class ProductSearchService {
 
     // this will return the products that contain the category name.
     public List<Product> getProductsByCategoryName(String categoryName) {
+        log.info("getting the product based on the category: "+categoryName);
         List<Category> rootCategory = categoryService.getCategoryByNameIgnoreCase(categoryName);
         System.out.println("root: "+rootCategory);
         if (rootCategory == null) return Collections.emptyList();
@@ -49,15 +51,14 @@ public class ProductSearchService {
     }
 
 
-
+    // this method gets all categories ids based on the names.
     public List<List<String>> resolveCategoryIdGroups(List<String> inputNames) {
-//        System.out.println("in resolve: "+inputNames);
+        log.info("getting the all categories of the input categories: "+inputNames);
         List<Category> matchedCategories = new ArrayList<>();
         for (String name : inputNames) {
             matchedCategories.addAll(categoryService.getCategoryByNameIgnoreCase(name));
         }
         List<List<String>> idGroups = new ArrayList<>();
-//        System.out.println("matched: "+matchedCategories);
         for (Category category : matchedCategories) {
             List<String> fullPathNames = new ArrayList<>();
             List<String> fullPathIds = new ArrayList<>();
@@ -65,14 +66,11 @@ public class ProductSearchService {
             while (current != null) {
                 fullPathNames.add(current.getName());
                 fullPathIds.add(current.getId());
-//                System.out.println("current: "+current );
                 if(current.getParentId() == null){
                     break;
                 }
                 current = categoryService.getCategoryById(current.getParentId());
             }
-//            System.out.println("pathnames: "+fullPathNames);
-//            System.out.println("pathids: "+fullPathIds);
             // Match only if all inputNames are present in the path
             if (inputNames.stream()
                     .map(String::toLowerCase)
@@ -81,20 +79,18 @@ public class ProductSearchService {
                             .collect(Collectors.toSet())
                             .contains(n))) {
                 idGroups.add(fullPathIds); // one group of required categoryIds
-//                System.out.println("idgroups: "+idGroups);
             }
         }
-//        System.out.println("grops: "+idGroups);
+        log.info("The id groups are: "+idGroups);
         return idGroups;
     }
 
 
 
     public List<Product> searchProductsByCategoryNames(List<String> inputNames,String brand) {
-//        System.out.println("in search : "+inputNames);
+        log.info("Searching the product based on the category name and the brand");
         List<List<String>> requiredIdGroups = resolveCategoryIdGroups(inputNames);
         // If no matching groups found, return empty
-//        System.out.println("requ: "+requiredIdGroups);
         if (requiredIdGroups.isEmpty())  throw
                 new ProductNotFoundException("The product you are trying is not present try to search categories like Clothes, Footwear, Electronics etc");
 
@@ -121,11 +117,13 @@ public class ProductSearchService {
 
 
     public List<ProductSearchResponse> getProductByBrand(String brandName){
+        log.info("Getting the products based on the brand");
         return productRepository.findByBrandIgnoreCase(brandName);
     }
 
 
     public Page<ProductSearchResponse> getAllProducts(int page, int size) {
+        log.info("Getting all the products present in the db with paging ");
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productPage = productRepository.findAll(pageable); // Update this call
 

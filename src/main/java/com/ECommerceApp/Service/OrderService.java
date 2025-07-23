@@ -1,12 +1,17 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.DeliveryUpdate;
-import com.ECommerceApp.DTO.PlaceOrderRequest;
-import com.ECommerceApp.DTO.StockLogModification;
-import com.ECommerceApp.Exceptions.OrderNotFoundException;
-import com.ECommerceApp.Exceptions.ProductOutOfStockException;
-import com.ECommerceApp.Model.*;
+import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
+import com.ECommerceApp.DTO.Order.PlaceOrderRequest;
+import com.ECommerceApp.DTO.Product.StockLogModificationRequest;
+import com.ECommerceApp.Exceptions.Order.OrderNotFoundException;
+import com.ECommerceApp.Exceptions.Product.ProductOutOfStockException;
+import com.ECommerceApp.Model.Delivery.ShippingDetails;
+import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Product.Product;
+import com.ECommerceApp.Model.User.Address;
+import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.OrderRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class OrderService {
 
@@ -39,12 +45,17 @@ public class OrderService {
     private TaxRuleService taxRuleService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private UserService userService;
 
     public Order createOrder(PlaceOrderRequest orderDto){
+        log.info("Creating the order for : "+orderDto.getUserId());
+        Users users = userService.getUserById(orderDto.getUserId());
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
         for(OrderItem item : orderItem){
             Product product = productService.getProductById(item.getProductId());
             if(!product.isAvailable()){
+                log.warn("The product to order is out of stock..");
                 throw new ProductOutOfStockException(product.getName()+" is Out of Stock");
             }
         }
@@ -70,15 +81,20 @@ public class OrderService {
         order.setFinalAmount(Math.round(finalAmount * 100.0) / 100.0);
         order.setPaymentMethod(orderDto.getPayMode());
         order.setOrderDate(new Date());
+        order.setUpiId(users.getUpiId());
         order.setOrderStatus(orderDto.getPayMode().equalsIgnoreCase("COD")?"PLACED":"PENDING");
         order.setPaymentStatus("PENDING"); // pending until the payment is successful
         Order order1 = orderRepository.save(order);
         if(orderDto.getPayMode().equalsIgnoreCase("COD")){
             // if the paymode is UPI then the shipping details must be generated after the payment.
+            log.info("The payment mode is COD so process the shipping.");
             ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
             emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com","Anil", order1, shippingDetails);
+        }
+        else{
+            log.info("The payment mode is UPI/ONLINE so shipping is processes after the payment.");
         }
         return order1; // flow goes to the initiating payment is the paymode is upi
     }
@@ -99,6 +115,7 @@ public class OrderService {
         couponService.recordCouponUsage(orderDto.getCoupon(),orderDto.getUserId());// this is used to track the no of time the coupon is used by user
         Coupon coupon = couponService.validateCoupon(orderDto.getCoupon(),orderDto.getUserId(),amount);
         double discount = couponService.getDiscountAmount(coupon,amount);
+        log.info("The calculated discount is: "+discount);
         return Math.round(discount * 100.0)/100.0;
     }
 
@@ -110,12 +127,13 @@ public class OrderService {
         for(OrderItem item : orderItem){
             amount += item.getPrice();
         }
-        System.out.println("amount is method: "+amount);
+        log.info("The total amount of product excluding the tax is: "+amount);
         return Math.round(amount * 100.0) / 100.0;
     }
 
     // update the order and payment status after the completion of payment.
     public void markOrderAsPaid(String orderId, String paymentId) {
+        log.info("updating UPI payment success in order details");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
         order.setPaymentStatus("SUCCESS");
@@ -130,6 +148,7 @@ public class OrderService {
     }
 
     public void markOrderAsPaymentFailed(String orderId) {
+        log.info("updating UPI payment failed in order details");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
         order.setPaymentStatus("FAILED");
@@ -143,10 +162,11 @@ public class OrderService {
 
     // update the stock details after the order is confirmed
     private void updateStockLogAfterOrderConfirmed(String orderId) {
+        log.info("updating the stock of the ordered products as sold out");
         Order order = getOrder(orderId);
         List<OrderItem> orderedProducts = order.getOrderItems();
         for(OrderItem orderItem : orderedProducts){
-            StockLogModification stockLogModificationDTO = new StockLogModification();
+            StockLogModificationRequest stockLogModificationDTO = new StockLogModificationRequest();
             stockLogModificationDTO.setAction("SOLD");
             stockLogModificationDTO.setModifiedAt(new Date());
             stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
@@ -162,10 +182,12 @@ public class OrderService {
     }
 
     public Order getOrder(String id){
+        log.info("getting the order with id: "+id);
         return orderRepository.findById(id).orElseThrow(()-> new OrderNotFoundException("There is no order found with id: "+id));
     }
 
     public void updateCODPaymentStatus(DeliveryUpdate deliveryUpdateDTO){
+        log.info("updating COD payment success in order details");
         Order order = getOrder(deliveryUpdateDTO.getOrderId());
         if(deliveryUpdateDTO.getPaymentStatus().equalsIgnoreCase("success")){
             order.setOrderStatus("DELIVERED");
@@ -182,6 +204,7 @@ public class OrderService {
 
     // this will calculates the tax of every product and return the whole tax applicable for the order.
     public double calculateTaxForOrder(Order order,String addressId){
+        log.info("calculating the tax for each product based on the category they belong.");
         List<OrderItem> orderItems = order.getOrderItems();
         double totalTax = 0.0;
         String shippingState = addressService.getAddressById(addressId).getState();

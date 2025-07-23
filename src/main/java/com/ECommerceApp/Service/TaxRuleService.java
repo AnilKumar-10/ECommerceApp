@@ -1,16 +1,17 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.TaxRuleCreationRequest;
-import com.ECommerceApp.Exceptions.TaxRuleNotFoundException;
-import com.ECommerceApp.Model.TaxRule;
+import com.ECommerceApp.DTO.Product.TaxRuleCreationRequest;
+import com.ECommerceApp.Exceptions.Order.TaxRuleNotFoundException;
+import com.ECommerceApp.Model.Order.TaxRule;
 import com.ECommerceApp.Repository.TaxRuleRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
+@Slf4j
 @Service
 public class TaxRuleService {
     @Autowired
@@ -18,6 +19,7 @@ public class TaxRuleService {
 
     // 1. Create new tax rule
     public TaxRule createOneTaxRule(TaxRuleCreationRequest rule) {
+        log.info("Creating the tax rule");
         TaxRule taxRule = new TaxRule();
         BeanUtils.copyProperties(rule,taxRule);
         return taxRuleRepository.save(taxRule);
@@ -37,6 +39,7 @@ public class TaxRuleService {
 
     // 2. Update existing tax rule
     public TaxRule updateTaxRule(TaxRuleCreationRequest updated) {
+        log.info("Updating the tax rule");
         TaxRule existing = taxRuleRepository.findById(updated.getId())
                 .orElseThrow(() -> new TaxRuleNotFoundException("TaxRule not found"));
 
@@ -52,6 +55,7 @@ public class TaxRuleService {
 
     // 3. Delete tax rule
     public String deleteTaxRule(String id) {
+        log.warn("deleting the taxrule: "+id);
         if (!taxRuleRepository.existsById(id)) {
             throw new TaxRuleNotFoundException("TaxRule not found");
         }
@@ -66,6 +70,7 @@ public class TaxRuleService {
 
     // 5. Get applicable tax rate based on state and category
     public double getApplicableTaxRate(String categoryId , String state) {
+        log.info("getting the applicable taxrules for: "+categoryId+"  in state: "+state);
         TaxRule rule = taxRuleRepository.findByStateAndCategoryIdAndIsActiveTrue(state, categoryId)
                 .orElse(null);
         if (rule == null) {

@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.Wishlist;
+import com.ECommerceApp.Model.User.Wishlist;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;

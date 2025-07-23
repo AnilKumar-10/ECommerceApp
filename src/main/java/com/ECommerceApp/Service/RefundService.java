@@ -1,17 +1,26 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.*;
-import com.ECommerceApp.Exceptions.OrderCancellationExpiredException;
-import com.ECommerceApp.Exceptions.RefundNotFoundException;
-import com.ECommerceApp.Model.*;
+import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
+import com.ECommerceApp.DTO.ReturnAndExchange.RaiseRefundRequest;
+import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
+import com.ECommerceApp.DTO.ReturnAndExchange.ReturnUpdateRequest;
+import com.ECommerceApp.Exceptions.Order.OrderCancellationExpiredException;
+import com.ECommerceApp.Exceptions.ReturnAndRefund.RefundNotFoundException;
+import com.ECommerceApp.Model.Delivery.DeliveryPerson;
+import com.ECommerceApp.Model.Delivery.ShippingDetails;
+import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Order.OrderItem;
+import com.ECommerceApp.Model.Product.Product;
+import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import com.ECommerceApp.Repository.RefundRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import java.util.*;
-
+@Slf4j
 @Service
 public class RefundService {
 
@@ -38,6 +47,7 @@ public class RefundService {
 
     //1. Raising the refund request
     public RefundAndReturnResponse requestRefund(RaiseRefundRequest refundRequestDto) {
+        log.info("Requesting for the refund on returning the products: "+refundRequestDto.getProductIds());
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         if(!order.getOrderStatus().equals("DELIVERED")){
             throw new RuntimeException("The order must be delivered before the refund..");
@@ -60,12 +70,10 @@ public class RefundService {
         refund.setOrderId(refundRequestDto.getOrderId());
         refund.setPaymentId(order.getPaymentId());
         refund.setReason(refundRequestDto.getReason());
-        System.out.println("reason in refund class: "+refundRequestDto.getReason());
         double amount = Math.round(refundAmount * 100.0) / 100.0;
         refund.setRefundAmount(amount);
         refund.setStatus("PENDING");
         refund.setRequestedAt(new Date());
-        System.out.println("inside the refund service class");
         ShippingDetails shippingDetails = returnService.updateShippingStatusForRefundAndReturn(order.getId());
         // this will update the status in shipping details
         returnService.updateOrderItemsForReturn(orderItems,refundRequestDto); //update the status of product to request to return
@@ -82,6 +90,7 @@ public class RefundService {
 
     //2. Approve the refund request (admin) if the reason is genuine
     public Refund approveRefund(String refundId, String adminId) {
+        log.info("Approve the refund for: "+refundId);
         Refund refund = getRefundById(refundId);
         if (!refund.getStatus().equals("PENDING")) {
             throw new IllegalStateException("Only PENDING refunds can be approved");
@@ -94,6 +103,7 @@ public class RefundService {
 
 //  3. Reject refund request (admin)
     public Refund rejectRefund(String refundId, String reason) {
+        log.info("Rejecting the return and refund");
         Refund refund = getRefundById(refundId);
         if (!refund.getStatus().equals("PENDING")) {
             throw new IllegalStateException("Only PENDING refunds can be rejected");
@@ -108,6 +118,7 @@ public class RefundService {
 
     //4. Complete the refund
     public Refund completeRefund(ReturnUpdateRequest returnUpdate) {
+        log.info("Making Refund to completed when the product is picked.");
         Refund refund = getRefundsByOrderId(returnUpdate.getOrderId());
         if (!refund.getStatus().equals("APPROVED")) {
             throw new IllegalStateException("Only APPROVED refunds can be completed");
@@ -159,6 +170,7 @@ public class RefundService {
     }
 
     public void checkProductReturnable(String productId,String shippingId){
+        log.info("Checking weather the product is eligible for return or not: "+productId);
         Product product = productService.getProductById(productId);
         int returnBefore = product.getReturnBefore(); // e.g., 7
         Date deliveredDate = getDeliveredTimestamp(shippingId);
@@ -175,6 +187,7 @@ public class RefundService {
     }
 
     public boolean isReturnAvailable(Date deliveredDate, int returnBeforeDays) {
+        log.info("Checking is the return period is expired or not");
         if (deliveredDate == null) {
             throw new IllegalArgumentException("Delivered date is null");
         }
@@ -191,6 +204,7 @@ public class RefundService {
 
 
     public Date getDeliveredTimestamp(String shippingId) {
+        log.info("getting the delivery date of order");
         Query query = new Query(Criteria.where("id").is(shippingId)
                 .and("modificationLogs.newValue").is("DELIVERED"));
 //        System.out.println("inside the getdeliverydate");
@@ -209,8 +223,10 @@ public class RefundService {
 
     // ORDER CANCELLATION
     public Order cancelOrder(String orderId,String cancelReason){
+        log.warn("Requesting to cancel the order: "+orderId);
         Order order = orderService.getOrder(orderId);
         if(order.getOrderStatus().equalsIgnoreCase("SHIPPED")){
+            log.warn("Order cannot be cancelled because the cancellation time is expired.!");
             throw new OrderCancellationExpiredException("Order cannot be cancelled because the cancellation time is expired.!");
         }
         order.setOrderStatus("CANCELLED");
@@ -221,9 +237,7 @@ public class RefundService {
         if(order.getPaymentMethod().equalsIgnoreCase("UPI")){
             Refund refund = refundOverOrderCancellation(order1);
         }
-        System.out.println("inside before");
         DeliveryPersonResponse deliveryPerson =deliveryService.getDeliveryPersonByOrderId(orderId);
-        System.out.println("inside order cancel: "+deliveryPerson);
         // sends the mail to the delivery person who the order delivery is assigned about the order cancellation.
         emailService.sendOrderCancellationToDelivery("iamanil3121@gmail.com",
                 deliveryPerson.getToDeliveryItems().getFirst(),deliveryPerson.getId());
@@ -238,6 +252,7 @@ public class RefundService {
 
 
     public Refund refundOverOrderCancellation(Order order){
+        log.info("The payment mode is UPI the order cancellation amount is created back");
         Refund refund = new Refund();
         refund.setOrderId(order.getId());
         refund.setRefundAmount(order.getFinalAmount());
@@ -248,6 +263,11 @@ public class RefundService {
         refund.setProcessedAt(new Date());
         return refundRepository.save(refund);
 
+    }
+
+
+    public Refund saveRefund(Refund refund){
+        return refundRepository.save(refund);
     }
 
 }

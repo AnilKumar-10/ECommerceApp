@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.Cart;
+import com.ECommerceApp.Model.User.Cart;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;

@@ -1,19 +1,19 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Exceptions.CouponNotFoundException;
-import com.ECommerceApp.Exceptions.InValidCouponException;
-import com.ECommerceApp.Model.Coupon;
-import com.ECommerceApp.Model.CouponUsage;
+import com.ECommerceApp.Exceptions.Order.CouponNotFoundException;
+import com.ECommerceApp.Exceptions.Order.InValidCouponException;
+import Coupon;
+import com.ECommerceApp.Model.User.CouponUsage;
 import com.ECommerceApp.Repository.CouponRepository;
 import com.ECommerceApp.Repository.CouponUsageRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-
+@Slf4j
 @Service
 public class CouponService {
     @Autowired
@@ -23,6 +23,7 @@ public class CouponService {
 
     // 1. Create a new coupon
     public Coupon createCoupon(Coupon coupon) {
+        log.info("inserting the coupon details: "+coupon);
         return couponRepository.save(coupon);
     }
 
@@ -56,22 +57,27 @@ public class CouponService {
 
     // 6. Validate coupon entered by customer
     public Coupon validateCoupon(String code, String userId, double orderAmount) {
+        log.info("validating the coupon code: "+code);
         Coupon coupon = couponRepository.findByCodeAndIsActiveTrue(code)
                 .orElseThrow(() -> new InValidCouponException("Invalid or inactive coupon code"));
         System.out.println(coupon.getMinOrderValue()+"  :  "+orderAmount);
         Date now = new Date();
         if (now.before(coupon.getValidFrom()) || now.after(coupon.getValidTo())) {
+            log.warn("The coupon is expired");
             throw new InValidCouponException("Coupon is not valid for current date");
         }
 
         if (orderAmount < coupon.getMinOrderValue()) {
+            log.warn("Order value doesnt meet the minimum required amount");
             throw new InValidCouponException("Order value does not meet minimum required for this coupon");
         }
 
         int usageCount = couponUsageRepository.countByCouponCodeAndUserId(code, userId);
         if (usageCount > coupon.getMaxUsagePerUser()) {
+            log.warn("User already used the coupon.");
             throw new InValidCouponException("Coupon usage limit exceeded for this user");
         }
+        log.info("Provided coupon is valid coupon");
         return coupon;
     }
 

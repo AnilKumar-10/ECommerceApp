@@ -1,19 +1,23 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.DeliveryUpdate;
-import com.ECommerceApp.DTO.ShippingUpdateRequest;
-import com.ECommerceApp.Exceptions.DeliveryNotFoundException;
-import com.ECommerceApp.Exceptions.ShippingDetailsNotFoundException;
-import com.ECommerceApp.Model.*;
+import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
+import com.ECommerceApp.DTO.Order.ShippingUpdateRequest;
+import com.ECommerceApp.Exceptions.Delivery.DeliveryNotFoundException;
+import com.ECommerceApp.Exceptions.Order.ShippingDetailsNotFoundException;
+import com.ECommerceApp.Model.Delivery.DeliveryPerson;
+import com.ECommerceApp.Model.Delivery.ModificationLog;
+import com.ECommerceApp.Model.Delivery.ShippingDetails;
+import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Repository.DeliveryRepository;
 import com.ECommerceApp.Repository.OrderRepository;
 import com.ECommerceApp.Repository.ShippingRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-
+@Slf4j
 @Service
 public class ShippingService {
 
@@ -36,6 +40,7 @@ public class ShippingService {
 
 
     public ShippingDetails createShippingDetails(Order order) {
+        log.info("Creating the shipping details for the order: "+order.getId());
         ShippingDetails shipping = new ShippingDetails();
         long nextId = sequenceGeneratorService.getNextSequence("shippingId");
         shipping.setId(String.valueOf(nextId));
@@ -72,6 +77,7 @@ public class ShippingService {
 
     // 2. Update shipping status
     public ShippingDetails updateShippingStatus(ShippingUpdateRequest shippingUpdateDTO) {
+        log.info("Updating the shipping status on every stage, present new status is: "+shippingUpdateDTO.getNewValue());
         System.out.println("inside update shipping stats: "+shippingUpdateDTO);
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
@@ -92,6 +98,7 @@ public class ShippingService {
 
     // 3. Update courier name or tracking ID
     public ShippingDetails updateCourierDetails(ShippingUpdateRequest shippingUpdateDTO) {
+        log.info("updating the courier details");
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
 
@@ -107,6 +114,7 @@ public class ShippingService {
 
     // 5. Get shipping by order ID
     public ShippingDetails getShippingByOrderId(String orderId) {
+        log.info("getting the shipping details with order: "+orderId);
         return shippingRepo.findByOrderId(orderId)
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping not found for order ID"));
     }
@@ -117,7 +125,10 @@ public class ShippingService {
     }
 
     // 7. Private: Add a flat modification log entry
+    // trace all the changes of the order after placing the order.
     private void addLog(ShippingDetails shipping, String field, String oldVal, String newVal, String updatedBy) {
+
+        log.info("updating the shipping modification");
         if (shipping.getModificationLogs() == null)
             shipping.setModificationLogs(new ArrayList<>());
 
@@ -141,6 +152,7 @@ public class ShippingService {
 
 
     public String updateDeliveryStatus(DeliveryUpdate deliveryUpdateDTO){
+        log.info("Updating the delivery status after successfull delivery.");
         ShippingUpdateRequest shippingUpdateDTO  = new ShippingUpdateRequest();
         shippingUpdateDTO.setUpdateBy(deliveryUpdateDTO.getUpdateBy());
         shippingUpdateDTO.setShippingId(deliveryUpdateDTO.getShippingId());
@@ -169,6 +181,7 @@ public class ShippingService {
 
     // this updates the status of the ordered items delivered when the order is delivered.
     public  Order updateOrderItemsDeliveredStatus(ShippingUpdateRequest shippingUpdateDTO){
+        log.info("updating the product status to delivered after the delivery success.");
         ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
         Order order = orderRepository.findById(shippingDetails.getOrderId()).get();
         List<OrderItem> orderItems = new ArrayList<>();

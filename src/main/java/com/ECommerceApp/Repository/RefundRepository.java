@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.Refund;
+import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

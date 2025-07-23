@@ -1,7 +1,7 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.DTO.ProductSearchResponse;
-import com.ECommerceApp.Model.Product;
+import com.ECommerceApp.DTO.Product.ProductSearchResponse;
+import com.ECommerceApp.Model.Product.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

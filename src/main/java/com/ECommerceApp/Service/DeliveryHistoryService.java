@@ -1,15 +1,16 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.DeliveryItems;
-import com.ECommerceApp.DTO.DeliveryPersonResponse;
-import com.ECommerceApp.Model.DeliveryHistory;
+import com.ECommerceApp.DTO.Delivery.DeliveryItems;
+import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
+import com.ECommerceApp.Model.Delivery.DeliveryHistory;
 import com.ECommerceApp.Repository.DeliveryHistoryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Slf4j
 @Service
 public class DeliveryHistoryService {
 
@@ -25,6 +26,7 @@ public class DeliveryHistoryService {
         BeanUtils.copyProperties(deliveryItems,deliveryHistory);
         deliveryHistory.setDeliverPersonId(deliveryPersonId);
         deliveryHistory.setName(deliveryPersonResponseDto.getName());
+        log.info("saving the delivery history after delivery is success");
         deliveryHistoryRepository.save(deliveryHistory);
 
     }

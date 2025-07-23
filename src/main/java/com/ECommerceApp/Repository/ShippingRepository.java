@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.ShippingDetails;
+import com.ECommerceApp.Model.Delivery.ShippingDetails;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.*;

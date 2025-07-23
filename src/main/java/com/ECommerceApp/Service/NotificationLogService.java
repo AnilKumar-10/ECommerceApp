@@ -1,15 +1,16 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Exceptions.NotificationNotFoundException;
-import com.ECommerceApp.Model.NotificationLog;
+import com.ECommerceApp.Exceptions.Notification.NotificationNotFoundException;
+import com.ECommerceApp.Model.RefundAndExchange.NotificationLog;
 import com.ECommerceApp.Repository.NotificationLogRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
-
+@Slf4j
 public class NotificationLogService {
 
     @Autowired
@@ -17,6 +18,7 @@ public class NotificationLogService {
 
     // Save a new notification
     public NotificationLog saveNotification(String userId, String message, String type) {
+        log.info("saving the notification log into the db.");
         NotificationLog log = new NotificationLog();
         log.setUserId(userId);
         log.setMessage(message);

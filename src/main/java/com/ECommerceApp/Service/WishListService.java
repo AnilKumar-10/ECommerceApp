@@ -1,10 +1,11 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Exceptions.ProductNotFoundException;
-import com.ECommerceApp.Model.Wishlist;
-import com.ECommerceApp.Model.WishlistItem;
+import com.ECommerceApp.Exceptions.Product.ProductNotFoundException;
+import com.ECommerceApp.Model.User.Wishlist;
+import com.ECommerceApp.Model.User.WishlistItem;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.WishListRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 public class WishListService {
 
@@ -24,6 +27,7 @@ public class WishListService {
 
     // 1. Get wishlist by buyer ID
     public Wishlist getWishlistByBuyerId(String buyerId) {
+        log.info("getting wish list of user: "+buyerId);
         return wishlistRepository.findByBuyerId(buyerId)
                 .orElseGet(() -> {
                     Wishlist newWishlist = new Wishlist();
@@ -36,6 +40,7 @@ public class WishListService {
 
     // 2. Add product to wishlist
     public Wishlist addToWishlist(String buyerId, String productId) {
+        log.info("Adding the new product to the wish list");
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
 
         // Check if product exists
@@ -63,6 +68,7 @@ public class WishListService {
 
     // 3. Remove product from wishlist
     public Wishlist removeFromWishlist(String buyerId, String productId) {
+        log.info("Removing the product from the wish list: "+productId);
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
 
         List<WishlistItem> updatedItems = wishlist.getItems().stream()
@@ -77,6 +83,7 @@ public class WishListService {
 
     // 4. Get all product IDs in wishlist(opt)
     public List<String> getWishlistProductIds(String buyerId) {
+        log.info("Getting all the wish list of: "+buyerId);
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
         return wishlist.getItems().stream()
                 .map(WishlistItem::getProductId)
@@ -94,6 +101,7 @@ public class WishListService {
 
     // 6. Clear entire wishlist
     public String clearWishlist(String buyerId) {
+        log.warn("Clearing the wish list of: "+buyerId);
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
         wishlist.setItems(new ArrayList<>());
         wishlist.setUpdatedAt(new Date());

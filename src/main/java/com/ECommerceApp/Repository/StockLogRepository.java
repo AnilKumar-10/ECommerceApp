@@ -1,6 +1,6 @@
 package com.ECommerceApp.Repository;
 
-import com.ECommerceApp.Model.StockLog;
+import com.ECommerceApp.Model.Product.StockLog;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;

@@ -1,15 +1,19 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.UserRegistrationRequest;
-import com.ECommerceApp.Exceptions.UserNotFoundException;
-import com.ECommerceApp.Model.Users;
+import com.ECommerceApp.DTO.User.SellerResponse;
+import com.ECommerceApp.DTO.User.UserRegistrationRequest;
+import com.ECommerceApp.DTO.User.UserResponse;
+import com.ECommerceApp.Exceptions.User.UserNotFoundException;
+import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.UsersRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
 public class UserService {
     @Autowired
@@ -38,7 +42,7 @@ public class UserService {
 
 
     // 2. Update user profile based on roles
-    public Users updateUser(String userId, Users updatedData) {
+    public Users updateUser(String userId, UserRegistrationRequest updatedData) {
         Users existing = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -59,11 +63,11 @@ public class UserService {
     }
 
     // 3. Deactivate user
-    public void deactivateUser(String userId) {
+    public Users deactivateUser(String userId) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         user.setActive(false);
-        usersRepository.save(user);
+        return usersRepository.save(user);
     }
 
     // 4. Get user by ID
@@ -79,12 +83,19 @@ public class UserService {
     }
 
     // 6. Get all users with a specific role
-    public List<Users> getUsersByRole(String role) {
-        return usersRepository.findByRolesContaining(role.toUpperCase());
+    public List<UserResponse> getUsersByRole(String role) {
+        List<Users> users = usersRepository.findByRolesContaining(role.toUpperCase());
+        List<UserResponse> userResponses  = new ArrayList<>();
+        for(Users user : users){
+            UserResponse userResponse = new UserResponse();
+            BeanUtils.copyProperties(user,userResponse);
+            userResponses.add(userResponse);
+        }
+        return userResponses;
     }
 
     // 7. Add new role to existing user (e.g., buyer becomes seller), This can be done my only ADMIN
-    public Users addRoleToUser(String userId, String newRole) {
+    public UserResponse addRoleToUser(String userId, String newRole) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -97,8 +108,10 @@ public class UserService {
         if (newRole.equalsIgnoreCase("SELLER")) {
             validateSellerFields(user);
         }
-
-        return usersRepository.save(user);
+        Users users =usersRepository.save(user);
+        UserResponse userResponse = new UserResponse();
+        BeanUtils.copyProperties(users,userResponse);
+        return userResponse;
     }
 
     // Validate required fields of Users
@@ -134,9 +147,27 @@ public class UserService {
     }
 
 
-    public List<Users> getAllUsers(){
-        return usersRepository.findAll();
+    public List<UserResponse> getAllUsers(){
+        List<Users> users = usersRepository.findAll();
+        List<UserResponse> userResponses  = new ArrayList<>();
+        for(Users user : users){
+            UserResponse userResponse = new UserResponse();
+            BeanUtils.copyProperties(user,userResponse);
+            userResponses.add(userResponse);
+        }
+        return userResponses;
     }
 
 
+
+    public List<SellerResponse> getAllSellers() {
+        List<Users> users = usersRepository.findByRolesContainingSellerRole();
+        List<SellerResponse> sellerResponses  = new ArrayList<>();
+        for(Users user : users){
+            SellerResponse sellerResponse = new SellerResponse();
+            BeanUtils.copyProperties(user,sellerResponses);
+            sellerResponses.add(sellerResponse);
+        }
+        return sellerResponses;
+    }
 }

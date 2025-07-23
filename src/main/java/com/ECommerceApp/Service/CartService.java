@@ -1,16 +1,19 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.Model.*;
+import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.User.Cart;
+import com.ECommerceApp.Model.User.CartItem;
 import com.ECommerceApp.Repository.CartRerepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.xml.sax.ext.LexicalHandler;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Service
 public class CartService {
 
@@ -20,6 +23,7 @@ public class CartService {
     private ProductService productService;
 
     public Cart getCartByBuyerId(String buyerId) {
+        log.info("Getting the cart of: "+ buyerId);
         return cartRepository.findByBuyerId(buyerId)
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
@@ -34,8 +38,9 @@ public class CartService {
     // Each time it add one item to the cart.
     public Cart addItemToCart(String buyerId, CartItem item) {
         Cart cart = getCartByBuyerId(buyerId);
+        log.info("adding the cart item: "+item+" to the buyer: "+buyerId);
         double price = productService.getProductPrice(item.getProductId());
-//        item.setPrice(price);
+
         boolean updated = false;
         for (CartItem existingItem : cart.getItems()) {
             if (existingItem.getProductId().equals(item.getProductId()) && existingItem.getSize().equals(item.getSize())) {
@@ -49,6 +54,7 @@ public class CartService {
         if (!updated) {
             item.setItemId(cart.getItems().size());
             item.setAddedAt(new Date());
+//            item.setStockAvailable(productService.checkStockAvailablity(item.getProductId()));
             cart.getItems().add(item);
         }
         double totalAmount=0;
@@ -69,7 +75,7 @@ public class CartService {
     }
 
     public void removeOrderedItemsFromCart(Order order) {
-        System.out.println("inside removecartitem");
+        log.info("removing the ordered items from the cart after the order delivery.");
         String userId = order.getBuyerId();
         System.out.println("user id: "+userId);
         List<OrderItem> orderItems = order.getOrderItems();
@@ -80,18 +86,13 @@ public class CartService {
         }
         List<CartItem> cartItems = cart.getItems();
         // Create a filtered list excluding ordered items
-        System.out.println("carts: "+cartItems);
         List<CartItem> updatedCartItems = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
-            System.out.println("inside for1: "+cartItem);
             boolean matched = false;
             for (OrderItem orderItem : orderItems) {
-                System.out.println("inside for2: "+orderItem+"  :  "+cartItem);
-                System.out.println( "before "+cartItem.getSize()==(orderItem.getSize()));
                 if (cartItem.getProductId().equals(orderItem.getProductId())
                         && cartItem.getSize().equals(orderItem.getSize())
                         && cartItem.getColor().equals(orderItem.getColor())) {
-                    System.out.println("inside if");
                     matched = true;
                     cart.setTotalAmount(cart.getTotalAmount() - orderItem.getPrice());
                     break;
@@ -123,17 +124,19 @@ public class CartService {
 
 
     // moving the cart items to orderItems
-    public List<OrderItem> checkOutForOrder(List<Integer> itemIds,String userId){
+    public List<OrderItem> checkOutForOrder(List<Integer> itemIds, String userId){
+        log.info("adding the cart items: "+itemIds+"  to the order items list");
         List<OrderItem> items = new ArrayList<>();
         for(CartItem item : cartRepository.findByBuyerId(userId).get().getItems()){
+//            if(!item.isStockAvailable()) throw new ProductOutOfStockException("The product "+ item.getProductId() +" to order is out of stock");
             if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
-                BeanUtils.copyProperties(item,orderItem); // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties.
+                BeanUtils.copyProperties(item,orderItem); // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties from source to target.
                 orderItem.setName(productService.getProductById(item.getProductId()).getName());
                 items.add(orderItem);
-//                removeItemFromCart(userId,item.getProductId());
             }
         }
+        log.info("order items after adding the cart items : "+items);
         return items;
     }
 

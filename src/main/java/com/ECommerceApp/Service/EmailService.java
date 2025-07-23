@@ -1,11 +1,17 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.DeliveryItems;
-import com.ECommerceApp.DTO.ProductReturnRequest;
-import com.ECommerceApp.DTO.RefundAndReturnResponse;
-import com.ECommerceApp.Exceptions.MailSendException;
+import com.ECommerceApp.DTO.Delivery.DeliveryItems;
+import com.ECommerceApp.DTO.ReturnAndExchange.ProductReturnRequest;
+import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
+import com.ECommerceApp.Exceptions.Notification.MailSendException;
+import com.ECommerceApp.Model.Delivery.DeliveryPerson;
+import com.ECommerceApp.Model.Delivery.ShippingDetails;
+import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Product.StockLog;
+import com.ECommerceApp.Model.User.Address;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +22,7 @@ import org.thymeleaf.context.Context;
 
 import java.nio.charset.StandardCharsets;
 
-import com.ECommerceApp.Model.*;
-
+@Slf4j
 @Service
 public class EmailService {
 
@@ -30,7 +35,7 @@ public class EmailService {
 
     public void sendOrderConfirmationEmail(String toEmail, String userName, Order order, ShippingDetails shippingDetails) {
         MimeMessage message = mailSender.createMimeMessage();
-
+        log.info("Sending the order Confirmation mail to :"+toEmail);
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(toEmail);
@@ -74,6 +79,7 @@ public class EmailService {
 
 
     public void sendOrderDeliveredEmail(String toEmail, String userName, Order order) {
+        log.info("Sending the order Delivery completed mail to :"+toEmail);
         try {
             Context context = new Context();
             context.setVariable("userName", userName);
@@ -108,6 +114,7 @@ public class EmailService {
 
 
     public void sendReturnRequestedEmail(String toEmail, RefundAndReturnResponse dto) {
+        log.info("Sending the order return request mail to :"+toEmail);
         try {
             // Prepare the context for Thymeleaf
             Context context = new Context();
@@ -150,6 +157,7 @@ public class EmailService {
 
 
     public void sendReturnCompletedEmail(String toEmail, String userName, Order order) {
+        log.info("Sending the return Completed mail to :"+toEmail);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -183,6 +191,7 @@ public class EmailService {
 
 
     public void sendRefundRejectedEmail(String toEmail, String userName, String orderId) {
+        log.info("Sending the return rejected mail to :"+toEmail);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -212,6 +221,7 @@ public class EmailService {
 
 
     public void sendOrderCancellationEmail(Order order, String userName, String toEmail) {
+        log.info("Sending the order cancelation mail to User :"+toEmail);
         try {
             Context context = new Context();
             context.setVariable("userName", userName);
@@ -240,6 +250,7 @@ public class EmailService {
 
     // To notify the deliveryPerson about the new Order.
     public void sendOrderAssignedToDeliveryPerson(String toEmail, DeliveryItems deliveryItem,String deliverPersonName,String deliveryPersonId) {
+        log.info("Sending the order assigned mail to delivery agent :"+toEmail);
         try {
             Context context = new Context();
             context.setVariable("deliveryItem", deliveryItem);
@@ -264,6 +275,7 @@ public class EmailService {
 
     // to notify the delivery person about the order cancellation.
     public void sendOrderCancellationToDelivery(String deliveryEmail, DeliveryItems deliveryItem,String deliveryPersonId) {
+        log.info("Sending the order cancellation mail to delivery agent:"+deliveryEmail);
         try {
             Context context = new Context();
             context.setVariable("deliveryItem", deliveryItem);
@@ -290,6 +302,7 @@ public class EmailService {
 
 
     public void sendLowStockAlertToSeller(String sellerEmail, StockLog stockLog) {
+        log.info("Sending the Low Stock alert mail to seller :"+sellerEmail);
         try {
             // Prepare the Thymeleaf context
             Context context = new Context();
@@ -320,6 +333,7 @@ public class EmailService {
 
 
     public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnRequest returnDto, String userId) {
+        log.info("Sending the return order to collect mail to delivery agent :"+toEmail);
         try {
             Context context = new Context();
             context.setVariable("deliveryPerson", deliveryPerson);
@@ -347,6 +361,7 @@ public class EmailService {
 
     // storing all the email log details.
     public void saveLogDetails(String userId,String subject,String type){
+        log.info("Saving all the Notification logs into db");
         notificationLogService.saveNotification(userId, subject, type);
     }
 
@@ -354,6 +369,7 @@ public class EmailService {
 
     // to send the user otp while resetting the password.
     public void sendOtpEmail(String toEmail, String userName, String otp) {
+        log.info("sending the otp mail to user for password reset : "+toEmail);
         try {
             // Prepare the email context
             Context context = new Context();
