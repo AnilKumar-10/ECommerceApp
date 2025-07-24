@@ -14,5 +14,5 @@ public class ExchangeDeliveryItems {
     private double amount;
     private Address address;
     private String paymentMode;
-
+    private boolean payable;
 }

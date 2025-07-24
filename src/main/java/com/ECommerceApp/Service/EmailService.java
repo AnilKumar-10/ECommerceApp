@@ -1,6 +1,8 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryItems;
+import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeDeliveryItems;
+import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductReturnRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
 import com.ECommerceApp.Exceptions.Notification.MailSendException;
@@ -358,15 +360,6 @@ public class EmailService {
         }
     }
 
-
-    // storing all the email log details.
-    public void saveLogDetails(String userId,String subject,String type){
-        log.info("Saving all the Notification logs into db");
-        notificationLogService.saveNotification(userId, subject, type);
-    }
-
-
-
     // to send the user otp while resetting the password.
     public void sendOtpEmail(String toEmail, String userName, String otp) {
         log.info("sending the otp mail to user for password reset : "+toEmail);
@@ -396,6 +389,76 @@ public class EmailService {
         }
     }
 
+    // Sends the exchange information mail to the customer.
+    public void sendExchangeConfirmationEmail(String toEmail, ProductExchangeInfo exchangeInfo, String upiId) {
+        log.info("Sending the exchange confirmation mail to the customer ");
+        try {
+            Context context = new Context();
+            context.setVariable("orderId", exchangeInfo.getOrderId());
+            context.setVariable("productIdToPick", exchangeInfo.getProductIdToPick());
+            context.setVariable("productIdToReplace", exchangeInfo.getProductIdToReplace());
+            context.setVariable("amount", exchangeInfo.getAmount());
+            context.setVariable("amountPayType", exchangeInfo.getAmountPayType());
+            context.setVariable("paymentStatus", exchangeInfo.getPaymentStatus());
+            context.setVariable("deliveryPersonName", exchangeInfo.getDeliveryPersonName());
+            context.setVariable("expectedReturnDate", exchangeInfo.getExpectedReturnDate());
+            context.setVariable("orderPaymentType", exchangeInfo.getOrderPaymentType());
+            context.setVariable("upi",upiId);
+            String htmlContent = templateEngine.process("ExchangeRequestConfirmation.html", context);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Your Exchange Request has been Accepted!");
+            helper.setText(htmlContent, true); // true = isHtml
+
+            mailSender.send(mimeMessage);
+            System.out.println("Exchange confirmation email sent to " + toEmail);
+
+        } catch (Exception e) {
+            System.err.println("Failed to send exchange email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
 
+    public void sendExchangeAssignmentMailToDeliveryPerson(String toEmail ,DeliveryPerson deliveryPerson, ExchangeDeliveryItems item) {
+        log.info("Sending the exchange order assigned mail to delivery agent");
+        try {
+            Context context = new Context();
+            context.setVariable("deliveryPersonName", deliveryPerson.getName());
+            context.setVariable("orderId", item.getOrderId());
+            context.setVariable("userName", item.getUserName());
+            context.setVariable("productIdToPick", item.getProductIdToPick());
+            context.setVariable("productIdToReplace", item.getProductIdToReplace());
+            context.setVariable("amount", item.getAmount());
+            context.setVariable("paymentMode", item.getPaymentMode());
+            context.setVariable("address", item.getAddress());
+
+            String body = templateEngine.process("ExchangeAssignedToDeliver.html", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(toEmail);  // You can update this method as per your logic
+            helper.setSubject("New Exchange Delivery Assignment - Order ID: " + item.getOrderId());
+            helper.setText(body, true); // true = HTML
+
+            mailSender.send(message);
+
+            System.out.println("Exchange assignment mail sent to: " + deliveryPerson.getName());
+
+        } catch (Exception e) {
+            System.err.println("Failed to send exchange delivery mail: " + e.getMessage());
+        }
+    }
+
+
+
+    // storing all the email log details.
+    public void saveLogDetails(String userId,String subject,String type){
+        log.info("Saving all the Notification logs into db");
+        notificationLogService.saveNotification(userId, subject, type);
+    }
 }

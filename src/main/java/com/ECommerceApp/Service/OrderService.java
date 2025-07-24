@@ -6,7 +6,7 @@ import com.ECommerceApp.DTO.Product.StockLogModificationRequest;
 import com.ECommerceApp.Exceptions.Order.OrderNotFoundException;
 import com.ECommerceApp.Exceptions.Product.ProductOutOfStockException;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
-import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Order.*;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Model.User.Address;
 import com.ECommerceApp.Model.User.Users;
@@ -202,7 +202,7 @@ public class OrderService {
         return "TRNSCN-" + UUID.randomUUID().toString().toUpperCase().replaceAll("-", "").substring(0, 10);
     }
 
-    // this will calculates the tax of every product and return the whole tax applicable for the order.
+    // this will calculate the tax of every product and return the whole tax applicable for the order.
     public double calculateTaxForOrder(Order order,String addressId){
         log.info("calculating the tax for each product based on the category they belong.");
         List<OrderItem> orderItems = order.getOrderItems();

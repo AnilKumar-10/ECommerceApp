@@ -1,6 +1,7 @@
 package com.ECommerceApp.Controller.Payment;
 
-import Invoice;
+
+import com.ECommerceApp.Model.Payment.Invoice;
 import com.ECommerceApp.Service.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

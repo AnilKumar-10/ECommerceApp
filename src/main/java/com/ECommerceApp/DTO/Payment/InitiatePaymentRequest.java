@@ -3,7 +3,7 @@ package com.ECommerceApp.DTO.Payment;
 import lombok.Data;
 
 @Data
-public class InitiatePaymentRequest {
+public class    InitiatePaymentRequest {
     String orderId;
     String userId;
     double amount;

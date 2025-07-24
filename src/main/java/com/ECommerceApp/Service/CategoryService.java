@@ -2,7 +2,7 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.Exceptions.Product.CategoryNotFoundException;
 import com.ECommerceApp.Exceptions.Product.RootCategoryNotFoundException;
-import Category;
+import com.ECommerceApp.Model.Product.Category;
 import com.ECommerceApp.Repository.CategoryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

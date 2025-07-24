@@ -5,10 +5,7 @@ import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
 import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
 import com.ECommerceApp.DTO.Payment.PaymentRequest;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
-import com.ECommerceApp.Service.DeliveryService;
-import com.ECommerceApp.Service.OrderService;
-import com.ECommerceApp.Service.PaymentService;
-import com.ECommerceApp.Service.ShippingService;
+import com.ECommerceApp.Service.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +23,8 @@ public class DeliveryController { // admin, delivery person
     private ShippingService shippingService;
     @Autowired
     private DeliveryService deliveryService;
+    @Autowired
+    private ExchangeService exchangeService;
 
 
     @PostMapping("/insertDelivery")
@@ -67,5 +66,7 @@ public class DeliveryController { // admin, delivery person
     public DeliveryPersonResponse getByOrderId(@PathVariable String orderId){
         return deliveryService.getDeliveryPersonByOrderId(orderId);
     }
+
+
 
 }

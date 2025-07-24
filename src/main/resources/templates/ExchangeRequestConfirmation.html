@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Exchange Request Confirmed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333333;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dddddd;
+        }
+        .header {
+            color: #4CAF50;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .info-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eeeeee;
+        }
+        .footer {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #888888;
+        }
+        .note {
+    margin-top: 16px;
+    padding: 10px 14px;
+    background-color: #FFF3E0; /* Light orange background */
+    border-left: 4px solid #FF9800; /* Emphasized left border */
+    color: #E65100; /* Darker orange text */
+    font-size: 15px;
+    border-radius: 4px;
+    line-height: 1.5;
+}
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">Exchange Request Confirmed</div>
+
+    <p>Dear Customer,</p>
+    <p>Your product exchange request has been <strong>successfully accepted</strong>. Below are the exchange details:</p>
+
+    <table class="info-table">
+        <tr>
+            <td><strong>Order ID:</strong></td>
+            <td th:text="${orderId}">ORDER12345</td>
+        </tr>
+        <tr>
+            <td><strong>Product to Pick (Return):</strong></td>
+            <td th:text="${productIdToPick}">PROD001</td>
+        </tr>
+        <tr>
+            <td><strong>Product to Replace With:</strong></td>
+            <td th:text="${productIdToReplace}">PROD002</td>
+        </tr>
+        <tr th:if="${amountPayType == 'PAYABLE' or amountPayType == 'NO_DIFFERENCE'}">
+            <td><strong>Amount to Pay:</strong></td>
+            <td>₹<span th:text="${amount}">499.00</span></td>
+        </tr>
+        <tr th:if="${amountPayType == 'REFUNDABLE'}">
+            <td><strong>Amount to Refund:</strong></td>
+            <td>₹<span th:text="${amount}">499.00</span></td>
+        </tr>
+        <tr>
+            <td><strong>Exchange Payment Type:</strong></td>
+            <td th:text="${amountPayType}">PAYABLE</td>
+        </tr>
+        <tr>
+            <td><strong>Payment Status:</strong></td>
+            <td th:text="${paymentStatus}">Pending</td>
+        </tr>
+        <tr>
+            <td><strong>Delivery Person:</strong></td>
+            <td th:text="${deliveryPersonName}">John Doe</td>
+        </tr>
+        <tr>
+            <td><strong>Expected Pickup Date:</strong></td>
+            <td th:text="${#dates.format(expectedReturnDate, 'dd MMM yyyy')}">24 Jul 2025</td>
+        </tr>
+    </table>
+
+    <p class="note" th:if="${amountPayType == 'REFUNDABLE'}">
+        Note: The refund will be credited back to your UPI account
+        <strong th:text="${upi}">12364479@ybl</strong> within 3–4 working days after the delivery is completed.
+    </p>
+
+
+    <p class="note"
+       th:if="${amountPayType == 'PAYABLE' and orderPaymentType == 'COD'}"
+       th:text="'Please note, an amount of ₹' + ${amount} + ' must be paid in cash at the time of delivery.'">
+    </p>
+
+
+    <!-- Return Instructions -->
+    <div style="margin-top: 20px;">
+        <h4 style="color: #333333;">Important Return Guidelines:</h4>
+        <ul style="padding-left: 18px; color: #444444;">
+            <li>The product must be in its original condition and <strong>should not be damaged</strong>.</li>
+            <li>All <strong>original tags and labels</strong> must be attached to the product.</li>
+            <li>The product must be returned in its <strong>original packaging</strong>.</li>
+            <li>Any included accessories, manuals, or freebies must also be returned.</li>
+            <li>Failure to meet these conditions may result in <strong>rejection of the return/exchange</strong>.</li>
+        </ul>
+    </div>
+
+    <p class="footer">
+        Thank you for shopping with us!<br>
+        If you have any questions, feel free to contact our support team.
+    </p>
+</div>
+</body>
+</html>

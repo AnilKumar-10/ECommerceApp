@@ -17,14 +17,14 @@ public class NotificationLogService {
     private NotificationLogRepository notificationLogRepository;
 
     // Save a new notification
-    public NotificationLog saveNotification(String userId, String message, String type) {
+    public void saveNotification(String userId, String message, String type) {
         log.info("saving the notification log into the db.");
         NotificationLog log = new NotificationLog();
         log.setUserId(userId);
         log.setMessage(message);
         log.setType(type);
         log.setCreatedAt(new Date());
-        return notificationLogRepository.save(log);
+        notificationLogRepository.save(log);
     }
 
     // Save an existing object

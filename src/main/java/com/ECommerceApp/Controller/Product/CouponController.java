@@ -1,6 +1,6 @@
 package com.ECommerceApp.Controller.Product;
 
-import Coupon;
+import com.ECommerceApp.Model.Order.Coupon;
 import com.ECommerceApp.Service.CouponService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

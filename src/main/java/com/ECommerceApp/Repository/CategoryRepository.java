@@ -1,6 +1,7 @@
 package com.ECommerceApp.Repository;
 
-import Category;
+
+import com.ECommerceApp.Model.Product.Category;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.*;

@@ -1,6 +1,7 @@
 package com.ECommerceApp.Controller.Product;
 
-import Category;
+
+import com.ECommerceApp.Model.Product.Category;
 import com.ECommerceApp.Service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

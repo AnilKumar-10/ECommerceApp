@@ -2,7 +2,7 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.Exceptions.Order.CouponNotFoundException;
 import com.ECommerceApp.Exceptions.Order.InValidCouponException;
-import Coupon;
+import com.ECommerceApp.Model.Order.Coupon;
 import com.ECommerceApp.Model.User.CouponUsage;
 import com.ECommerceApp.Repository.CouponRepository;
 import com.ECommerceApp.Repository.CouponUsageRepository;

@@ -2,8 +2,8 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.Exceptions.Payment.InvoiceNotFoundException;
 import com.ECommerceApp.Exceptions.Payment.PaymentNotFoundException;
-import Invoice;
 import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Payment.Invoice;
 import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.Repository.InvoiceRepository;
 import com.ECommerceApp.Repository.OrderRepository;

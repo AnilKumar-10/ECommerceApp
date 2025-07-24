@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Exchange Delivery Assigned</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            padding: 20px;
+            border: 1px solid #dedede;
+            border-radius: 6px;
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: auto;
+        }
+        h2 {
+            color: #2c3e50;
+            font-size: 22px;
+        }
+        .section {
+            margin-top: 20px;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+        .note {
+            margin-top: 12px;
+            padding: 10px;
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            color: #856404;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Hello <span th:text="${deliveryPersonName}">Delivery Person</span>,</h2>
+
+    <p>You have been assigned a new exchange delivery. Below are the details:</p>
+
+    <div class="section">
+        <p><span class="label">Order ID:</span> <span th:text="${orderId}">ORDER123</span></p>
+        <p><span class="label">Customer Name:</span> <span th:text="${userName}">Amit Kumar</span></p>
+        <p><span class="label">Product to Pick:</span> <span th:text="${productIdToPick}">PICK123</span></p>
+        <p><span class="label">Product to Deliver:</span> <span th:text="${productIdToReplace}">REPLACE456</span></p>
+        <p><span class="label">Amount to Collect/Refund:</span> ₹<span th:text="${amount}">0.0</span></p>
+        <p><span class="label">Payment Mode:</span> <span th:text="${paymentMode}">COD</span></p>
+    </div>
+
+    <div class="section">
+        <p class="label">Delivery Address:</p>
+        <p>
+            <span th:text="${address.phoneNo}">9876543210</span>
+            <span th:text="${address.street}">123 Main Street</span><br/>
+            <span th:text="${address.city}">Bangalore</span>
+            <span th:text="${address.state}">Karnataka</span><br/>
+            <span th:text="${address.postalCode}">560001</span><br/>
+        </p>
+    </div>
+
+    <div class="note">
+        Please ensure the product being picked is not damaged and has all original tags and packaging intact. <br/>
+        Collect or refund the mentioned amount as per the payment mode.
+    </div>
+
+    <p style="margin-top: 30px;">Thank you,<br/>E-Commerce Logistics Team</p>
+</div>
+</body>
+</html>

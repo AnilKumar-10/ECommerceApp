@@ -27,10 +27,11 @@ public class ExchangeDetails {
     // "PAYABLE", "REFUNDABLE", or "NO_DIFFERENCE"
     private String exchangeType;
 
-
+    private String paymentId;
     private String paymentMode;          // UPI, COD (if PAYABLE)
     private String paymentStatus;        // PENDING, SUCCESS, FAILED (if PAYABLE)
 
+    private String refundId;
     private String refundMode;           // UPI (if REFUNDABLE)
     private String refundStatus;         // PENDING, COMPLETED, FAILED (if REFUNDABLE)
 

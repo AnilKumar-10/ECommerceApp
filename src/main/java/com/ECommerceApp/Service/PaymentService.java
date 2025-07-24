@@ -39,7 +39,7 @@ public class PaymentService {
         payment.setUserId(initiatePaymentDto.getUserId());
         payment.setAmountPaid(initiatePaymentDto.getAmount());
         payment.setPaymentMethod(initiatePaymentDto.getMethod());
-        payment.setStatus("PENDING");// because we dont know whether the payment will be done or not
+        payment.setStatus("PENDING");// because we don't know whether the payment will be done or not
         payment.setTransactionTime(new Date());
         return paymentRepository.save(payment);
     }
@@ -73,14 +73,14 @@ public class PaymentService {
         return payment;
     }
 
-    public Payment confirmCODPayment(PaymentRequest paymentDto) { // for COD payment
+    public void confirmCODPayment(PaymentRequest paymentDto) { // for COD payment
         log.info("making the COD payment done by the delivery agent");
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
         payment.setStatus("SUCCESS");
         payment.setTransactionTime(new Date());
-        return paymentRepository.save(payment); // after this the flow goes to the shipping details.
+        paymentRepository.save(payment);
     }
 
 
@@ -109,15 +109,16 @@ public class PaymentService {
             throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
         }
         long nextId = sequenceGeneratorService.getNextSequence("paymentId");
-        payment.setId(String.valueOf(nextId)); // If id is String
+        payment.setId(String.valueOf(nextId));
         payment.setOrderId(initiatePaymentDto.getOrderId());
         payment.setUserId(initiatePaymentDto.getUserId());
         payment.setAmountPaid(initiatePaymentDto.getAmount());
         payment.setPaymentMethod(initiatePaymentDto.getMethod());
-        payment.setStatus("PENDING");// because we dont know whether the payment will be done or not
+        payment.setStatus("PENDING");// because we don't know whether the payment will be done or not
         payment.setTransactionTime(new Date());
         return savePayment(payment);
     }
+
 
     public Payment confirmUPIPaymentForExchange(PaymentRequest paymentDto) {
         log.info( " Confirm the exchange COD payment for order: ");
@@ -127,9 +128,10 @@ public class PaymentService {
         payment.setStatus("SUCCESS");
         payment.setTransactionTime(new Date());
         paymentRepository.save(payment);
-        //call the payment succes method to assign the delivery
         return payment;
     }
+
+
 
 
 }

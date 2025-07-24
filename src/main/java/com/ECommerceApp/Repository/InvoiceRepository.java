@@ -1,6 +1,7 @@
 package com.ECommerceApp.Repository;
 
-import Invoice;
+
+import com.ECommerceApp.Model.Payment.Invoice;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.*;

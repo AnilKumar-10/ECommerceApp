@@ -2,7 +2,7 @@ package com.ECommerceApp.Service;
 
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Exceptions.Product.ProductNotFoundException;
-import Category;
+import com.ECommerceApp.Model.Product.Category;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Repository.CategoryRepository;
 import com.ECommerceApp.Repository.ProductRepository;

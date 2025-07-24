@@ -4,8 +4,10 @@ import lombok.Data;
 
 @Data
 public class ExchangeUpdateRequest {
-    private String deliveryPersonId;
-    private boolean exchanged;
     private String orderId;
+    private String deliveryPersonId;
+    private String paymentId;
+    private boolean exchanged;
     private boolean anyDamage;
+    private String paymentStatus;
 }
