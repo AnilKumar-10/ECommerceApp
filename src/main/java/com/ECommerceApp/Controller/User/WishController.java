@@ -1,7 +1,9 @@
 package com.ECommerceApp.Controller.User;
 
+import com.ECommerceApp.Model.User.Cart;
 import com.ECommerceApp.Model.User.Wishlist;
 
+import com.ECommerceApp.Model.User.WishlistItem;
 import com.ECommerceApp.Service.WishListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,24 +16,30 @@ public class WishController { // user.
     @Autowired
     private WishListService wishListService;
 
-    @PostMapping("/addWish")
-    public Wishlist insertWish(@RequestBody Map<String,String > pid ){
-        return wishListService.addToWishlist("USER1002",pid.get("id")); // there the userId is taken from JWT after implementation
-    }
-
     @GetMapping("/getWish")
     public Wishlist getWish(){
-        return  wishListService.getWishlistByBuyerId("USER1002");
+        return  wishListService.getWishlistByBuyerId("USER1019");
     } // user
 
-    @GetMapping("/removeWishListItem/{productId}")
+    @DeleteMapping("/removeWishListItem/{productId}")
     public Wishlist removeProductFromWishList(@PathVariable String productId){
-        return wishListService.removeFromWishlist("",productId);
+        return wishListService.removeFromWishlist("USER1019",productId);
     }
 
-    @GetMapping("/clearWishList")  // user
+    @DeleteMapping("/clearWishList")  // user
     public String clearWishList(){
-        return wishListService.clearWishlist("");
+        return wishListService.clearWishlist("USER1019");
     }
+
+    @PostMapping("/addWish")
+    public Wishlist insertWish(@RequestBody WishlistItem item){ // user
+        return wishListService.addToWishlist("USER1019",item); // there the userId is taken from JWT after implementation
+    }
+
+    @PostMapping("/moveToCart/{productId}")
+    public Cart moveWishToCart(@PathVariable String productId){
+        return wishListService.moveWishTOCart("USER1019",productId);
+    }
+
 
 }

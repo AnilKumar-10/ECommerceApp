@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.User.SellerResponse;
 import com.ECommerceApp.DTO.User.UserRegistrationRequest;
 import com.ECommerceApp.DTO.User.UserResponse;
 import com.ECommerceApp.Model.User.Users;
+import com.ECommerceApp.Service.DeliveryService;
 import com.ECommerceApp.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
@@ -17,7 +18,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private DeliveryService deliveryService;
 
     @PostMapping("/insertUser")
     public UserResponse insertUser(@Valid @RequestBody UserRegistrationRequest users){
@@ -72,5 +74,10 @@ public class UserController {
     @GetMapping("/getSellers")
     public List<SellerResponse> getAllSellers(){
         return userService.getAllSellers();
+    }
+
+    @GetMapping("/getDeliveryCount")
+    public long getDeliveryAgentCount(){
+        return  deliveryService.totalCount();
     }
 }

@@ -26,4 +26,7 @@ public interface ProductRepository extends MongoRepository<Product,String> {
     List<Product> findByCategoryIdsContainingAllAndBrandIgnoreCase(List<String> categoryIds, String brand);
 
     Page<Product> findAll(Pageable pageable);
+
+    long countBySellerId(String sellerId);
+
 }

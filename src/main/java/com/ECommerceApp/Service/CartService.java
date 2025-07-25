@@ -3,6 +3,7 @@ package com.ECommerceApp.Service;
 import com.ECommerceApp.Model.Order.*;
 import com.ECommerceApp.Model.User.Cart;
 import com.ECommerceApp.Model.User.CartItem;
+import com.ECommerceApp.Model.User.WishlistItem;
 import com.ECommerceApp.Repository.CartRerepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -40,7 +42,7 @@ public class CartService {
         Cart cart = getCartByBuyerId(buyerId);
         log.info("adding the cart item: "+item+" to the buyer: "+buyerId);
         double price = productService.getProductPrice(item.getProductId());
-
+        item.setName(productService.getProductById(item.getProductId()).getName());
         boolean updated = false;
         for (CartItem existingItem : cart.getItems()) {
             if (existingItem.getProductId().equals(item.getProductId()) && existingItem.getSize().equals(item.getSize())) {
@@ -132,7 +134,7 @@ public class CartService {
             if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
                 BeanUtils.copyProperties(item,orderItem); // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties from source to target.
-                orderItem.setName(productService.getProductById(item.getProductId()).getName());
+//                orderItem.setName(productService.getProductById(item.getProductId()).getName());
                 items.add(orderItem);
             }
         }

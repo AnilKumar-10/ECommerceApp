@@ -19,9 +19,6 @@ public class UserService {
     @Autowired
     private UsersRepository  usersRepository;
 
-    @Autowired
-    private ProductService productService;
-
     public Users registerUser(UserRegistrationRequest user) {
         Users users = new Users();
         BeanUtils.copyProperties(user,users);
@@ -162,12 +159,29 @@ public class UserService {
 
     public List<SellerResponse> getAllSellers() {
         List<Users> users = usersRepository.findByRolesContainingSellerRole();
+        System.out.println("users response"+users);
         List<SellerResponse> sellerResponses  = new ArrayList<>();
         for(Users user : users){
             SellerResponse sellerResponse = new SellerResponse();
-            BeanUtils.copyProperties(user,sellerResponses);
+            BeanUtils.copyProperties(user,sellerResponse );
             sellerResponses.add(sellerResponse);
         }
         return sellerResponses;
     }
+
+
+
+    public long getTotalUserCount() {
+        return usersRepository.count();
+    }
+
+    public long getTotalSellersCount() {
+        return usersRepository.countByRolesContaining("SELLER");
+    }
+
+
+
+
+
+
 }

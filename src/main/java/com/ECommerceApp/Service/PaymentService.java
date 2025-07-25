@@ -105,7 +105,7 @@ public class PaymentService {
         System.out.println("inside the initiate payment : "+initiatePaymentDto);
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
-        if(order.getExchangeDetails().getExchangeDifferenceAmount()==initiatePaymentDto.getAmount()){
+        if(order.getExchangeDetails().getExchangeDifferenceAmount()!=initiatePaymentDto.getAmount()){
             throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
         }
         long nextId = sequenceGeneratorService.getNextSequence("paymentId");

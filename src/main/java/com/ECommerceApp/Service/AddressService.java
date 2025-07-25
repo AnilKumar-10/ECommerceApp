@@ -14,8 +14,6 @@ import java.util.List;
 public class AddressService {
     @Autowired
     private AddressRepository addressRepository;
-    @Autowired
-    private UserService userService;
 
     // inserting the new address
     public Address createAddress(AddressRegistrationRequest address) {

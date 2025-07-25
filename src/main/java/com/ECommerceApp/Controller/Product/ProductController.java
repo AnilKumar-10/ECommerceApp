@@ -57,6 +57,11 @@ public class ProductController { // admin, seller
     }
 
 
+    @GetMapping("/getProductCountBySeller/{sellerId}")
+    public long getProductCountBySeller(@PathVariable String sellerId){
+        return productService.getTotalCountOfProductBySeller(sellerId);
+    }
+
 
     @GetMapping("/deleteProduct/{productId}")
     public String deleteProduct(@PathVariable String productId){

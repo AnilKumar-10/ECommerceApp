@@ -10,12 +10,13 @@ import com.ECommerceApp.Service.ExchangeService;
 import com.ECommerceApp.Service.OrderService;
 import com.ECommerceApp.Service.PaymentService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
+@Slf4j
 @RestController
 public class ExchangeController {
 
@@ -35,23 +36,12 @@ public class ExchangeController {
 
     @PostMapping("/updateExchange")
     public ResponseEntity<?> exchangeUpdate(@RequestBody ExchangeUpdateRequest exchangeUpdateRequest){
-        System.out.println("asd: "+exchangeUpdateRequest);
-        ExchangeDetails exchangeDetails = orderService.getOrder(exchangeUpdateRequest.getOrderId()).getExchangeDetails();
-        System.out.println("exchange: "+exchangeDetails);
-        if(exchangeDetails.getExchangeType().equalsIgnoreCase("PAYABLE") && exchangeDetails.getPaymentMode().equalsIgnoreCase("COD") ){
-            System.out.println("inside the if of update: "+exchangeUpdateRequest);
-            PaymentRequest paymentDto = new PaymentRequest();
-            paymentDto.setPaymentId(exchangeUpdateRequest.getPaymentId());
-            paymentDto.setTransactionId(orderService.generateTransactionIdForCOD());
-            paymentDto.setStatus("SUCCESS");
-            paymentService.confirmCODPayment(paymentDto); // updating the payment success details
-            exchangeService.markExchangeCodPaymentSuccess(exchangeUpdateRequest);// updating the order payment status
-        }
+        log.info("inside the exchange update: "+exchangeUpdateRequest);
+        exchangeService.exchangeUpdate(exchangeUpdateRequest);
         if(exchangeUpdateRequest.isExchanged() && exchangeUpdateRequest.getPaymentStatus().equalsIgnoreCase("SUCCESS")){
-            System.out.println("inside");
             return  ResponseEntity.ok(exchangeService.updateExchangeSuccess(exchangeUpdateRequest.getOrderId(),exchangeUpdateRequest.getDeliveryPersonId()));
         }
-        return ResponseEntity.ok("Something went wrong");
+        return ResponseEntity.ok("Something went wrong. Please try again.");
     }
 
 }

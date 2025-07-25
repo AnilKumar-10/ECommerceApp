@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +37,7 @@ public class ProductSearchController { // everyone
 
 
     @GetMapping("/search")
-//    http://localhost:9090/search?categories=Shirts&orderBy=desc
+//    http://localhost:9090/search?categories=Shirts&sortOrder=desc
 //    http://localhost:9090/search?categories=Shirts&sortOrder=desc&sortBy=rating
 //    http://localhost:9090/search?categories=Footwear,Women&brand=Nike&sortOrder=desc&sortBy=rating
     public List<ProductSearchResponse> searchProductsByCategoryNames(
@@ -45,38 +46,16 @@ public class ProductSearchController { // everyone
             @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder,
             @RequestParam(name = "sortBy", required = false) String sortBy,
             HttpServletRequest httpServletRequest) {
-
-        System.out.println("http url: " + httpServletRequest.getQueryString());
-        System.out.println("sortOrder: " + sortOrder + "  sortby: " + sortBy + "  brand: " + brand);
-
-        List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
-
-        List<Product> products = productSearchService.searchProductsByCategoryNames(categories, brand);
-
-        for (Product product : products) {
-            ProductSearchResponse dto = new ProductSearchResponse();
-            BeanUtils.copyProperties(product, dto);
-            productSearchDtos.add(dto);
-        }
-
-        Comparator<ProductSearchResponse> comparator;
-        if ("rating".equalsIgnoreCase(sortBy)) {
-            comparator = Comparator.comparingDouble(ProductSearchResponse::getRating);
-        } else {
-            comparator = Comparator.comparingDouble(ProductSearchResponse::getPrice);
-        }
-
-        if ("desc".equalsIgnoreCase(sortOrder)) {
-            comparator = comparator.reversed();
-        }
-
-        productSearchDtos.sort(comparator);
-        return productSearchDtos;
+        return productSearchService.searchRequest(categories, brand, sortOrder, sortBy, httpServletRequest);
     }
 
     @GetMapping("/searchBrand/{brandName}")
-    public List<ProductSearchResponse> getProductByBrand(@PathVariable String brandName) {
-        return productSearchService.getProductByBrand(brandName);
+    public ResponseEntity<?> getProductByBrand(@PathVariable String brandName) {
+        List<ProductSearchResponse> productSearchResponses = productSearchService.getProductByBrand(brandName);
+        if(productSearchResponses.isEmpty()){
+            return ResponseEntity.ok("There is no products found with: "+brandName);
+        }
+        return ResponseEntity.ok(productSearchResponses);
     }
 
     @GetMapping("/viewAll")
@@ -87,6 +66,12 @@ public class ProductSearchController { // everyone
             @RequestParam(defaultValue = "10") int size) {
         System.out.println(page+" : "+size);
         return productSearchService.getAllProducts(page, size);
+    }
+
+
+    @GetMapping("/UserFeed")
+    public List<ProductSearchResponse> feedByWishList(){
+        return productSearchService.feedByWishProducts();
     }
 
 

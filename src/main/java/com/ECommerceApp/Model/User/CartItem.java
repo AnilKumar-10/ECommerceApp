@@ -9,11 +9,11 @@ import java.util.Date;
 public class CartItem {
     private int  itemId;         // this field add after it is moved to cart.
     private String productId;
+    private String name;
     private int quantity;
     private double price;
     private String size;
     private String color;
-//    private boolean stockAvailable;
     private Date addedAt;
 }
 

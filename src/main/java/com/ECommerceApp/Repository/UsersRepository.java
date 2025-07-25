@@ -14,4 +14,12 @@ public interface UsersRepository extends MongoRepository<Users,String> {
     @Query("{'roles':'SELLER'}")
     List<Users> findByRolesContainingSellerRole();
 
+    // Count users whose roles array contains "SELLER"
+    long countByRolesContaining(String role);
+
+    // Count all users
+    long count();
+
+
+
 }

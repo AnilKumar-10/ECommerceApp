@@ -1,7 +1,7 @@
 package com.ECommerceApp.Service;
 
-import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
 import com.ECommerceApp.DTO.Order.ShippingUpdateRequest;
+import com.ECommerceApp.DTO.Payment.PaymentRequest;
 import com.ECommerceApp.DTO.Product.StockLogModificationRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.*;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
@@ -43,6 +43,9 @@ public class ExchangeService {
     private SequenceGeneratorService sequenceGeneratorService;
     @Autowired
     private RefundService refundService;
+    @Autowired
+    private PaymentService paymentService;
+
 
     public ExchangeResponse exchangeRequest(ProductExchangeRequest productExchangeDto){
         log.info("Request to exchange.");
@@ -52,7 +55,7 @@ public class ExchangeService {
         double oldTax=0;
         for(OrderItem orderItem : order.getOrderItems()){
             if(orderItem.getProductId().equalsIgnoreCase(productExchangeDto.getProductIdToReplace())){
-                orderItem.setStatus("REQUESTED_TO_REPLACE");
+                orderItem.setStatus("REQUESTED_TO_RETURN");
                 oldPrice = orderItem.getPrice();
                 oldTax = orderItem.getTax();
             }
@@ -61,12 +64,12 @@ public class ExchangeService {
         // Adding the replacement product to the order items
         OrderItem item = createNewOrderItem(order,productExchangeDto);
         double newTax = item.getTax();
-        order.setTax(order.getTax()-oldTax+newTax);
+        order.setTax(order.getTax() - oldTax + newTax);
         order.getOrderItems().add(item);
         double newPrice = item.getPrice();
         double finalAmount = calculateNewFinalAmount(oldPrice, newPrice, order.getFinalAmount(), order.getTotalAmount(), order.getDiscount());
         order.setTotalAmount(order.getTotalAmount() - oldPrice + newPrice);
-        order.setFinalAmount(order.getFinalAmount() + finalAmount - oldTax + newTax);
+        order.setFinalAmount(finalAmount - oldTax + newTax);
         log.info("old price: "+oldPrice+"  , new price; "+newPrice+"  ,new final price: "+finalAmount+ ",  new total price: "+order.getTotalAmount());
 
         // Updating the exchange details in the order class.
@@ -77,7 +80,7 @@ public class ExchangeService {
         if(exchangeDetails.getExchangeType().equalsIgnoreCase("NO_DIFFERENCE") || order.getPaymentMethod().equalsIgnoreCase("COD") || exchangeDetails.getExchangeType().equalsIgnoreCase("REFUNDABLE") ){
             DeliveryPerson deliveryPerson =  assignDeliveryForExchange(order);
             updateNewProductStockToReplace(item); // this will update stock of new product.
-            System.out.println("delivery Person:"+deliveryPerson);
+            System.out.println("delivery Person after exchange is assigned:"+deliveryPerson);
             ProductExchangeInfo productExchangeInfo = getExchangeInformation(order.getId());
             emailService.sendExchangeConfirmationEmail("iamanil3121@gmail.com",productExchangeInfo,order.getUpiId());
             // here we send the mail about the exchange confirmation because
@@ -177,9 +180,8 @@ public class ExchangeService {
     }
 
 
-    public double calculateNewFinalAmount(
-            double oldPrice, double newPrice,
-            double finalOrderAmount, double totalOriginalPrice, double totalDiscount) {
+    public double calculateNewFinalAmount(double oldPrice, double newPrice, double finalOrderAmount, double totalOriginalPrice, double totalDiscount) {
+
         double discountOnOldProduct = (oldPrice / totalOriginalPrice) * totalDiscount;
         double oldProductFinalAmount = oldPrice - discountOnOldProduct;
         double newFinalAmount = finalOrderAmount - oldProductFinalAmount + newPrice;
@@ -259,7 +261,7 @@ public class ExchangeService {
         List<OrderItem> orderItems  = order.getOrderItems();
         ExchangeDeliveryItems exchangeDeliveryItems = new ExchangeDeliveryItems();
         for(OrderItem item : orderItems){
-            if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
+            if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_RETURN")){
                 exchangeDeliveryItems.setProductIdToPick(item.getProductId());
             }
             if(item.getStatus().equalsIgnoreCase("FOR_REPLACE")){
@@ -287,14 +289,13 @@ public class ExchangeService {
     }
 
 
-
     public ProductExchangeInfo getExchangeInformation(String orderId){
         log.info("Getting the Exchange information of order: "+orderId);
         Order order = orderService.getOrder(orderId);
         List<OrderItem> orderItems = order.getOrderItems();
         String productToReplace="",productId="";
         for(OrderItem item : orderItems){
-            if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
+            if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_RETURN")){
                 productToReplace = item.getProductId();
             }
             if(item.getStatus().equalsIgnoreCase("FOR_REPLACE")){
@@ -310,7 +311,7 @@ public class ExchangeService {
         productExchangeResponse.setAmountPayType(order.getExchangeDetails().getExchangeType());
         productExchangeResponse.setOrderPaymentType(order.getPaymentMethod());
         productExchangeResponse.setAmount(order.getExchangeDetails().getExchangeDifferenceAmount());
-        productExchangeResponse.setExpectedReturnDate(calculateExpectedDate());
+        productExchangeResponse.setExpectedReturnDate(calculateExpectedDate()); // just getting one sample expected date.
         productExchangeResponse.setDeliveryPersonId(deliveryPerson.getId());
         productExchangeResponse.setDeliveryPersonName(deliveryPerson.getName());
         productExchangeResponse.setPaymentStatus(order.getExchangeDetails().getPaymentStatus());
@@ -319,14 +320,13 @@ public class ExchangeService {
     }
 
 
-
     public Order updateExchangeSuccess(String orderId,String deliveryPersonId){
         log.info("Updating the Exchange status as success.");
         Order order = orderService.getOrder(orderId);
         updateStockAfterExchangeSuccess(orderId);// updating the stock of returned object.
         for(OrderItem orderItem : order.getOrderItems()){
             System.out.println("orderItem status:  "+orderItem.getStatus());
-            if(orderItem.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
+            if(orderItem.getStatus().equalsIgnoreCase("REQUESTED_TO_RETURN")){
                 orderItem.setStatus("EXCHANGE_RETURNED");
             }
             if(orderItem.getStatus().equalsIgnoreCase("FOR_REPLACE")){
@@ -354,12 +354,12 @@ public class ExchangeService {
         List<OrderItem> orderItems = order.getOrderItems();
         OrderItem orderItem = new OrderItem();
         for(OrderItem item : orderItems){
-            if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_REPLACE")){
+            if(item.getStatus().equalsIgnoreCase("REQUESTED_TO_RETURN")){
                 orderItem = item;
             }
         }
         StockLogModificationRequest stockLogModificationDTO = new StockLogModificationRequest();
-        stockLogModificationDTO.setAction("RETURNED");
+        stockLogModificationDTO.setAction("EXCHANGED");
         stockLogModificationDTO.setModifiedAt(new Date());
         stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
         stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
@@ -374,6 +374,21 @@ public class ExchangeService {
         refund.setProcessedAt(new Date());
         refund.setStatus("COMPLETED");
         refundService.saveRefund(refund);
+    }
+
+    // called from the controller
+    public void exchangeUpdate(ExchangeUpdateRequest exchangeUpdateRequest){
+        ExchangeDetails exchangeDetails = orderService.getOrder(exchangeUpdateRequest.getOrderId()).getExchangeDetails();
+        System.out.println("exchange: "+exchangeDetails);
+        if(exchangeDetails.getExchangeType().equalsIgnoreCase("PAYABLE") && exchangeDetails.getPaymentMode().equalsIgnoreCase("COD") ){
+            System.out.println("inside the if of update: "+exchangeUpdateRequest);
+            PaymentRequest paymentDto = new PaymentRequest();
+            paymentDto.setPaymentId(exchangeUpdateRequest.getPaymentId());
+            paymentDto.setTransactionId(orderService.generateTransactionIdForCOD());
+            paymentDto.setStatus("SUCCESS");
+            paymentService.confirmCODPayment(paymentDto); // updating the payment success details
+            markExchangeCodPaymentSuccess(exchangeUpdateRequest);// updating the order payment status
+        }
     }
 
 

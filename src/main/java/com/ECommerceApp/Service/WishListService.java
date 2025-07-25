@@ -1,15 +1,20 @@
 package com.ECommerceApp.Service;
 
 import com.ECommerceApp.Exceptions.Product.ProductNotFoundException;
+import com.ECommerceApp.Model.Product.Product;
+import com.ECommerceApp.Model.User.Cart;
+import com.ECommerceApp.Model.User.CartItem;
 import com.ECommerceApp.Model.User.Wishlist;
 import com.ECommerceApp.Model.User.WishlistItem;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.WishListRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,11 +26,13 @@ public class WishListService {
     @Autowired
     private WishListRepository wishlistRepository;
     @Autowired
-    private ProductRepository productRepository; // optional for validation
+    private ProductRepository productRepository;
     @Autowired
     private CartService cartService;
+    @Autowired
+    private ProductService productService;
 
-    // 1. Get wishlist by buyer ID
+    //  Get wishlist by buyer ID
     public Wishlist getWishlistByBuyerId(String buyerId) {
         log.info("getting wish list of user: "+buyerId);
         return wishlistRepository.findByBuyerId(buyerId)
@@ -38,35 +45,35 @@ public class WishListService {
                 });
     }
 
-    // 2. Add product to wishlist
-    public Wishlist addToWishlist(String buyerId, String productId) {
+    //  Add product to wishlist
+    public Wishlist addToWishlist(String buyerId, WishlistItem wishItem) {
         log.info("Adding the new product to the wish list");
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
 
         // Check if product exists
-        if (!productRepository.existsById(productId)) {
+        if (!productRepository.existsById(wishItem.getProductId())) {
             throw new ProductNotFoundException("Product does not exist");
         }
 
         // Check if already in wishlist
-        boolean alreadyExists = wishlist.getItems().stream()
-                .anyMatch(item -> item.getProductId().equals(productId));
-
+        boolean alreadyExists = isInWishlist(buyerId, wishItem.getProductId());
+        System.out.println("already: "+alreadyExists);
         if (!alreadyExists) {
-            WishlistItem item = new WishlistItem();
-            item.setProductId(productId);
-            item.setAddedAt(new Date());
-
-            wishlist.getItems().add(item);
+            Product product = productService.getProductById(wishItem.getProductId());
+            wishItem.setAvailable(product.isAvailable());
+            wishItem.setName(product.getName());
+            wishItem.setPrice(product.getPrice()*wishItem.getQuantity());
+            wishItem.setAddedAt(new Date());
             wishlist.setUpdatedAt(new Date());
-
+            System.out.println("before");
+            wishlist.getItems().add(wishItem);
             wishlist = wishlistRepository.save(wishlist);
         }
 
         return wishlist;
     }
 
-    // 3. Remove product from wishlist
+    //  Remove product from wishlist
     public Wishlist removeFromWishlist(String buyerId, String productId) {
         log.info("Removing the product from the wish list: "+productId);
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
@@ -81,16 +88,7 @@ public class WishListService {
         return wishlistRepository.save(wishlist);
     }
 
-    // 4. Get all product IDs in wishlist(opt)
-    public List<String> getWishlistProductIds(String buyerId) {
-        log.info("Getting all the wish list of: "+buyerId);
-        Wishlist wishlist = getWishlistByBuyerId(buyerId);
-        return wishlist.getItems().stream()
-                .map(WishlistItem::getProductId)
-                .collect(Collectors.toList());
-    }
-
-    // 5. Check if a product is in wishlist(opt)
+    //  Check if a product is in wishlist(opt)
     public boolean isInWishlist(String buyerId, String productId) {
         Wishlist wishlist = wishlistRepository.findByBuyerId(buyerId).orElse(null);
         if (wishlist == null) return false;
@@ -99,7 +97,7 @@ public class WishListService {
                 .anyMatch(item -> item.getProductId().equals(productId));
     }
 
-    // 6. Clear entire wishlist
+    //  Clear entire wishlist
     public String clearWishlist(String buyerId) {
         log.warn("Clearing the wish list of: "+buyerId);
         Wishlist wishlist = getWishlistByBuyerId(buyerId);
@@ -108,6 +106,60 @@ public class WishListService {
         wishlistRepository.save(wishlist);
         return "the wish list is empty now.";
     }
+
+    public List<String> getWishlistProductIdsByBuyer(String buyerId) {
+        Wishlist wishlist = wishlistRepository.findByBuyerId(buyerId).get();
+        if (wishlist.getItems() != null) {
+            return wishlist.getItems()
+                    .stream()
+                    .map(WishlistItem::getProductId)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+
+    public WishlistItem getWishlistItemByBuyerAndProduct(String buyerId, String productId) {
+        Wishlist wishlist = wishlistRepository.findByBuyerId(buyerId).get();
+        if (wishlist != null && wishlist.getItems() != null) {
+            return wishlist.getItems()
+                    .stream()
+                    .filter(item -> productId.equals(item.getProductId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+
+
+    public Cart moveWishTOCart(String userId,String productId){
+        log.info("Moving the: "+productId+ " from wish to Cart of: "+userId);
+        WishlistItem item = getWishlistItemByBuyerAndProduct(userId,productId);
+        CartItem cartItem = new CartItem();
+        BeanUtils.copyProperties(item,cartItem);
+        return cartService.addItemToCart(userId,cartItem);
+    }
+
+
+    public Cart cartToWish(String productId, String buyerId){
+        log.info("Moving the: "+productId+ " from Cart to Wish list of: "+buyerId);
+        WishlistItem wishlistItem = new WishlistItem();
+        Cart cart = cartService.getCartByBuyerId(buyerId);
+        CartItem cartItem = cart.getItems()
+                .stream()
+                .filter(item -> productId.equals(item.getProductId()))
+                .findFirst()
+                .orElse(null);
+        if (cartItem==null) {
+            throw new ProductNotFoundException("Product not found in cart: " + productId);
+        }
+
+        BeanUtils.copyProperties(cartItem,wishlistItem);
+        addToWishlist(buyerId,wishlistItem);
+        return cartService.removeOneItemFromCart(buyerId,productId);
+    }
+
 
 
 

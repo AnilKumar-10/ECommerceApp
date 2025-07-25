@@ -145,8 +145,13 @@ public class ProductService{
     }
 
 
-    public boolean checkStockAvailablity(String productId) {
+    public boolean checkStockAvailability(String productId) {
         return getProductById(productId).isAvailable();
 
+    }
+
+
+    public long getTotalCountOfProductBySeller(String sellerId) {
+        return productRepository.countBySellerId(sellerId);
     }
 }

@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.*;
 @Slf4j
 @Service
-public class CategoryService {
+public class  CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 

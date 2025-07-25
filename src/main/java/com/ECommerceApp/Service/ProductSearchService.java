@@ -6,6 +6,7 @@ import com.ECommerceApp.Model.Product.Category;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Repository.CategoryRepository;
 import com.ECommerceApp.Repository.ProductRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,15 @@ import java.util.stream.Collectors;
 public class ProductSearchService {
 
     @Autowired
-    public ProductRepository productRepository;
+    private ProductRepository productRepository;
     @Autowired
-    public ProductService productService;
+    private ProductService productService;
     @Autowired
-    public CategoryService categoryService;
+    private CategoryService categoryService;
     @Autowired
-    public CategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private WishListService wishListService;
 
     // this will return the products that contain the category name.
     public List<Product> getProductsByCategoryName(String categoryName) {
@@ -43,9 +46,7 @@ public class ProductSearchService {
         Set<String> allCategoryIds = new HashSet<>();
         for (Category category : rootCategory) {
             allCategoryIds.addAll(categoryService.getAllSubCategoryIds(category.getId()));
-//            allCategoryIds.add(category.getId());
         }
-//        List<String> allCategoryIds = categoryService.getAllSubCategoryIds(rootCategory.getId());
         System.out.println("all categories id list: "+allCategoryIds);
         return productService.getProductContainsAnyCategory(new ArrayList<>(allCategoryIds));
     }
@@ -96,19 +97,11 @@ public class ProductSearchService {
 
         List<Product> allMatchingProducts = new ArrayList<>();
         for (List<String> requiredIds : requiredIdGroups) {
-            // Find products that contain all IDs in this group
-//            allMatchingProducts.addAll(
-//                    productRepository.findByCategoryIdsContainingAll(requiredIds)
-//            );
-            //=======
+
             if (brand != null && !brand.isBlank()) {
-                allMatchingProducts.addAll(
-                        productRepository.findByCategoryIdsContainingAllAndBrandIgnoreCase(requiredIds, brand)
-                );
+                allMatchingProducts.addAll(productRepository.findByCategoryIdsContainingAllAndBrandIgnoreCase(requiredIds, brand));
             } else {
-                allMatchingProducts.addAll(
-                        productRepository.findByCategoryIdsContainingAll(requiredIds)
-                );
+                allMatchingProducts.addAll(productService.getProductContainsAllCategory(requiredIds));
             }
         }
         return new ArrayList<>(new HashSet<>(allMatchingProducts));
@@ -136,5 +129,52 @@ public class ProductSearchService {
 
         return new PageImpl<>(dtoList, pageable, productPage.getTotalElements());
     }
+
+
+    public List<ProductSearchResponse> feedByWishProducts(){
+        log.info("Getting the search feed based on the Wish list items");
+        List<String> productIds = wishListService.getWishlistProductIdsByBuyer("USER1019");
+        List<String> rootIds = new ArrayList<>();
+        for(String productId : productIds){
+            String root = categoryService.getRootCategoryId(productService.getProductById(productId).getCategoryIds());
+            rootIds.add(root);
+        }
+        List<Product>  products = productService.getProductContainsAnyCategory(rootIds);
+        List<ProductSearchResponse> productSearchResponses = new ArrayList<>();
+        for(Product product : products ){
+            ProductSearchResponse productSearchResponse = new ProductSearchResponse();
+            BeanUtils.copyProperties(product,productSearchResponse);
+            productSearchResponses.add(productSearchResponse);
+        }
+        return productSearchResponses;
+    }
+
+
+    public List<ProductSearchResponse> searchRequest(List<String> categories, String brand, String sortOrder, String sortBy,
+                                                     HttpServletRequest httpServletRequest){
+        System.out.println("http url: " + httpServletRequest.getQueryString());
+        System.out.println("sortOrder: " + sortOrder + "  sortby: " + sortBy + "  brand: " + brand);
+        List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
+        List<Product> products = searchProductsByCategoryNames(categories, brand);
+        for (Product product : products) {
+            ProductSearchResponse dto = new ProductSearchResponse();
+            BeanUtils.copyProperties(product, dto);
+            productSearchDtos.add(dto);
+        }
+
+        Comparator<ProductSearchResponse> comparator;
+        if ("rating".equalsIgnoreCase(sortBy)) {
+            comparator = Comparator.comparingDouble(ProductSearchResponse::getRating);
+        } else {
+            comparator = Comparator.comparingDouble(ProductSearchResponse::getPrice);
+        }
+
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+        productSearchDtos.sort(comparator);
+        return productSearchDtos;
+    }
+
 
 }

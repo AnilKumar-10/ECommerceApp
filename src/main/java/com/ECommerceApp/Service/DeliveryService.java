@@ -53,6 +53,7 @@ public class DeliveryService {
         return null;
     }
 
+
     public DeliveryPerson register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto){
         DeliveryPerson deliveryPerson  = new DeliveryPerson();
         BeanUtils.copyProperties(deliveryPersonRegistrationDto,deliveryPerson);
@@ -64,6 +65,7 @@ public class DeliveryService {
         log.info("Delivery person registration is success: "+deliveryPerson);
         return deliveryRepository.save(deliveryPerson);
     }
+
 
     public String registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson){
         int c=0;
@@ -125,7 +127,7 @@ public class DeliveryService {
 
     }
 
-
+    // here we are using the mongo template because jpa don't support the updates.
     public void removeReturnItemFromDeliveryPerson(String deliveryPersonId, String orderId) {
         log.info("Removing the to return items after the return delivery is success.");
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
@@ -133,12 +135,17 @@ public class DeliveryService {
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
     }
 
+
     public void removeExchangeItemFromDeliveryPerson(String deliveryPersonId, String orderId) {
         log.info("Removing the to Exchange items after the exchange delivery is success.");
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
         Update update = new Update().pull("toExchangeItems", Query.query(Criteria.where("orderId").is(orderId)));
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
+        DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
+        deliveryPerson.setDeliveredCount(deliveryPerson.getDeliveredCount()+1);
+        save(deliveryPerson);
     }
+
 
     public String  deleteDeliveryMan(String id){
         if(!deliveryRepository.existsById(id)){
@@ -147,19 +154,6 @@ public class DeliveryService {
         deliveryRepository.deleteById(id);
         return "Deleted Successfully";
     }
-
-//    public Optional<DeliveryItems> getDeliveryItemByOrderId(String deliveryPersonId, String orderId) {
-//        Optional<DeliveryPerson> deliveryPersonOptional =
-//                deliveryRepository.findSingleDeliveryItemByOrderId(deliveryPersonId, orderId);
-//
-//        if (deliveryPersonOptional.isPresent()) {
-//            List<DeliveryItems> items = deliveryPersonOptional.get().getToDeliveryItems();
-//            if (items != null && !items.isEmpty()) {
-//                return Optional.of(items.get(0)); // Only one item is returned by the query
-//            }
-//        }
-//        return Optional.empty();
-//    }
 
 
     public DeliveryPersonResponse getDeliveryPersonByOrderId(String orderId){
@@ -180,4 +174,14 @@ public class DeliveryService {
         deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
         updateDeliveryPerson(deliveryPerson); // updating the delivery counts of the delivered person.
     }
+
+
+    public void save(DeliveryPerson deliveryPerson){
+        deliveryRepository.save(deliveryPerson);
+    }
+
+    public long totalCount() {
+        return deliveryRepository.count();
+    }
+
 }

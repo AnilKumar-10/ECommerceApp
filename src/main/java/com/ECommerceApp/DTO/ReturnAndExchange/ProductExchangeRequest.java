@@ -3,7 +3,7 @@ package com.ECommerceApp.DTO.ReturnAndExchange;
 import lombok.Data;
 
 @Data
-public class ProductExchangeRequest {
+public class     ProductExchangeRequest {
     private String orderId;
     private String productIdToReplace;
     private String reasonToReplace;
