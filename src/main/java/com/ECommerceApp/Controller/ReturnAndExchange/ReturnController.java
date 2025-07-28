@@ -2,9 +2,7 @@ package com.ECommerceApp.Controller.ReturnAndExchange;
 
 import com.ECommerceApp.DTO.ReturnAndExchange.*;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
-import com.ECommerceApp.Service.DeliveryService;
-import com.ECommerceApp.Service.RefundService;
-import com.ECommerceApp.Service.ReturnService;
+import com.ECommerceApp.ServiceInterface.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReturnController {  // buyer
 
     @Autowired
-    private RefundService refundService;
+    private IRefundService refundService;
     @Autowired
-    private ReturnService returnService;
+    private IReturnService returnService;
     @Autowired
-    private DeliveryService deliveryService;
+    private IDeliveryService deliveryService;
 
 
     @PostMapping("/requestRefund")

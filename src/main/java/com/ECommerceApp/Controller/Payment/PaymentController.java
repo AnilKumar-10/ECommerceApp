@@ -3,9 +3,7 @@ import com.ECommerceApp.DTO.Payment.InitiatePaymentRequest;
 import com.ECommerceApp.DTO.Payment.PaymentRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
 import com.ECommerceApp.Model.Payment.Payment;
-import com.ECommerceApp.Service.ExchangeService;
-import com.ECommerceApp.Service.PaymentService;
-import com.ECommerceApp.Service.ReturnService;
+import com.ECommerceApp.ServiceInterface.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,11 +16,11 @@ import java.util.List;
 public class PaymentController { //user
 
     @Autowired
-    private PaymentService paymentService;
+    private IPaymentService paymentService;
     @Autowired
-    private ReturnService returnService;
+    private IReturnService returnService;
     @Autowired
-    private ExchangeService exchangeService;
+    private IExchangeService exchangeService;
 
     @PostMapping("/initPay")
     public Payment initiatePayment(@RequestBody InitiatePaymentRequest initiatePaymentDto){
@@ -61,9 +59,6 @@ public class PaymentController { //user
         return "Payment Failed.! , Please try again";
     }
 
-    @PostMapping("/getExchangeInfo/{orderId}")
-    public ProductExchangeInfo getExchangeInfor(@PathVariable String  orderId){
-        return exchangeService.getExchangeInformation(orderId);
-    }
+
 
 }

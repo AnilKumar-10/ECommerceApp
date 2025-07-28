@@ -1,7 +1,7 @@
 package com.ECommerceApp.Controller.Product;
 
 import com.ECommerceApp.Model.Order.Coupon;
-import com.ECommerceApp.Service.CouponService;
+import com.ECommerceApp.ServiceInterface.ICouponService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ import java.util.List;
 public class CouponController { // admin , seller
 
     @Autowired
-    private CouponService couponService;
+    private ICouponService couponService;
 
     @PostMapping("/insertCoupon")
     public ResponseEntity<?> insertCoupon(@Valid @RequestBody Coupon coupon){

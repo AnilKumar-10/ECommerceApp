@@ -6,9 +6,6 @@ import org.springframework.data.annotation.Id;
 @Data
 public class ReviewCreationRequest {
 
-    @Id
-    private String id;
-
     @NotBlank(message = "Product ID is required")
     private String productId;
 

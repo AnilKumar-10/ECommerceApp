@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.DTO.Product.StockLogModificationRequest;
 import com.ECommerceApp.Model.Product.StockLog;
-import com.ECommerceApp.Service.StockLogService;
+import com.ECommerceApp.ServiceInterface.IStockLogService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,13 +15,14 @@ import java.util.List;
 public class StockLogController { // admin, seller
 
     @Autowired
-    private StockLogService stockLogService;
+    private IStockLogService stockLogService;
 
     // this will insert is the stock is previously not available, updates if already available
     @PostMapping("/updateStock") // seller
     public ResponseEntity<?> insertStock(@Valid @RequestBody StockLogModificationRequest stockLogModificationDTO){
         return ResponseEntity.ok(stockLogService.modifyStock(stockLogModificationDTO));
     }
+
 
     @PostMapping("/insertStockLogs")//seller
     public ResponseEntity<?> insertStockLogs(@Valid @RequestBody List<@Valid StockLogModificationRequest> stockLogModificationDTOS){

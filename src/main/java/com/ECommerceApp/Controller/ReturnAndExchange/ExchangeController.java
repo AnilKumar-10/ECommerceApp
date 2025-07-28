@@ -1,18 +1,14 @@
 package com.ECommerceApp.Controller.ReturnAndExchange;
 
-import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
-import com.ECommerceApp.DTO.Payment.PaymentRequest;
-import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeDetails;
 import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeResponse;
 import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeUpdateRequest;
+import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeRequest;
-import com.ECommerceApp.Service.ExchangeService;
-import com.ECommerceApp.Service.OrderService;
-import com.ECommerceApp.Service.PaymentService;
-import jakarta.validation.Valid;
+import com.ECommerceApp.ServiceInterface.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExchangeController {
 
     @Autowired
-    private ExchangeService exchangeService;
+    private IExchangeService exchangeService;
     @Autowired
-    private OrderService orderService;
+    private IOrderService orderService;
     @Autowired
-    private PaymentService paymentService;
+    private IPaymentService paymentService;
 
 
     @PostMapping("/RequestReturnExchange")
@@ -33,6 +29,10 @@ public class ExchangeController {
         return exchangeService.exchangeRequest(productExchangeDto);
     }
 
+    @PostMapping("/getExchangeInfo/{orderId}")
+    public ProductExchangeInfo getExchangeInformation(@PathVariable String  orderId){
+        return exchangeService.getExchangeInformation(orderId);
+    }
 
     @PostMapping("/updateExchange")
     public ResponseEntity<?> exchangeUpdate(@RequestBody ExchangeUpdateRequest exchangeUpdateRequest){

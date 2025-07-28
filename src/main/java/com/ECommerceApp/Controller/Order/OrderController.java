@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.Order;
 
 import com.ECommerceApp.DTO.Order.PlaceOrderRequest;
 import com.ECommerceApp.Model.Order.Order;
-import com.ECommerceApp.Service.OrderService;
+import com.ECommerceApp.ServiceInterface.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class OrderController { //user from service classes
 
     @Autowired
-    private OrderService orderService;
+    private IOrderService orderService;
 
     @PostMapping("/placeOrder")
     public Order placeOrder(@RequestBody PlaceOrderRequest orderDto){

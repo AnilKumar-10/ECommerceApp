@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.Order;
 
 import com.ECommerceApp.DTO.Product.TaxRuleCreationRequest;
 import com.ECommerceApp.Model.Order.TaxRule;
-import com.ECommerceApp.Service.TaxRuleService;
+import com.ECommerceApp.ServiceInterface.ITaxRuleService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class TaxController { //admin
 
     @Autowired
-    private TaxRuleService taxRuleService;
+    private ITaxRuleService taxRuleService;
 
 
     @PostMapping("/createTaxrules")

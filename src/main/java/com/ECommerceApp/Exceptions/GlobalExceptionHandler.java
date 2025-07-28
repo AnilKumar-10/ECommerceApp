@@ -47,7 +47,8 @@ public class GlobalExceptionHandler {
             ShippingDetailsNotFoundException.class,
             ShippingNotFoundException.class,
             TaxRuleNotFoundException.class,
-            UserNotFoundException.class
+            UserNotFoundException.class,
+            ReviewAlreadyExistsException.class
     })
     public ResponseEntity<ExceptionResponse> handleNotFoundExceptions(Exception ex, HttpServletRequest request) {
         return buildResponse(ex, HttpStatus.NOT_FOUND, request.getRequestURI());

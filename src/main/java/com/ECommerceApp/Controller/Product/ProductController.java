@@ -3,7 +3,7 @@ package com.ECommerceApp.Controller.Product;
 import com.ECommerceApp.DTO.Product.ProductCreationRequest;
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Model.Product.Product;
-import com.ECommerceApp.Service.ProductService;
+import com.ECommerceApp.ServiceInterface.IProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class ProductController { // admin, seller
 
     @Autowired
-    private ProductService productService;
+    private IProductService productService;
 
     @PostMapping("/insertProduct")
     public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductCreationRequest product, BindingResult result){

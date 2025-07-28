@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.Order;
 
 import com.ECommerceApp.DTO.Order.ShippingUpdateRequest;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
-import com.ECommerceApp.Service.ShippingService;
+import com.ECommerceApp.ServiceInterface.IShippingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class ShippingController { //admin,deliveryman/seller
 
     @Autowired
-    private ShippingService shippingService;
+    private IShippingService shippingService;
 
 
     @GetMapping("/getShippingByOrder/{id}")

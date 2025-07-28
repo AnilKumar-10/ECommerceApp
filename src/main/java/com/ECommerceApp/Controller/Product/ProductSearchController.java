@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.Product;
 
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Model.Product.Product;
-import com.ECommerceApp.Service.ProductSearchService;
+import com.ECommerceApp.ServiceInterface.IProductSearchService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 @RestController
 public class ProductSearchController { // everyone
 
     @Autowired
-    private ProductSearchService productSearchService;
+       private IProductSearchService productSearchService;
 
     @GetMapping("/product/{name}")
     public List<ProductSearchResponse> getProductByCategoryName(@PathVariable String name){

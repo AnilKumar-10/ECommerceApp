@@ -5,7 +5,8 @@ import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
 import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
 import com.ECommerceApp.DTO.Payment.PaymentRequest;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
-import com.ECommerceApp.Service.*;
+import com.ECommerceApp.ServiceInterface.*;
+import com.ECommerceApp.ServiceInterface.IPaymentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,21 +17,22 @@ import java.util.List;
 public class DeliveryController { // admin, delivery person
 
     @Autowired
-    private OrderService orderService;
+    private IOrderService orderService;
     @Autowired
-    private PaymentService paymentService;
+    private IPaymentService paymentService;
     @Autowired
-    private ShippingService shippingService;
+    private IShippingService shippingService;
     @Autowired
-    private DeliveryService deliveryService;
+    private IDeliveryService deliveryService;
     @Autowired
-    private ExchangeService exchangeService;
+    private IExchangeService exchangeService;
 
 
     @PostMapping("/insertDelivery")
     public ResponseEntity<?> insertDelivery(@Valid @RequestBody DeliveryPersonRegistrationRequest deliveryPerson ){
         return  ResponseEntity.ok(deliveryService.register(deliveryPerson));
     }
+
 
     @PostMapping("/insertDeliveries")
     public ResponseEntity<?>  insertDeliveryPersons(@Valid @RequestBody List<@Valid DeliveryPersonRegistrationRequest> deliveryPerson){
@@ -52,15 +54,18 @@ public class DeliveryController { // admin, delivery person
         return ResponseEntity.ok(shippingService.updateDeliveryStatus(deliveryUpdateDTO));
     }
 
+
     @DeleteMapping("/deleteDeliveryPerson/{id}")
     public String deleteDeliveryPerson(@PathVariable String id){
         return deliveryService.deleteDeliveryMan(id);
     }
 
+
     @GetMapping("/getDeliveryPerson/{id}")
     public DeliveryPerson getDeliveryPerson(@PathVariable String id){
         return deliveryService.getDeliveryPerson(id);
     }
+
 
     @GetMapping("/getDelPersonByOrder/{orderId}")
     public DeliveryPersonResponse getByOrderId(@PathVariable String orderId){
