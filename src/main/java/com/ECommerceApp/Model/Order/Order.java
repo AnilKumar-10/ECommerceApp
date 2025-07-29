@@ -1,6 +1,7 @@
 package com.ECommerceApp.Model.Order;
 
 import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeDetails;
+import com.ECommerceApp.Model.Payment.Payment;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,9 +24,9 @@ public class Order {
     private double finalAmount;
     private String  refundId;
     private Double refundAmount;
-    private String orderStatus;         // PLACED, CONFIRMED,SHIPPED,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
-    private String paymentMethod;       // UPI, CARD, COD
-    private String paymentStatus;       // PENDING, SUCCESS, FAILED
+    private OrderStatus orderStatus;         // PENDING, PLACED,SHIPPED,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, REQUESTED_TO_RETURN, RETURNED, REFUNDED, REQUESTED_TO_EXCHANGE, EXCHANGED
+    private Payment.PaymentMethod paymentMethod;       // UPI, COD
+    private Payment.PaymentStatus paymentStatus;       // PENDING, SUCCESS, FAILED
     private String paymentId;
     private Date orderDate;
     private boolean isCancelled;
@@ -37,6 +38,26 @@ public class Order {
 
     private String upiId;
     private ExchangeDetails exchangeDetails;
+
+
+
+    public enum OrderStatus {
+        PENDING,
+        PLACED,
+        SHIPPED,
+        OUT_FOR_DELIVERY,
+        DELIVERED,
+        CANCELLED,
+        REQUESTED_TO_RETURN,
+        RETURNED,
+        REFUNDED,
+        REQUESTED_TO_EXCHANGE,
+        EXCHANGED,
+        RETURN_FAILED,
+        EXCHANGE_FAILED
+    }
+
+
 }
 
 

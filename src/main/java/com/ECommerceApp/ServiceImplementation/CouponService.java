@@ -22,10 +22,16 @@ public class CouponService implements ICouponService {
     @Autowired
     private CouponUsageRepository couponUsageRepository;
 
+
+    public Coupon saveCoupon(Coupon coupon){
+        return couponRepository.save(coupon);
+    }
+
+
     // 1. Create a new coupon
     public Coupon createCoupon(Coupon coupon) {
         log.info("inserting the coupon details: "+coupon);
-        return couponRepository.save(coupon);
+        return saveCoupon(coupon);
     }
 
     // 2. Update an existing coupon
@@ -34,7 +40,7 @@ public class CouponService implements ICouponService {
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
         BeanUtils.copyProperties(existing,updatedCoupon);
 
-        return couponRepository.save(existing);
+        return saveCoupon(existing);
     }
 
     // 3. Activate or deactivate a coupon
@@ -42,7 +48,7 @@ public class CouponService implements ICouponService {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
         coupon.setActive(isActive);
-        return couponRepository.save(coupon);
+        return saveCoupon(coupon);
     }
 
     // 4. Get coupon by ID
@@ -106,7 +112,7 @@ public class CouponService implements ICouponService {
     public String  createCouponsList(List<Coupon> coupons) {
         int c=0;
         for(Coupon coupon : coupons){
-            couponRepository.save(coupon);
+            saveCoupon(coupon);
             c++;
         }
         return "Insertion of coupons are done successfully: "+c;

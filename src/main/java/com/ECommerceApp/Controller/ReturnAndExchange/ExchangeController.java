@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeResponse;
 import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeUpdateRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeRequest;
+import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class ExchangeController {
     public ResponseEntity<?> exchangeUpdate(@RequestBody ExchangeUpdateRequest exchangeUpdateRequest){
         log.info("inside the exchange update: "+exchangeUpdateRequest);
         exchangeService.exchangeUpdate(exchangeUpdateRequest);
-        if(exchangeUpdateRequest.isExchanged() && exchangeUpdateRequest.getPaymentStatus().equalsIgnoreCase("SUCCESS")){
+        if(exchangeUpdateRequest.getExchanged() && exchangeUpdateRequest.getPaymentStatus() == Payment.PaymentStatus.SUCCESS ){
             return  ResponseEntity.ok(exchangeService.updateExchangeSuccess(exchangeUpdateRequest.getOrderId(),exchangeUpdateRequest.getDeliveryPersonId()));
         }
         return ResponseEntity.ok("Something went wrong. Please try again.");

@@ -1,22 +1,29 @@
 package com.ECommerceApp.DTO.Delivery;
 
+import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Payment.Payment;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 public class DeliveryUpdate {
-    private String orderId;
-    private String paymentId; // for cod
-    private String paymentStatus; // for cod
-    private String shippingId;
-    private String newValue; // delivered
-    private String updateBy;
 
-    /*
-    for the cod
-    we have to give the all the details
-    because we have to update some fields in Order class like paymentId, transactionId, PaymentStatus.
-    ====
-    for UPI
-    we just have to give orderId,shippingId,newValue,updateBy
-     */
+    @NotBlank(message = "Order ID must not be blank")
+    private String orderId;
+
+    // These fields are only required for COD
+    private String paymentId;
+
+    private Payment.PaymentStatus paymentStatus;
+
+    @NotBlank(message = "Shipping ID must not be blank")
+    private String shippingId;
+
+    @NotNull(message = "New value must not be blank")
+    private Order.OrderStatus newValue;
+
+    @NotBlank(message = "UpdateBy must not be blank")
+    private String updateBy;
 }

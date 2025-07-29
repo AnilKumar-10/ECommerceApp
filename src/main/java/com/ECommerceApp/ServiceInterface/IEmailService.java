@@ -3,12 +3,13 @@ package com.ECommerceApp.ServiceInterface;
 import com.ECommerceApp.DTO.Delivery.DeliveryItems;
 import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeDeliveryItems;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
-import com.ECommerceApp.DTO.ReturnAndExchange.ProductReturnRequest;
+import com.ECommerceApp.DTO.ReturnAndExchange.ProductReturnDetails;
 import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Model.Product.StockLog;
+import com.ECommerceApp.Model.RefundAndExchange.NotificationLog;
 
 public interface IEmailService {
 
@@ -30,7 +31,7 @@ public interface IEmailService {
 
     void sendLowStockAlertToSeller(String sellerEmail, StockLog stockLog);
 
-    void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnRequest returnDto, String userId);
+    void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnDetails returnDto, String userId);
 
     void sendOtpEmail(String toEmail, String userName, String otp);
 
@@ -38,5 +39,5 @@ public interface IEmailService {
 
     void sendExchangeAssignmentMailToDeliveryPerson(String toEmail, DeliveryPerson deliveryPerson, ExchangeDeliveryItems item);
 
-    void saveLogDetails(String userId, String subject, String type);
+    void saveLogDetails(NotificationLog notificationLog);
 }

@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface INotificationLogService {
 
-    void saveNotification(String userId, String message, String type);
+    void saveNotification(NotificationLog notificationLog);
 
     NotificationLog save(NotificationLog log);
 

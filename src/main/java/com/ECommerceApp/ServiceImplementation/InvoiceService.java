@@ -1,14 +1,13 @@
 package com.ECommerceApp.ServiceImplementation;
 
 import com.ECommerceApp.Exceptions.Payment.InvoiceNotFoundException;
-import com.ECommerceApp.Exceptions.Payment.PaymentNotFoundException;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Model.Payment.Invoice;
 import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.Repository.InvoiceRepository;
-import com.ECommerceApp.Repository.OrderRepository;
-import com.ECommerceApp.Repository.PaymentRepository;
 import com.ECommerceApp.ServiceInterface.IInvoiceService;
+import com.ECommerceApp.ServiceInterface.IOrderService;
+import com.ECommerceApp.ServiceInterface.IPaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,23 +20,21 @@ import java.util.Optional;
 public class InvoiceService implements IInvoiceService {
 
     @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
     private InvoiceRepository invoiceRepository;
     @Autowired
-    private PaymentRepository paymentRepository;
-    @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
-
+    @Autowired
+    private IOrderService orderService;
+    @Autowired
+    private IPaymentService paymentService;
 
     public Invoice generateInvoice(String orderId) {
         // Validate order
         log.info("Generating the invoice for order: "+orderId);
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderService.getOrder(orderId);
 
-        if (!"SUCCESS".equalsIgnoreCase(order.getPaymentStatus())) {
-            log.warn("The payment must be success in order to generate the invoice");
+        if (!(order.getPaymentStatus()== Payment.PaymentStatus.SUCCESS)) {
+            log.warn("The payment status must be success in order to generate the invoice");
             throw new IllegalStateException("Invoice can only be generated after successful payment");
         }
 
@@ -48,46 +45,45 @@ public class InvoiceService implements IInvoiceService {
         }
 
         // Get related payment
-        Payment payment = paymentRepository.findById(order.getPaymentId())
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+        Payment payment = paymentService.getPaymentById(order.getPaymentId());
 
         Invoice invoice = new Invoice();
         invoice.setId(String.valueOf(sequenceGeneratorService.getNextSequence("invoiceId")));
         invoice.setOrderId(orderId);
         invoice.setUserId(order.getBuyerId());
         invoice.setPaymentId(payment.getId());
-        invoice.setPaymentMode(order.getPaymentMethod());
+        invoice.setPaymentMode(order.getPaymentMethod().name());
         invoice.setAmount(payment.getAmountPaid());
         invoice.setIssuedAt(new Date());
         log.info("invoice is generated");
         return invoiceRepository.save(invoice);
     }
 
-     // 2. Get invoice by ID
+     // Get invoice by ID
     public Invoice getInvoiceById(String invoiceId) {
         return invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new InvoiceNotFoundException("Invoice not found"));
     }
 
-    //.3. Get invoice by order ID
+    // Get invoice by order ID
     public Invoice getInvoiceByOrderId(String orderId) {
         return invoiceRepository.findByOrderId(orderId).get();
     }
 
 
-     //4 Get all invoices for a use
+     // Get all invoices for a use
     public List<Invoice> getInvoicesByUserId(String userId) {
         return invoiceRepository.findByUserId(userId);
     }
 
 
-     // 5. Get all invoice
+     //  Get all invoice
     public List<Invoice> getAllInvoices() {
         return invoiceRepository.findAll();
     }
 
 
-     //6. Delete an invoice (admin only - optional)
+     // Delete an invoice (admin only - optional)
     public void deleteInvoice(String invoiceId) {
         if (!invoiceRepository.existsById(invoiceId)) {
             throw new InvoiceNotFoundException("Invoice not found");

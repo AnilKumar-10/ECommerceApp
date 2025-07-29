@@ -26,9 +26,9 @@ public class ReturnController {  // buyer
     }
 
 
-    @PostMapping("/updateReturn")
+        @PostMapping("/updateReturn")
     public Refund updateReturn(@RequestBody ReturnUpdateRequest returnUpdate){
-        if(returnUpdate.isPicked()){
+        if(returnUpdate.getPicked()){
             returnService.updateReturnSuccess(returnUpdate.getOrderId());
             return refundService.completeRefund(returnUpdate);
         }

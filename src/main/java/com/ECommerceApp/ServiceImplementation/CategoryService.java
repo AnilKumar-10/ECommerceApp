@@ -94,7 +94,7 @@ public class  CategoryService implements ICategoryService {
         while (current != null) {
             hierarchy.add(current);
             if (current.getParentId() == null) break;
-            current = categoryRepository.findById(current.getParentId()).orElse(null);
+            current = getCategoryById(current.getParentId());
         }
         Collections.reverse(hierarchy);
         log.info("The category hierarchy of: "+categoryId+" is  "+hierarchy);
@@ -120,10 +120,8 @@ public class  CategoryService implements ICategoryService {
     // if the given list doesn't contain the parent Category then based on the list it find out the root categoryId.
     public String getRootCategoryId(List<String> categoryIds) {
         // this will find the root categoryId in that list (only if the list contains the root id)
-        System.out.println("inside getRoot: "+categoryIds);
         for (String id : categoryIds) {
-            Category cat = categoryRepository.findById(id).orElse(null);
-            System.out.println("for1: "+cat);
+            Category cat = getCategoryById(id);
             if (cat != null && cat.getParentId() == null) {
                 return cat.getId(); // It's a root category
             }
@@ -131,10 +129,9 @@ public class  CategoryService implements ICategoryService {
 
         // if none marked as root, walk up to find root
         for (String id : categoryIds) {
-            Category cat = categoryRepository.findById(id).orElse(null);
-            System.out.println("for2: "+cat);
+            Category cat = getCategoryById(id);
             while (cat != null && cat.getParentId() != null) {
-                cat = categoryRepository.findById(cat.getParentId()).orElse(null);
+                cat = getCategoryById(cat.getParentId());
             }
             if (cat != null) return cat.getId();
         }

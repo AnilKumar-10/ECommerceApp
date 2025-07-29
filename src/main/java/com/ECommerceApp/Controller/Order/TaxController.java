@@ -22,12 +22,7 @@ public class TaxController { //admin
 
 
     @PostMapping("/createTaxrules")
-    public ResponseEntity<?>  createTax(@Valid @RequestBody List<TaxRuleCreationRequest> rule, BindingResult result){
-        if (result.hasErrors()) {
-            Map<String, String> errors = result.getFieldErrors().stream()
-                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-            return ResponseEntity.badRequest().body(errors);
-        }
+    public ResponseEntity<?>  createTax(@Valid @RequestBody List<TaxRuleCreationRequest> rule){
         return ResponseEntity.ok(taxRuleService.createMultiTaxRules(rule));
     }
 

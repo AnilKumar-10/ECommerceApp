@@ -32,5 +32,7 @@ public interface UserServiceInterface {
     long getTotalUserCount();
 
     long getTotalSellersCount();
+
+    Users saveUser(Users users);
 }
 

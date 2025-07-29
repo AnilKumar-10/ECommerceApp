@@ -1,6 +1,7 @@
 package com.ECommerceApp.ServiceImplementation;
 
 import com.ECommerceApp.DTO.Product.ProductCreationRequest;
+import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Exceptions.Product.ProductNotFoundException;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Model.Product.Review;
@@ -27,9 +28,6 @@ public class ProductService implements IProductService{
     @Autowired
     private IStockLogService stockLogService;
 
-    @Autowired
-    private IReviewService reviewService;
-
     public Product createProduct(ProductCreationRequest request) {
 //        Product product = mapToEntity(request);
         log.info("Creating the new product");
@@ -38,8 +36,8 @@ public class ProductService implements IProductService{
         product.setAddedOn(new Date());
         product.setAvailable(true);
         product.setRating(0.0);
-        StockLog stockLog = stockLogService.getByProductId(request.getId());
-        return productRepository.save(product);
+        stockLogService.getByProductId(request.getId());
+        return saveProduct(product);
     }
 
     public String  createProductList(List<ProductCreationRequest> products){
@@ -48,7 +46,7 @@ public class ProductService implements IProductService{
         for(ProductCreationRequest product : products){
             Product p = new Product();
             BeanUtils.copyProperties(product,p);
-            productRepository.save(p);
+            saveProduct(p);
             count++;
         }
         if(count==products.size()){
@@ -72,7 +70,7 @@ public class ProductService implements IProductService{
         log.info("Updating the product by id: "+request.getId());
         Product existing = getProductById(request.getId());
         BeanUtils.copyProperties(request,existing);
-        return productRepository.save(existing);
+        return saveProduct(existing);
     }
 
     public String  deleteProduct(String id) {
@@ -87,17 +85,8 @@ public class ProductService implements IProductService{
     }
 
 
-    public double calculateAverageRating(String productId) {
-        List<Review> reviews = reviewService.getReviewsByProduct(productId);
-        if (reviews.isEmpty()) return 0.0;
-        double total = reviews.stream()
-                .mapToInt(Review::getRating)
-                .sum();
-        return total / reviews.size();
-    }
-
     public double getProductPrice(String id){
-        Product product = productRepository.findById(id).get();
+        Product product = getProductById(id);
         return product.getPrice();
     }
 
@@ -125,5 +114,25 @@ public class ProductService implements IProductService{
 
     public long getTotalCountOfProductBySeller(String sellerId) {
         return productRepository.countBySellerId(sellerId);
+    }
+
+
+    public List<Product> getProductsByCategoryAndBrand(List<String> categoryIds, String brand) {
+        return productRepository.findByCategoryIdsContainingAllAndBrandIgnoreCase(categoryIds, brand);
+    }
+
+
+    public List<ProductSearchResponse> getProductsByBrand(String brandName) {
+        return productRepository.findByBrandIgnoreCase(brandName);
+    }
+
+
+    public Product saveProduct(Product product){
+        return productRepository.save(product);
+    }
+
+
+    public List<Product> getProductsBySellerId(String sellerId) {
+        return productRepository.findBySellerId(sellerId);
     }
 }

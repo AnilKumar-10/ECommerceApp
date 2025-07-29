@@ -34,7 +34,6 @@ public class AddressService implements IAddressService {
     }
     // getting the address based on the userid
     public List<Address> getAddressesByUserId(String userId) {
-
         return addressRepository.findByUserId(userId);
     }
 

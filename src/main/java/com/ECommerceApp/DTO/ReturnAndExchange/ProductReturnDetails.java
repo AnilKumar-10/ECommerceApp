@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class ProductReturnRequest {
+public class ProductReturnDetails {
     private String orderId;
     private List<String> productsId = new ArrayList<>();
     private List<String> productsName = new ArrayList<>();

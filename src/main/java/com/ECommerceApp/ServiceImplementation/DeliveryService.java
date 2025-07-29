@@ -1,4 +1,5 @@
 package com.ECommerceApp.ServiceImplementation;
+import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.*;
 import com.ECommerceApp.DTO.Delivery.DeliveryItems;
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
@@ -39,11 +40,9 @@ public class DeliveryService implements IDeliveryService {
         log.info("Assigning the delivery Person to delivery the Order");
         List<DeliveryPerson> allPersons = deliveryRepository.findAll();
         String address = addressService.getAddressById(deliveryAddress).getCity();
-        System.out.println("city: "+address);
         for (DeliveryPerson person : allPersons) {
             if(person.isActive()){
             for (String area : person.getAssignedAreas()) {
-                System.out.println("city: "+address+"  ===>   "+area);
                 if (area.toLowerCase().equalsIgnoreCase(address.toLowerCase())) {
                     log.info("The person to deliver is : "+person);
                     return person;
@@ -64,14 +63,14 @@ public class DeliveryService implements IDeliveryService {
         deliveryPerson.setDeliveredCount(0);
         deliveryPerson.setActive(true);
         log.info("Delivery person registration is success: "+deliveryPerson);
-        return deliveryRepository.save(deliveryPerson);
+        return save(deliveryPerson);
     }
 
 
     public String registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson){
         int c=0;
         for(DeliveryPersonRegistrationRequest person: deliveryPerson){
-            deliveryRepository.save(register(person));
+            save(register(person));
             c++;
         }
         return "inserted: "+c;
@@ -92,8 +91,8 @@ public class DeliveryService implements IDeliveryService {
         deliveryItems.setShippingId(order.getShippingId());
         deliveryItems.setOrderId(order.getId());
 
-        deliveryItems.setPaymentMode(order.getPaymentMethod());
-        deliveryItems.setAmountToPay(order.getPaymentMethod().equalsIgnoreCase("COD")? order.getFinalAmount() : 0.0);
+        deliveryItems.setPaymentMode(order.getPaymentMethod().name());
+        deliveryItems.setAmountToPay(order.getPaymentMethod() == Payment.PaymentMethod.COD ? order.getFinalAmount() : 0.0);
         deliveryItems.setUserName(userService.getUserById(order.getBuyerId()).getName());
         if(deliveryPerson.getToDeliveryItems().isEmpty()){
             deliveryPerson.setToDeliveryItems(new ArrayList<>());
@@ -102,12 +101,12 @@ public class DeliveryService implements IDeliveryService {
         // sending the mail to delivery partner about the order is assigned to deliver
         log.info("sending the mail to the about the Order is assigned to the delivery to : "+deliveryPersonId);
         emailService.sendOrderAssignedToDeliveryPerson("iamanil3121@gmail.com",deliveryItems,deliveryPerson.getName(),deliveryPerson.getId());
-        return deliveryRepository.save(deliveryPerson);
+        return save(deliveryPerson);
     }
 
 
     public DeliveryPerson updateDeliveryPerson(DeliveryPerson deliveryPerson){
-        return deliveryRepository.save(deliveryPerson);
+        return save(deliveryPerson);
     }
 
 
@@ -177,8 +176,8 @@ public class DeliveryService implements IDeliveryService {
     }
 
 
-    public void save(DeliveryPerson deliveryPerson){
-        deliveryRepository.save(deliveryPerson);
+    public DeliveryPerson save(DeliveryPerson deliveryPerson){
+        return  deliveryRepository.save(deliveryPerson);
     }
 
     public long totalCount() {

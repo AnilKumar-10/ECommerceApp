@@ -35,7 +35,7 @@ public interface IDeliveryService {
 
     void updateDeliveryCountAfterOrderCancellation(String deliveryPersonId);
 
-    void save(DeliveryPerson deliveryPerson);
+    DeliveryPerson save(DeliveryPerson deliveryPerson);
 
     long totalCount();
 }

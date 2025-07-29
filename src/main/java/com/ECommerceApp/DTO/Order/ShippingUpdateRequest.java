@@ -1,10 +1,11 @@
 package com.ECommerceApp.DTO.Order;
 
+import com.ECommerceApp.Model.Order.Order;
 import lombok.Data;
 
 @Data
 public class ShippingUpdateRequest {
     private String shippingId;
-    private String newValue;
+    private Order.OrderStatus newValue;
     private String updateBy;
 }

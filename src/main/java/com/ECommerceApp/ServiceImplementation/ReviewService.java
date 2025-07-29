@@ -11,7 +11,9 @@ import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.ProductRepository;
 import com.ECommerceApp.Repository.ReviewRepository;
 import com.ECommerceApp.Repository.UsersRepository;
+import com.ECommerceApp.ServiceInterface.IProductService;
 import com.ECommerceApp.ServiceInterface.IReviewService;
+import com.ECommerceApp.ServiceInterface.UserServiceInterface;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -26,12 +28,12 @@ public class ReviewService implements IReviewService {
 
     @Autowired
     private ReviewRepository reviewRepository;
-
     @Autowired
-    private UsersRepository usersRepository;
-
+    private UserServiceInterface userService;
     @Autowired
-    private ProductRepository productRepository;
+    private IProductService productService;
+
+
 
     public Review addReview(ReviewCreationRequest review) {
         log.info("adding the new review to the product: "+review.getProductId());
@@ -42,10 +44,9 @@ public class ReviewService implements IReviewService {
         BeanUtils.copyProperties(review,review1);
         review1.setCreatedAt(new Date());
         review1.setUpdatedAt(new Date());
-        if(usersRepository.existsById(review.getUserId())){
+        if(userService.getUserById(review.getUserId())!=null){
             review1.setVerifiedBuyer(true);
-        }
-        else{
+        }else{
             throw new UnknowUserReviewException("User is not verified ");
         }
         Review saved = reviewRepository.save(review1);
@@ -55,15 +56,18 @@ public class ReviewService implements IReviewService {
         return saved;
     }
 
+
     public List<Review> getReviewsByProduct(String productId) {
         return reviewRepository.findByProductId(productId);
     }
+
 
     public Review getReviewById(String id) {
         log.info("Getting the review with is: "+id);
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFountException("Review not found with ID: " + id));
     }
+
 
     public Review updateReview( ReviewCreationRequest updatedReview) {
         log.info("updating the review : "+updatedReview.getProductId());
@@ -76,9 +80,11 @@ public class ReviewService implements IReviewService {
         return review;
     }
 
+
     public Review getReviewByUserId(String productId,String userId) {
         return reviewRepository.findByProductIdAndUserId(productId,userId).orElseThrow(()->new ReviewNotFountException("There is no review with these ids"));
     }
+
 
     public String deleteReview(String id) {
         log.warn("deleting the review: "+id);
@@ -90,21 +96,23 @@ public class ReviewService implements IReviewService {
 
     }
 
+
     private void updateProductRating(String productId) {
         log.info("updating the product ratings after every new rating added.");
         List<Review> reviews = reviewRepository.findByProductId(productId);
         double average = reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
         double roundedValue = Math.round(average * 10.0) / 10.0;
-        Product product = productRepository.findById(productId).orElse(null);
+        Product product = productService.getProductById(productId);
         if (product != null) {
             product.setRating(roundedValue);
-            productRepository.save(product);
-            Users user = usersRepository.findById(product.getSellerId()).get();
+            productService.saveProduct(product);
+            Users user = userService.getUserById(product.getSellerId());
             user.setRating(getAverageSellerProductRating(user.getId()));
             // this will update the seller's avg rating when new rating is added to their products.
-            usersRepository.save(user);
+            userService.saveUser(user);
         }
     }
+
 
     public List<Review> getReviewByProductId(String id){
         return reviewRepository.findByProductId(id);
@@ -121,9 +129,10 @@ public class ReviewService implements IReviewService {
         return "Review is deleted successfully";
     }
 
+
     public double getAverageSellerProductRating(String sellerId) {
         log.info("calculating the average rating of seller after every new rating is added to their products.");
-        List<Product> products = productRepository.findBySellerId(sellerId);
+        List<Product> products = productService.getProductsBySellerId(sellerId);
         if (products.isEmpty()) {
             return 0.0;
         }
@@ -137,8 +146,10 @@ public class ReviewService implements IReviewService {
         return count == 0 ? 0.0 : Math.round((sum/count) * 10.0) / 10.0;
     }
 
+
     public List<Review> getAllUserReviews(String userId){
         return reviewRepository.findByUserId(userId);
     }
+
 
 }

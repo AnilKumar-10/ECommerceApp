@@ -1,5 +1,6 @@
 package com.ECommerceApp.Model.Delivery;
 
+import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Model.User.Address;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -18,7 +19,7 @@ public class ShippingDetails {
     private Address DeliveryAddress;
     private String trackingId;
     private Date expectedDate;
-    private String status; // PLACED, CONFIRMED, PACKED, SHIPPED, IN_TRANSIT,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
+    private Order.OrderStatus status; // PLACED, CONFIRMED, PACKED, SHIPPED, IN_TRANSIT,OUT_FOR_DELIVERY, DELIVERED, CANCELLED, RETURN_REQUESTED, RETURNED, REFUNDED,
     private String deliveryPersonId;
     private List<ModificationLog> modificationLogs;
 }

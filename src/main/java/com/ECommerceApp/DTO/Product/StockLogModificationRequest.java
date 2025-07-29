@@ -1,5 +1,7 @@
 package com.ECommerceApp.DTO.Product;
 
+import com.ECommerceApp.Model.Product.StockLog;
+import com.ECommerceApp.Model.Product.StockLogModification;
 import lombok.Data;
 
 import java.util.Date;
@@ -17,7 +19,7 @@ public class StockLogModificationRequest {
 
     @NotBlank(message = "Action is required")
     @Pattern(regexp = "ADD|SOLD|RETURNED", message = "Action must be one of: ADD, SOLD, RETURNED")
-    private String action;
+    private StockLogModification.ActionType action;
 
     @Min(value = 1, message = "Quantity changed must be at least 1")
     private int quantityChanged;

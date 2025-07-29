@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.Payment.PaymentRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
 import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,9 +30,12 @@ public class PaymentController { //user
 
 
     @PostMapping("/pay")
-    public Payment pay(@RequestBody PaymentRequest paymentDto){
-        return paymentDto.getStatus().equalsIgnoreCase("Success")?paymentService.confirmUPIPayment(paymentDto):paymentService.failPayment(paymentDto);
+    public Payment pay(@Valid @RequestBody PaymentRequest paymentDto) {
+        return paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS
+                ? paymentService.confirmUPIPayment(paymentDto)
+                : paymentService.failPayment(paymentDto);
     }
+
 
     @GetMapping("/getPayment/{paymentId}")
     public Payment getPaymentDetails(@PathVariable String paymentId){
@@ -51,7 +55,7 @@ public class PaymentController { //user
 
     @PostMapping("/payExchange")// for upi payment.
     public String  upiPayExchangeAmount(@RequestBody PaymentRequest paymentDto){
-        if(paymentDto.getStatus().equalsIgnoreCase("SUCCESS")){
+        if(paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS){
             Payment payment =  paymentService.confirmUPIPaymentForExchange(paymentDto);
             exchangeService.processExchangeAfterUpiPayDone(payment.getOrderId(),payment.getId());
             return "Payment Successful ";

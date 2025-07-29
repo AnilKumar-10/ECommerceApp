@@ -18,14 +18,10 @@ public class NotificationLogService implements INotificationLogService {
     private NotificationLogRepository notificationLogRepository;
 
     // Save a new notification
-    public void saveNotification(String userId, String message, String type) {
+    public void saveNotification(NotificationLog notificationLog) {
         log.info("saving the notification log into the db.");
-        NotificationLog log = new NotificationLog();
-        log.setUserId(userId);
-        log.setMessage(message);
-        log.setType(type);
-        log.setCreatedAt(new Date());
-        notificationLogRepository.save(log);
+        notificationLog.setCreatedAt(new Date());
+        notificationLogRepository.save(notificationLog);
     }
 
     // Save an existing object

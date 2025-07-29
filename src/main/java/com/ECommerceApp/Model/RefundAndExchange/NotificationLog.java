@@ -13,6 +13,16 @@ public class NotificationLog {
     private String id;
     private String userId;
     private String message;
-    private String type; // "ORDER", "ALERT","Delivery" etc.
+    private NotificationType type;
     private Date createdAt;
+
+    public enum NotificationType {
+        ORDER,
+        ALERT,
+        DELIVERY,
+        REFUND,
+        EXCHANGE,
+        CANCEL
+    }
 }
+

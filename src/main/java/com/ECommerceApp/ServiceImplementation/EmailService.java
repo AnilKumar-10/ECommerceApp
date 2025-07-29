@@ -3,13 +3,15 @@ package com.ECommerceApp.ServiceImplementation;
 import com.ECommerceApp.DTO.Delivery.DeliveryItems;
 import com.ECommerceApp.DTO.ReturnAndExchange.ExchangeDeliveryItems;
 import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
-import com.ECommerceApp.DTO.ReturnAndExchange.ProductReturnRequest;
+import com.ECommerceApp.DTO.ReturnAndExchange.ProductReturnDetails;
 import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
 import com.ECommerceApp.Exceptions.Notification.MailSendException;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Model.Product.StockLog;
+import com.ECommerceApp.Model.Product.StockLogModification;
+import com.ECommerceApp.Model.RefundAndExchange.NotificationLog;
 import com.ECommerceApp.Model.User.Address;
 import com.ECommerceApp.ServiceInterface.IEmailService;
 import com.ECommerceApp.ServiceInterface.INotificationLogService;
@@ -73,7 +75,11 @@ public class EmailService implements IEmailService {
             mailSender.send(message);
             System.out.println("Order Confirmation Email is sent successfully  to: "+toEmail);
 
-            saveLogDetails(order.getBuyerId(),"Your Order #" + order.getId() + " is Confirmed" ,"ORDER");
+            NotificationLog log = new NotificationLog();
+            log.setUserId(order.getBuyerId());
+            log.setMessage("Your Order #" + order.getId() + " is Confirmed");
+            log.setType(NotificationLog.NotificationType.ORDER);
+            saveLogDetails(log);
 
         } catch (MessagingException e) {
             throw new MailSendException("Failed to send Order Confirmation Mail.");
@@ -108,8 +114,11 @@ public class EmailService implements IEmailService {
             mailSender.send(mimeMessage);
             System.out.println("Order delivery email sent to " + toEmail);
 
-            saveLogDetails(order.getBuyerId(),"Order Delivered - #" + order.getId(),"ORDER");
-
+            NotificationLog log = new NotificationLog();
+            log.setUserId(order.getBuyerId());
+            log.setMessage("Order Delivered - #" + order.getId());
+            log.setType(NotificationLog.NotificationType.ORDER);
+            saveLogDetails(log);
         } catch (Exception e) {
             System.err.println("Failed to send delivery email: " + e.getMessage());
             throw new MailSendException("Failed to send Order Delivered Mail.");
@@ -149,8 +158,11 @@ public class EmailService implements IEmailService {
             // Send the mail
             mailSender.send(message);
             System.out.println("Return request mail sent successfully to "+toEmail);
-
-            saveLogDetails(dto.getUserId(),"Your Return Request for Order #" + dto.getOrderId(),"REFUND" );
+            NotificationLog log = new NotificationLog();
+            log.setUserId(dto.getUserId());
+            log.setMessage("Your Return Request for Order #" + dto.getOrderId());
+            log.setType(NotificationLog.NotificationType.REFUND);
+            saveLogDetails(log);
 
         } catch (Exception e) {
             throw new MailSendException("Failed to send Return Request Mail.");
@@ -186,7 +198,11 @@ public class EmailService implements IEmailService {
             mailSender.send(message);
             System.out.println("Return Completed mail send to: "+toEmail);
 
-            saveLogDetails(order.getBuyerId(), "Your Return is Completed – Refund Processing","REFUND");
+            NotificationLog log = new NotificationLog();
+            log.setUserId(order.getBuyerId());
+            log.setMessage("Your Return is Completed – Refund Processing");
+            log.setType(NotificationLog.NotificationType.REFUND);
+            saveLogDetails(log);
 
         } catch (MessagingException e) {
             throw new MailSendException("Failed to send Return Completion Mail.");
@@ -216,7 +232,12 @@ public class EmailService implements IEmailService {
             mailSender.send(message);
             System.out.println("Refund rejected email sent to " + toEmail);
 
-            saveLogDetails(userName,"Refund Request Rejected for Order #" + orderId,"REFUND");
+            NotificationLog log = new NotificationLog();
+            log.setUserId(userName);
+            log.setMessage("Refund Request Rejected for Order #" + orderId);
+            log.setType(NotificationLog.NotificationType.REFUND);
+            saveLogDetails(log);
+
 
         } catch (MessagingException e) {
             throw  new MailSendException("Failed to send Refund Rejection mail.");
@@ -243,7 +264,11 @@ public class EmailService implements IEmailService {
             mailSender.send(message);
             System.out.println("Order cancellation Email sent successfully to: "+toEmail);
 
-            saveLogDetails(order.getBuyerId(), "Order Cancellation - " + order.getId(),"ORDER" );
+            NotificationLog log = new NotificationLog();
+            log.setUserId(order.getBuyerId());
+            log.setMessage("Order Cancellation - " + order.getId());
+            log.setType(NotificationLog.NotificationType.CANCEL);
+            saveLogDetails(log);
 
         } catch (MessagingException e) {
             throw new MailSendException("Failed to send order cancellation email to " + toEmail);
@@ -270,7 +295,11 @@ public class EmailService implements IEmailService {
             mailSender.send(mimeMessage);
             System.out.println("Order assigned to delivery Email sent successfully to: "+toEmail);
 
-            saveLogDetails(deliveryPersonId,"New Order Assigned for Delivery","ORDER");
+            NotificationLog log = new NotificationLog();
+            log.setUserId(deliveryPersonId);
+            log.setMessage("New Order Assigned for Delivery"+deliveryItem.getOrderId());
+            log.setType(NotificationLog.NotificationType.DELIVERY);
+            saveLogDetails(log);
 
         } catch (Exception e) {
             throw new MailSendException("Failed to send delivery assignment email"+e);
@@ -296,7 +325,11 @@ public class EmailService implements IEmailService {
             mailSender.send(message);
             System.out.println("Delivery cancellation Email sent successfully to: "+deliveryEmail);
 
-            saveLogDetails(deliveryPersonId,"Order Cancelled – No Delivery Required for Order: " + deliveryItem.getOrderId(),"ORDER");
+            NotificationLog log = new NotificationLog();
+            log.setUserId(deliveryPersonId);
+            log.setMessage("Order Cancelled – No Delivery Required for Order: " + deliveryItem.getOrderId());
+            log.setType(NotificationLog.NotificationType.DELIVERY);
+            saveLogDetails(log);
 
         } catch (MessagingException e) {
             throw new MailSendException("Failed to send order cancellation email to delivery person"+e);
@@ -327,7 +360,11 @@ public class EmailService implements IEmailService {
             mailSender.send(message);
             System.out.println("Low stock alert email sent to seller: " + sellerEmail);
 
-            saveLogDetails(stockLog.getSellerId(),"Low Stock Alert for Product: "+stockLog.getProductId(),"ALERT" );
+            NotificationLog log = new NotificationLog();
+            log.setUserId(stockLog.getSellerId());
+            log.setMessage("Low Stock Alert for Product: "+stockLog.getProductId());
+            log.setType(NotificationLog.NotificationType.ALERT);
+            saveLogDetails(log);
 
         } catch (MessagingException e) {
             System.err.println("Failed to send low stock alert: " + e.getMessage());
@@ -336,7 +373,7 @@ public class EmailService implements IEmailService {
     }
 
 
-    public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnRequest returnDto, String userId) {
+    public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnDetails returnDto, String userId) {
         log.info("Sending the return order to collect mail to delivery agent :"+toEmail);
         try {
             System.out.println("INSIDE MAIL SERIVE: "+returnDto);
@@ -355,7 +392,12 @@ public class EmailService implements IEmailService {
 
             mailSender.send(mimeMessage);
 
-            saveLogDetails(userId,"Return Pickup Assigned - Order " + returnDto.getOrderId(),"RETURN  ");
+            NotificationLog log = new NotificationLog();
+            log.setUserId(userId);
+            log.setMessage("Return Pickup Assigned - Order " + returnDto.getOrderId());
+            log.setType(NotificationLog.NotificationType.REFUND);
+            saveLogDetails(log);
+
 
             System.out.println("Return assigned mail to delivery sent successfully: "+toEmail);
         } catch (MessagingException e) {
@@ -384,8 +426,13 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true); // true for HTML content
 
             mailSender.send(mimeMessage);
-            System.out.println("OTP mail sent successfully to " + toEmail);
+            log.info("OTP mail sent successfully to " + toEmail);
 
+            NotificationLog log = new NotificationLog();
+            log.setUserId(userName);
+            log.setMessage("Your OTP to Reset Password");
+            log.setType(NotificationLog.NotificationType.ORDER);
+            saveLogDetails(log);
         } catch (MessagingException e) {
             System.err.println("Failed to send OTP email: " + e.getMessage());
             // Handle/log exception or throw custom exception
@@ -419,6 +466,11 @@ public class EmailService implements IEmailService {
             mailSender.send(mimeMessage);
             System.out.println("Exchange confirmation email sent to " + toEmail);
 
+            NotificationLog log = new NotificationLog();
+            log.setUserId(exchangeInfo.getOrderId());
+            log.setMessage("Your Exchange Request has been Accepted!"+exchangeInfo.getOrderId());
+            log.setType(NotificationLog.NotificationType.EXCHANGE);
+            saveLogDetails(log);
         } catch (Exception e) {
             System.err.println("Failed to send exchange email: " + e.getMessage());
             e.printStackTrace();
@@ -450,6 +502,12 @@ public class EmailService implements IEmailService {
 
             mailSender.send(message);
 
+            NotificationLog log = new NotificationLog();
+            log.setUserId(deliveryPerson.getId());
+            log.setMessage("New Exchange Delivery Assignment - Order ID: " + item.getOrderId());
+            log.setType(NotificationLog.NotificationType.EXCHANGE);
+            saveLogDetails(log);
+
             System.out.println("Exchange assignment mail sent to: " + deliveryPerson.getName());
 
         } catch (Exception e) {
@@ -457,11 +515,9 @@ public class EmailService implements IEmailService {
         }
     }
 
-
-
     // storing all the email log details.
-    public void saveLogDetails(String userId,String subject,String type){
+    public void saveLogDetails(NotificationLog notificationLog){
         log.info("Saving all the Notification logs into db");
-        notificationLogService.saveNotification(userId, subject, type);
+        notificationLogService.saveNotification(notificationLog);
     }
 }

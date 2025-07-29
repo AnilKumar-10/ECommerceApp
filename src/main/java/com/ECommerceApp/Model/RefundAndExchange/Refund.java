@@ -19,7 +19,14 @@ public class Refund {
     private double refundAmount;
 
     private String reason;       // Reason for refund
-    private String status;       // PENDING, APPROVED, REJECTED, COMPLETED
+    private RefundStatus status; // Enum instead of String
     private Date requestedAt;
     private Date processedAt;
+
+    public enum RefundStatus {
+        PENDING,
+        APPROVED,
+        REJECTED,
+        COMPLETED
+    }
 }

@@ -42,11 +42,13 @@ public class StockLogService implements IStockLogService {
 
         // 2. Update quantity based on action
         int change = modification.getQuantityChanged();
-        String action = modification.getAction().toUpperCase();
+        StockLogModification.ActionType action = modification.getAction();
 
-        if (action.equals("ADD") || action.equals("RETURNED") || action.equals("CANCELLED")) {
+        if (action == StockLogModification.ActionType.ADD
+                || action == StockLogModification.ActionType.RETURNED
+                || action == StockLogModification.ActionType.CANCELLED) {
             change = Math.abs(change); // Ensure positive change
-        } else if (action.equals("SOLD")) {
+        } else if (action == StockLogModification.ActionType.SOLD) {
             change = -Math.abs(change); // Ensure negative change
         } else {
             throw new IllegalArgumentException("Invalid stock action: " + action);

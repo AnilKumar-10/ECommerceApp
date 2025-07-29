@@ -21,7 +21,7 @@ public class  CartController { //buyer
     public Cart addToCart(@RequestBody CartItem items){
         items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
         System.out.println(items);
-        return cartService.addItemToCart("USER1040",items); // userid is taken from the jwt token
+        return cartService.addItemToCart("USER1031",items); // userid is taken from the jwt token
     }
 
 
@@ -39,7 +39,7 @@ public class  CartController { //buyer
 
     @DeleteMapping("/removeCartItem")
     public Cart removeItemFromCart(@PathVariable String itemNo){ // we get userid from jwt
-        return cartService.removeOneItemFromCart("USER1040",itemNo);
+        return cartService.removeOneItemFromCart("USER1031",itemNo);
     }
 
 

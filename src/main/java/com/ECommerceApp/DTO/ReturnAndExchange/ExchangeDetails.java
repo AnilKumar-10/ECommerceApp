@@ -1,19 +1,15 @@
 package com.ECommerceApp.DTO.ReturnAndExchange;
 
+import com.ECommerceApp.Model.Payment.Payment;
+import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import lombok.Data;
 
 import java.util.Date;
 
-//@Data
-//public class ExchangeDetails {
-//    private String replacementProductId;
-//    private double replacementPrice;
-//    private double originalPrice;
-//    private double exchangeDifferenceAmount;
-//    private String paymentMode;
-//    private String paymentStatus;
-//    private String reason;
-//}
+import lombok.Data;
+
+import java.util.Date;
+
 @Data
 public class ExchangeDetails {
 
@@ -24,19 +20,32 @@ public class ExchangeDetails {
 
     private double exchangeDifferenceAmount;
 
-    // "PAYABLE", "REFUNDABLE", or "NO_DIFFERENCE"
-    private String exchangeType;
+    private ExchangeType exchangeType;
 
     private String paymentId;
-    private String paymentMode;          // UPI, COD (if PAYABLE)
-    private String paymentStatus;        // PENDING, SUCCESS, FAILED (if PAYABLE)
+    private Payment.PaymentMethod paymentMode;               // UPI, COD (if PAYABLE)
+    private Payment.PaymentStatus paymentStatus;           // PENDING, SUCCESS, FAILED (if PAYABLE)
 
     private String refundId;
-    private String refundMode;           // UPI (if REFUNDABLE)
-    private String refundStatus;         // PENDING, COMPLETED, FAILED (if REFUNDABLE)
+    private RefundMode refundMode;                 // UPI (if REFUNDABLE)
+    private Refund.RefundStatus refundStatus;             // PENDING, COMPLETED, FAILED (if REFUNDABLE)
 
-    private String reason;               // Reason for exchange
+    private String reason;                         // Reason for exchange
 
     private Date createdAt;
     private Date updatedAt;
+
+
+    public enum ExchangeType {
+        PAYABLE,
+        REFUNDABLE,
+        NO_DIFFERENCE
+    }
+
+
+    public enum RefundMode {
+        UPI
+    }
+
+
 }

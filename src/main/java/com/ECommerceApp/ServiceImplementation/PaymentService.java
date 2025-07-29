@@ -29,7 +29,6 @@ public class PaymentService implements IPaymentService {
     // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
     public Payment initiatePayment(InitiatePaymentRequest initiatePaymentDto) {
         log.info("Initiating the online payment for order ");
-        System.out.println("inside the initiate payment : "+initiatePaymentDto);
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
         if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
@@ -41,20 +40,19 @@ public class PaymentService implements IPaymentService {
         payment.setUserId(initiatePaymentDto.getUserId());
         payment.setAmountPaid(initiatePaymentDto.getAmount());
         payment.setPaymentMethod(initiatePaymentDto.getMethod());
-        payment.setStatus("PENDING");// because we don't know whether the payment will be done or not
+        payment.setStatus(Payment.PaymentStatus.SUCCESS);// because we don't know whether the payment will be done or not
         payment.setTransactionTime(new Date());
-        return paymentRepository.save(payment);
+        return savePayment(payment);
     }
 
     // Update payment on success
     public Payment confirmUPIPayment(PaymentRequest paymentDto) {
         log.info("making the payment success after initialize");
-        Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+        Payment payment = getPaymentById(paymentDto.getPaymentId());
         payment.setTransactionId(paymentDto.getTransactionId());
-        payment.setStatus("SUCCESS");
+        payment.setStatus(Payment.PaymentStatus.SUCCESS);
         payment.setTransactionTime(new Date());
-        paymentRepository.save(payment);
+        savePayment(payment);
 
         // Update order as well
         orderService.markOrderAsPaid(payment.getOrderId(), payment.getId());
@@ -64,12 +62,11 @@ public class PaymentService implements IPaymentService {
     //  Update payment on failure
     public Payment failPayment(PaymentRequest paymentDto) {
         log.warn("the online payment is failed");
-        Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+        Payment payment = getPaymentById(paymentDto.getPaymentId());
 
-        payment.setStatus("FAILED");
+        payment.setStatus(Payment.PaymentStatus.FAILED);
         payment.setTransactionTime(new Date());
-        paymentRepository.save(payment);
+        savePayment(payment);
         // Mark order as failed
         orderService.markOrderAsPaymentFailed(payment.getOrderId());
         return payment;
@@ -78,12 +75,11 @@ public class PaymentService implements IPaymentService {
     // conforming the cod payment success.
     public void confirmCODPayment(PaymentRequest paymentDto) { // for COD payment
         log.info("making the COD payment done by the delivery agent");
-        Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
+        Payment payment = getPaymentById(paymentDto.getPaymentId());
         payment.setTransactionId(paymentDto.getTransactionId());
-        payment.setStatus("SUCCESS");
+        payment.setStatus(Payment.PaymentStatus.SUCCESS);
         payment.setTransactionTime(new Date());
-        paymentRepository.save(payment);
+        savePayment(payment);
     }
 
 
@@ -105,7 +101,6 @@ public class PaymentService implements IPaymentService {
     // for exchange payment.
     public Payment initiateExchangePayment(InitiatePaymentRequest initiatePaymentDto) {
         log.info("Initialize the exchange online payment for order: "+initiatePaymentDto.getOrderId());
-        System.out.println("inside the initiate payment : "+initiatePaymentDto);
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
         if(order.getExchangeDetails().getExchangeDifferenceAmount()!=initiatePaymentDto.getAmount()){
@@ -117,7 +112,7 @@ public class PaymentService implements IPaymentService {
         payment.setUserId(initiatePaymentDto.getUserId());
         payment.setAmountPaid(initiatePaymentDto.getAmount());
         payment.setPaymentMethod(initiatePaymentDto.getMethod());
-        payment.setStatus("PENDING");// because we don't know whether the payment will be done or not
+        payment.setStatus(Payment.PaymentStatus.PENDING);// because we don't know whether the payment will be done or not
         payment.setTransactionTime(new Date());
         return savePayment(payment);
     }
@@ -128,9 +123,9 @@ public class PaymentService implements IPaymentService {
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
                 .orElseThrow(() -> new PaymentNotFoundException("Payment not found"));
         payment.setTransactionId(paymentDto.getTransactionId());
-        payment.setStatus("SUCCESS");
+        payment.setStatus(Payment.PaymentStatus.SUCCESS);
         payment.setTransactionTime(new Date());
-        paymentRepository.save(payment);
+        savePayment(payment);
         return payment;
     }
 

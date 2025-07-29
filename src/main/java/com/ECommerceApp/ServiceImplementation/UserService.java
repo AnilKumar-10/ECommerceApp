@@ -180,9 +180,10 @@ public class UserService implements UserServiceInterface {
         return usersRepository.countByRolesContaining("SELLER");
     }
 
-
-
-
+    @Override
+    public Users saveUser(Users users) {
+        return usersRepository.save(users);
+    }
 
 
 }

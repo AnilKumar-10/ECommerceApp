@@ -13,8 +13,6 @@ public interface IShippingService {
 
     ShippingDetails updateShippingStatus(ShippingUpdateRequest shippingUpdateDTO);
 
-    ShippingDetails updateCourierDetails(ShippingUpdateRequest shippingUpdateDTO);
-
     ShippingDetails getShippingByOrderId(String orderId);
 
     List<ShippingDetails> getByDeliveryPersonId(String deliveryPersonId);

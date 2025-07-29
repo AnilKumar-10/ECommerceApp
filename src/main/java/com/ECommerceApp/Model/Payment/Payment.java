@@ -15,8 +15,19 @@ public class Payment {
     private String userId;
     private String orderId;
     private double amountPaid;
-    private String paymentMethod;
-    private String status;
+    private PaymentMethod paymentMethod;   // Enum inside Payment
+    private PaymentStatus status;          // Enum inside Payment
     private Date transactionTime;
+
+    public enum PaymentMethod {
+        UPI,
+        COD
+    }
+
+    public enum PaymentStatus {
+        PENDING,
+        SUCCESS,
+        FAILED
+    }
 }
 

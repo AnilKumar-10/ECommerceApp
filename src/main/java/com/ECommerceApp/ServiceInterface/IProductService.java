@@ -1,6 +1,7 @@
 package com.ECommerceApp.ServiceInterface;
 
 import com.ECommerceApp.DTO.Product.ProductCreationRequest;
+import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Model.Product.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +22,7 @@ public interface IProductService {
 
     String deleteProduct(String id);
 
-    double calculateAverageRating(String productId);
+//    double calculateAverageRating(String productId);
 
     double getProductPrice(String id);
 
@@ -34,5 +35,15 @@ public interface IProductService {
     boolean checkStockAvailability(String productId);
 
     long getTotalCountOfProductBySeller(String sellerId);
+
+    List<Product> getProductsByCategoryAndBrand(List<String> categoryIds, String brand);
+
+    List<ProductSearchResponse> getProductsByBrand(String brandName);
+
+    public Product saveProduct(Product product);
+
+    List<Product> getProductsBySellerId(String sellerId);
+
+
 }
 

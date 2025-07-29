@@ -1,5 +1,6 @@
 package com.ECommerceApp.DTO.ReturnAndExchange;
 
+import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,7 +13,7 @@ public class RefundAndReturnResponse {
     private double refundAmount;
 
     private String reason;       // Reason for refund
-    private String status;       // PENDING, APPROVED, REJECTED, COMPLETED
+    private Refund.RefundStatus status;       // PENDING, APPROVED, REJECTED, COMPLETED
     private Date requestedAt;
     private Date processedAt;
 

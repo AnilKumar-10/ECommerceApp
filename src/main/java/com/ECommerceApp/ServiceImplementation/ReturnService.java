@@ -7,6 +7,7 @@ import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Model.Order.OrderItem;
+import com.ECommerceApp.Model.Product.StockLogModification;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import com.ECommerceApp.ServiceInterface.IReturnService;
 import lombok.extern.slf4j.Slf4j;
@@ -51,17 +52,15 @@ public class ReturnService  implements IReturnService {
         Order order = orderService.getOrder(orderId);
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy("ADMIN");
-        shippingUpdateDTO.setNewValue("REQUESTED_TO_RETURN");
-        ShippingDetails  shippingDetails = shippingService.updateShippingStatus(shippingUpdateDTO);
-//        System.out.println("indide the return service class with : "+shippingDetails);
-        return shippingDetails;
+        shippingUpdateDTO.setNewValue(Order.OrderStatus.REQUESTED_TO_RETURN);
+        return shippingService.updateShippingStatus(shippingUpdateDTO);
     }
 
     public DeliveryPerson assignReturnProductToDeliveryPerson(ShippingDetails shippingDetails, String reason){
-        log.info("Assining the to return products to the delivery agent");
+        log.info("Assigning the to return products to the delivery agent");
         DeliveryPerson deliveryPerson =  deliveryService.getDeliveryPerson(shippingDetails.getDeliveryPersonId());
         Order order = orderService.getOrder(shippingDetails.getOrderId());
-        ProductReturnRequest productReturnDto = new ProductReturnRequest();
+        ProductReturnDetails productReturnDto = new ProductReturnDetails();
         productReturnDto.setProductPicked(false);
         productReturnDto.setReason(reason);
         productReturnDto.setOrderId(order.getId());
@@ -69,7 +68,7 @@ public class ReturnService  implements IReturnService {
         productReturnDto.setAddress(addressService.getAddressById(shippingDetails.getDeliveryAddress().getId()));
         log.info("Adding the products that need to be returned to the delivery agent.");
         for(OrderItem orderItem : order.getOrderItems()){
-            if(orderItem.getStatus().equalsIgnoreCase("REQUESTED_TO_RETURN")){
+            if(Objects.equals(orderItem.getStatus(), Order.OrderStatus.REQUESTED_TO_RETURN.name())){
 
                 productReturnDto.getProductsId().add(orderItem.getProductId());
                 productReturnDto.getProductsName().add(orderItem.getName());
@@ -98,9 +97,7 @@ public class ReturnService  implements IReturnService {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);  // Set the calendar to your original date
         calendar.add(Calendar.DAY_OF_MONTH, 3);  // Add 3 days
-
-        Date dateAfter3Days = calendar.getTime();  // Resulting date
-        return dateAfter3Days;
+        return calendar.getTime();
     }
 
     public void updateReturnSuccess(String orderId){
@@ -109,10 +106,9 @@ public class ReturnService  implements IReturnService {
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy("ADMIN");
-        shippingUpdateDTO.setNewValue("RETURNED");
+        shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURNED);
         shippingService.updateShippingStatus(shippingUpdateDTO);
         updateOrderItemsForReturnSuccess(order);
-//        System.out.println("inside the return service class with : "+shippingDetails);
         updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
 
     }
@@ -122,8 +118,8 @@ public class ReturnService  implements IReturnService {
         log.info("updating the status to returned to the products that are requested.");
         List<OrderItem> orderItems = order.getOrderItems();
         for(OrderItem orderItem:orderItems){
-            if(orderItem.getStatus().equals("REQUESTED_TO_RETURN") ){
-                orderItem.setStatus("RETURNED");
+            if(orderItem.getStatus().equals(Order.OrderStatus.REQUESTED_TO_RETURN.name()) ){
+                orderItem.setStatus(Order.OrderStatus.RETURNED.name());
             }
         }
         order.setOrderItems(orderItems);
@@ -139,7 +135,7 @@ public class ReturnService  implements IReturnService {
         orderService.saveOrder(order);
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy("ADMIN");
-        shippingUpdateDTO.setNewValue("RETURNED_FAILED");
+        shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURN_FAILED);
         shippingService.updateShippingStatus(shippingUpdateDTO);
     }
 
@@ -149,9 +145,9 @@ public class ReturnService  implements IReturnService {
         Order order = orderService.getOrder(orderId);
         List<OrderItem> orderedProducts = order.getOrderItems();
         for(OrderItem orderItem : orderedProducts){
-            if(orderItem.getStatus().equals("RETURNED")){
+            if(orderItem.getStatus().equals(Order.OrderStatus.RETURNED.name())){
                 StockLogModificationRequest stockLogModificationDTO = new StockLogModificationRequest();
-                stockLogModificationDTO.setAction("RETURNED");
+                stockLogModificationDTO.setAction(StockLogModification.ActionType.RETURNED);
                 stockLogModificationDTO.setModifiedAt(new Date());
                 stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
                 stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
@@ -169,7 +165,7 @@ public class ReturnService  implements IReturnService {
         for(OrderItem orderItem : orderedProducts){
             if(orderItem.getStatus()==null){
                 StockLogModificationRequest stockLogModificationDTO = new StockLogModificationRequest();
-                stockLogModificationDTO.setAction("CANCELLED");
+                stockLogModificationDTO.setAction(StockLogModification.ActionType.CANCELLED);
                 stockLogModificationDTO.setModifiedAt(new Date());
                 stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
                 stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
@@ -184,7 +180,7 @@ public class ReturnService  implements IReturnService {
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         for(OrderItem orderItem : orderItems){
             if(refundRequestDto.getProductIds().contains(orderItem.getProductId())){
-                orderItem.setStatus("REQUESTED_TO_RETURN");
+                orderItem.setStatus(Order.OrderStatus.REQUESTED_TO_RETURN.name());
             }
         }
         order.setOrderItems(orderItems);

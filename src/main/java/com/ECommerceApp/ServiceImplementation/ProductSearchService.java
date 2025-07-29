@@ -29,13 +29,9 @@ import java.util.stream.Collectors;
 public class ProductSearchService implements IProductSearchService {
 
     @Autowired
-    private ProductRepository productRepository;
-    @Autowired
     private IProductService productService;
     @Autowired
     private ICategoryService categoryService;
-    @Autowired
-    private CategoryRepository categoryRepository;
     @Autowired
     private IWishListService wishListService;
 
@@ -101,7 +97,7 @@ public class ProductSearchService implements IProductSearchService {
         for (List<String> requiredIds : requiredIdGroups) {
 
             if (brand != null && !brand.isBlank()) {
-                allMatchingProducts.addAll(productRepository.findByCategoryIdsContainingAllAndBrandIgnoreCase(requiredIds, brand));
+                allMatchingProducts.addAll(productService.getProductsByCategoryAndBrand(requiredIds, brand));
             } else {
                 allMatchingProducts.addAll(productService.getProductContainsAllCategory(requiredIds));
             }
@@ -113,15 +109,14 @@ public class ProductSearchService implements IProductSearchService {
 
     public List<ProductSearchResponse> getProductByBrand(String brandName){
         log.info("Getting the products based on the brand");
-        return productRepository.findByBrandIgnoreCase(brandName);
+        return productService.getProductsByBrand(brandName);
     }
 
 
     public Page<ProductSearchResponse> getAllProducts(int page, int size) {
         log.info("Getting all the products present in the db with paging ");
         Pageable pageable = PageRequest.of(page, size);
-        Page<Product> productPage = productRepository.findAll(pageable); // Update this call
-
+        Page<Product> productPage = productService.getAllProducts(pageable);
         List<ProductSearchResponse> dtoList = new ArrayList<>();
         for (Product product : productPage.getContent()) {
             ProductSearchResponse dto = new ProductSearchResponse();

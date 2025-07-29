@@ -7,7 +7,9 @@ import com.ECommerceApp.Exceptions.Order.OrderNotFoundException;
 import com.ECommerceApp.Exceptions.Product.ProductOutOfStockException;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
 import com.ECommerceApp.Model.Order.*;
+import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.Model.Product.Product;
+import com.ECommerceApp.Model.Product.StockLogModification;
 import com.ECommerceApp.Model.User.Address;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.OrderRepository;
@@ -81,11 +83,11 @@ public class OrderService implements IOrderService {
         order.setPaymentMethod(orderDto.getPayMode());
         order.setOrderDate(new Date());
         order.setUpiId(users.getUpiId());
-        order.setOrderStatus(orderDto.getPayMode().equalsIgnoreCase("COD")?"PLACED":"PENDING");
-        order.setPaymentStatus("PENDING"); // pending until the payment is successful
+        order.setOrderStatus(orderDto.getPayMode() == Payment.PaymentMethod.COD? Order.OrderStatus.PLACED: Order.OrderStatus.PENDING);
+        order.setPaymentStatus(Payment.PaymentStatus.PENDING); // pending until the payment is successful
         Order order1 = orderRepository.save(order);
-        if(orderDto.getPayMode().equalsIgnoreCase("COD")){
-            // if the paymode is UPI then the shipping details must be generated after the payment.
+        if(orderDto.getPayMode() == Payment.PaymentMethod.COD){
+            // if the pay mode is UPI then the shipping details must be generated after the payment.
             log.info("The payment mode is COD so process the shipping.");
             ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
@@ -95,16 +97,16 @@ public class OrderService implements IOrderService {
         else{
             log.info("The payment mode is UPI/ONLINE so shipping is processes after the payment.");
         }
-        return order1; // flow goes to the initiating payment is the paymode is upi
+        return order1; // flow goes to the initiating payment is the pay mode is upi
     }
 
 
     public String getAddress(String userId,String type){
-        List<Address> address = addressService.getAddressesByUserId(userId);
+        List<Address> addresses = addressService.getAddressesByUserId(userId);
         String addressId = "";
-        for(Address adrs : address){
-            if(adrs.getType().equals(type)){
-                addressId = adrs.getId();
+        for(Address address : addresses){
+            if(address.getType().equals(type)){
+                addressId = address.getId();
             }
         }
         return addressId;
@@ -135,8 +137,8 @@ public class OrderService implements IOrderService {
         log.info("updating UPI payment success in order details");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
-        order.setPaymentStatus("SUCCESS");
-        order.setOrderStatus("CONFIRMED");
+        order.setPaymentStatus(Payment.PaymentStatus.SUCCESS);
+        order.setOrderStatus(Order.OrderStatus.PLACED);
         order.setPaymentId(paymentId);
         Order order1 = orderRepository.save(order);
         ShippingDetails shippingDetails = shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
@@ -150,8 +152,8 @@ public class OrderService implements IOrderService {
         log.info("updating UPI payment failed in order details");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
-        order.setPaymentStatus("FAILED");
-        order.setOrderStatus("CANCELLED");
+        order.setPaymentStatus(Payment.PaymentStatus.FAILED);
+        order.setOrderStatus(Order.OrderStatus.CANCELLED);
         order.setCancelled(true);
         order.setCancelReason("Payment failed");
         order.setCancellationTime(new Date());
@@ -166,7 +168,7 @@ public class OrderService implements IOrderService {
         List<OrderItem> orderedProducts = order.getOrderItems();
         for(OrderItem orderItem : orderedProducts){
             StockLogModificationRequest stockLogModificationDTO = new StockLogModificationRequest();
-            stockLogModificationDTO.setAction("SOLD");
+            stockLogModificationDTO.setAction(StockLogModification.ActionType.SOLD);
             stockLogModificationDTO.setModifiedAt(new Date());
             stockLogModificationDTO.setQuantityChanged(orderItem.getQuantity());
             stockLogModificationDTO.setSellerId(productService.getProductById(orderItem.getProductId()).getSellerId());
@@ -188,9 +190,9 @@ public class OrderService implements IOrderService {
     public void updateCODPaymentStatus(DeliveryUpdate deliveryUpdateDTO){
         log.info("updating COD payment success in order details");
         Order order = getOrder(deliveryUpdateDTO.getOrderId());
-        if(deliveryUpdateDTO.getPaymentStatus().equalsIgnoreCase("success")){
-            order.setOrderStatus("DELIVERED");
-            order.setPaymentStatus("SUCCESS");
+        if(deliveryUpdateDTO.getPaymentStatus() == Payment.PaymentStatus.SUCCESS){
+            order.setOrderStatus(Order.OrderStatus.DELIVERED);
+            order.setPaymentStatus(Payment.PaymentStatus.SUCCESS);
             order.setPaymentId(deliveryUpdateDTO.getPaymentId());
         }
         saveOrder(order);
@@ -210,12 +212,9 @@ public class OrderService implements IOrderService {
 
         for (OrderItem item : orderItems) {
             Product product = productService.getProductById(item.getProductId());
-            // Get root category ID
             String rootCategoryId = categoryService.getRootCategoryId(product.getCategoryIds());
-            // Get tax rule
-//            TaxRule rule = taxRuleService.getTaxRule(rootCategoryId, shippingState).get();
             double taxRate = taxRuleService.getApplicableTaxRate(rootCategoryId, shippingState);
-            // Calculate tax for this item
+
             double tax = (item.getPrice() * taxRate) / 100;
             item.setTax(tax);
 

@@ -5,6 +5,7 @@ import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
 import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
 import com.ECommerceApp.DTO.Payment.PaymentRequest;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
+import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.*;
 import com.ECommerceApp.ServiceInterface.IPaymentService;
 import jakarta.validation.Valid;
@@ -42,12 +43,12 @@ public class DeliveryController { // admin, delivery person
 
     @PostMapping("/updateDelivery")
     public ResponseEntity<?> updateDelivery(@Valid @RequestBody DeliveryUpdate deliveryUpdateDTO){
-        if(orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod().equalsIgnoreCase("COD")){
+        if(orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod()== Payment.PaymentMethod.COD){
             System.out.println("inside the if of update: "+deliveryUpdateDTO);
             PaymentRequest paymentDto = new PaymentRequest();
             paymentDto.setPaymentId(deliveryUpdateDTO.getPaymentId());
             paymentDto.setTransactionId(orderService.generateTransactionIdForCOD());
-            paymentDto.setStatus("SUCCESS");
+            paymentDto.setStatus(Payment.PaymentStatus.SUCCESS);
             paymentService.confirmCODPayment(paymentDto); // updating the payment success details
             orderService.updateCODPaymentStatus(deliveryUpdateDTO);// updating the order payment status
         }
