@@ -73,9 +73,9 @@ public class UserController {
 
 
     @PutMapping("/addRole")
-    public UserResponse addRoleToUser(@RequestBody Map<String,String > map){
+    public UserResponse addRoleToUser(@RequestBody Map<String, String> map){
         String userId = map.get("userId");
-        String newRole = map.get("newRole");
+        Users.Role newRole = Users.Role.valueOf(map.get("newRole"));
         return  userService.addRoleToUser(userId,newRole);
     }
 

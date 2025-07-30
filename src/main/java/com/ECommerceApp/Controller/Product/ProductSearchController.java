@@ -43,9 +43,8 @@ public class ProductSearchController { // everyone
             @RequestParam List<String> categories,
             @RequestParam(name = "brand", required = false) String brand,
             @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder,
-            @RequestParam(name = "sortBy", required = false) String sortBy,
-            HttpServletRequest httpServletRequest) {
-        return productSearchService.searchRequest(categories, brand, sortOrder, sortBy, httpServletRequest);
+            @RequestParam(name = "sortBy", required = false) String sortBy) {
+        return productSearchService.searchRequest(categories, brand, sortOrder, sortBy);
     }
 
     @GetMapping("/searchBrand/{brandName}")

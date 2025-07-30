@@ -10,6 +10,7 @@ import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Model.Product.StockLogModification;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
+import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.ServiceInterface.IExchangeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +96,7 @@ public class ExchangeService  implements IExchangeService {
 
         // updating the shipping status.
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
-        shippingUpdateDTO.setUpdateBy("ADMIN");
+        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
         shippingUpdateDTO.setNewValue(Order.OrderStatus.REQUESTED_TO_EXCHANGE);
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingService.updateShippingStatus(shippingUpdateDTO); // this updates the shipping status for exchange.
@@ -172,7 +173,7 @@ public class ExchangeService  implements IExchangeService {
         item.setPrice(productService.getProductPrice(productExchangeDto.getNewProductId()) * productExchangeDto.getQuantity());
         item.setQuantity(productExchangeDto.getQuantity());
         item.setColor(productExchangeDto.getColor());
-        item.setStatus("FOR_REPLACE");
+        item.setStatus(Order.OrderStatus.TO_DELIVER.name());
         double tax = (item.getPrice() * taxRate) / 100;
         item.setTax(tax);
         System.out.println("new item: "+item);
@@ -225,7 +226,7 @@ public class ExchangeService  implements IExchangeService {
         exchangeDetails.setPaymentId(paymentId);
         exchangeDetails.setUpdatedAt(new Date());
         for(OrderItem orderItem : order.getOrderItems()){
-            if(orderItem.getStatus().equalsIgnoreCase("FOR_REPLACE")){
+            if(orderItem.getStatus().equalsIgnoreCase(Order.OrderStatus.TO_DELIVER.name())){
                 updateNewProductStockToReplace(orderItem);
             }
         }
@@ -274,7 +275,7 @@ public class ExchangeService  implements IExchangeService {
             if(item.getStatus().equalsIgnoreCase(Order.OrderStatus.REQUESTED_TO_RETURN.name())){
                 exchangeDeliveryItems.setProductIdToPick(item.getProductId());
             }
-            if(item.getStatus().equalsIgnoreCase("FOR_REPLACE")){
+            if(item.getStatus().equalsIgnoreCase(Order.OrderStatus.TO_DELIVER.name())){
                 exchangeDeliveryItems.setProductIdToReplace(item.getProductId());
             }
         }
@@ -308,7 +309,7 @@ public class ExchangeService  implements IExchangeService {
             if(item.getStatus().equalsIgnoreCase(Order.OrderStatus.REQUESTED_TO_RETURN.name())){
                 productToReplace = item.getProductId();
             }
-            if(item.getStatus().equalsIgnoreCase("FOR_REPLACE")){
+            if(item.getStatus().equalsIgnoreCase(Order.OrderStatus.TO_DELIVER.name())){
                 productId = item.getProductId();
             }
         }
@@ -336,15 +337,15 @@ public class ExchangeService  implements IExchangeService {
         for(OrderItem orderItem : order.getOrderItems()){
             System.out.println("orderItem status:  "+orderItem.getStatus());
             if(orderItem.getStatus().equalsIgnoreCase(Order.OrderStatus.REQUESTED_TO_RETURN.name())){
-                orderItem.setStatus("EXCHANGE_RETURNED");
+                orderItem.setStatus(Order.OrderStatus.EXCHANGE_RETURNED.name());
             }
-            if(orderItem.getStatus().equalsIgnoreCase("FOR_REPLACE")){
-                orderItem.setStatus("EXCHANGE_DELIVERED");
+            if(orderItem.getStatus().equalsIgnoreCase(Order.OrderStatus.TO_DELIVER.name())){
+                orderItem.setStatus(Order.OrderStatus.EXCHANGE_DELIVERED.name());
             }
         }
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingUpdateDTO.setUpdateBy("ADMIN");
+        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
         shippingUpdateDTO.setNewValue(Order.OrderStatus.EXCHANGED);
         shippingService.updateShippingStatus(shippingUpdateDTO);
         deliveryService.removeExchangeItemFromDeliveryPerson(deliveryPersonId,orderId);

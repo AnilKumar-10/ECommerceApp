@@ -1,5 +1,6 @@
 package com.ECommerceApp.DTO.User;
 
+import com.ECommerceApp.Model.User.Users;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -24,7 +25,7 @@ public class UserRegistrationRequest {
 
     @NotNull(message = "At least one role is required")
     @Size(min = 1, message = "At least one role must be specified")
-    private String[] roles;
+    private List<Users.Role> roles;
 
     @NotBlank(message = "Phone number is required")
     private String phone;

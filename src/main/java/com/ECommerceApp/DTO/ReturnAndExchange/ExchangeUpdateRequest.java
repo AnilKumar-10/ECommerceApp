@@ -15,7 +15,6 @@ public class ExchangeUpdateRequest {
     @NotBlank(message = "Delivery person ID cannot be blank")
     private String deliveryPersonId;
 
-    @NotBlank(message = "Payment ID cannot be blank")
     private String paymentId;
 
     @NotNull(message = "Exchanged status must be provided")

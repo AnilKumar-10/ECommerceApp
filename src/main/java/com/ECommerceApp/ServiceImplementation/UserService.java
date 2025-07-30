@@ -50,7 +50,7 @@ public class UserService implements UserServiceInterface {
         existing.setGender(updatedData.getGender());
 
         // If role contains SELLER, update seller-specific fields
-        if (Arrays.asList(existing.getRoles()).contains("SELLER")) {
+        if (existing.getRoles().contains(Users.Role.SELLER)) {
             existing.setShopName(updatedData.getShopName());
             existing.setShopDescription(updatedData.getShopDescription());
             existing.setShippingOptions(updatedData.getShippingOptions());
@@ -93,17 +93,17 @@ public class UserService implements UserServiceInterface {
     }
 
     // 7. Add new role to existing user (e.g., buyer becomes seller), This can be done my only ADMIN
-    public UserResponse addRoleToUser(String userId, String newRole) {
+    public UserResponse addRoleToUser(String userId, Users.Role newRole) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Set<String> roles = new HashSet<>(Arrays.asList(user.getRoles()));
-        roles.add(newRole.toUpperCase());
+        Set<Users.Role> roles = new HashSet<>(user.getRoles());
+        roles.add(newRole);
 
-        user.setRoles(roles.toArray(new String[0]));
+        user.setRoles(List.of(roles.toArray(new Users.Role[0])));
 
         // If becoming a seller, ensure seller fields are present
-        if (newRole.equalsIgnoreCase("SELLER")) {
+        if (newRole == Users.Role.SELLER) {
             validateSellerFields(user);
         }
         Users users =usersRepository.save(user);
@@ -114,8 +114,8 @@ public class UserService implements UserServiceInterface {
 
     // Validate required fields of Users
     private void validateUserForRoles(Users user) {
-        List<String> roles = Arrays.asList(user.getRoles());
-        if (roles.contains("SELLER")) {
+        List<Users.Role> roles = user.getRoles();
+        if (roles.contains(Users.Role.SELLER)) {
             user.setRating(0.0);
             validateSellerFields(user);
         }

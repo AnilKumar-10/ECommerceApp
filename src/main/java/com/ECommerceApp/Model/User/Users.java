@@ -16,7 +16,7 @@ public class Users {
     private String name;
     private String email;
     private String password;
-    private String[] roles;               // "BUYER", "SELLER", "ADMIN"
+    private List<Role>  roles;               // "BUYER", "SELLER", "ADMIN"
     private String phone;
     private String gender;
     private boolean isActive;
@@ -29,5 +29,12 @@ public class Users {
     private String shopDescription;
     private List<String> shippingOptions;
     private List<String> assignedZones;
+
+    public enum Role {
+        ADMIN,
+        USER,
+        SELLER,
+        DELIVERY_PERSON
+    }
 
 }

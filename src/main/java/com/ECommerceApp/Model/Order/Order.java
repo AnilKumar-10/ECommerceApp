@@ -50,11 +50,13 @@ public class Order {
         CANCELLED,
         REQUESTED_TO_RETURN,
         RETURNED,
-        REFUNDED,
         REQUESTED_TO_EXCHANGE,
         EXCHANGED,
         RETURN_FAILED,
-        EXCHANGE_FAILED
+        EXCHANGE_FAILED,
+        TO_DELIVER,
+        EXCHANGE_RETURNED,
+        EXCHANGE_DELIVERED
     }
 
 

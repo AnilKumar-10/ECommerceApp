@@ -1,4 +1,5 @@
 package com.ECommerceApp.DTO.Delivery;
+import com.ECommerceApp.Model.User.Users;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +22,7 @@ public class DeliveryPersonRegistrationRequest {
 
     @NotNull(message = "Role must not be null")
     @Size(min = 1, message = "At least one role is required")
-    private String[] roles ;
+    private List<Users.Role> roles ;
 
     @NotNull(message = "Assigned areas must not be null")
     @Size(min = 1, message = "At least one assigned area is required")

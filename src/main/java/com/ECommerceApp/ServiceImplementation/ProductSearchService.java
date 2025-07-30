@@ -147,9 +147,8 @@ public class ProductSearchService implements IProductSearchService {
     }
 
 
-    public List<ProductSearchResponse> searchRequest(List<String> categories, String brand, String sortOrder, String sortBy,
-                                                     HttpServletRequest httpServletRequest){
-        log.info("sortOrder: " + sortOrder + "  sortby: " + sortBy + "  brand: " + brand);
+    public List<ProductSearchResponse> searchRequest(List<String> categories, String brand, String sortOrder, String sortBy){
+        log.info("sortOrder: " + sortOrder + "  sortBy: " + sortBy + "  brand: " + brand);
         List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
         List<Product> products = searchProductsByCategoryNames(categories, brand);
         for (Product product : products) {

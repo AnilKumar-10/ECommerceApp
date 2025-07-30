@@ -23,7 +23,7 @@ public interface UserServiceInterface {
 
     List<UserResponse> getUsersByRole(String role);
 
-    UserResponse addRoleToUser(String userId, String newRole);
+    UserResponse addRoleToUser(String userId, Users.Role newRole);
 
     List<UserResponse> getAllUsers();
 

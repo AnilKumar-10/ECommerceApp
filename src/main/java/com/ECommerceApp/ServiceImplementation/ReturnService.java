@@ -9,6 +9,7 @@ import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Model.Order.OrderItem;
 import com.ECommerceApp.Model.Product.StockLogModification;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
+import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.ServiceInterface.IReturnService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -51,7 +52,7 @@ public class ReturnService  implements IReturnService {
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         Order order = orderService.getOrder(orderId);
         shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingUpdateDTO.setUpdateBy("ADMIN");
+        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
         shippingUpdateDTO.setNewValue(Order.OrderStatus.REQUESTED_TO_RETURN);
         return shippingService.updateShippingStatus(shippingUpdateDTO);
     }
@@ -105,7 +106,7 @@ public class ReturnService  implements IReturnService {
         Order order = orderService.getOrder(orderId);
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingUpdateDTO.setUpdateBy("ADMIN");
+        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
         shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURNED);
         shippingService.updateShippingStatus(shippingUpdateDTO);
         updateOrderItemsForReturnSuccess(order);
@@ -134,7 +135,7 @@ public class ReturnService  implements IReturnService {
         order.setReturned(false);
         orderService.saveOrder(order);
         shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingUpdateDTO.setUpdateBy("ADMIN");
+        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
         shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURN_FAILED);
         shippingService.updateShippingStatus(shippingUpdateDTO);
     }

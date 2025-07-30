@@ -24,7 +24,6 @@ public interface IProductSearchService {
             List<String> categories,
             String brand,
             String sortOrder,
-            String sortBy,
-            HttpServletRequest httpServletRequest
+            String sortBy
     );
 }

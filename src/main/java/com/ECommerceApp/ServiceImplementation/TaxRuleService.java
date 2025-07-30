@@ -45,12 +45,6 @@ public class TaxRuleService implements ITaxRuleService {
                 .orElseThrow(() -> new TaxRuleNotFoundException("TaxRule not found"));
 
         BeanUtils.copyProperties(updated,existing);
-//        existing.setCountry(updated.getCountry());
-//        existing.setState(updated.getState());
-//        existing.setCategoryId(updated.getCategoryId());
-//        existing.setTaxRate(updated.getTaxRate());
-//        existing.setActive(updated.isActive());
-
         return taxRuleRepository.save(existing);
     }
 
