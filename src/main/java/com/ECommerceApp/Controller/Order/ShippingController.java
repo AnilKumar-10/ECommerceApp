@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/shipping")
 public class ShippingController { //admin,deliveryman/seller
 
     @Autowired

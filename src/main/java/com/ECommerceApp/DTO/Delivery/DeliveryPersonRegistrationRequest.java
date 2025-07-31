@@ -16,6 +16,14 @@ public class DeliveryPersonRegistrationRequest {
     @Size(max = 50, message = "Name must not exceed 50 characters")
     private String name;
 
+    @Email(message = "Invalid email")
+    @NotBlank(message = "Email is required")
+    private String email;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian number")
     private String phone;

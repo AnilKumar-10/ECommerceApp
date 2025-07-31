@@ -16,13 +16,13 @@ public class Users {
     private String name;
     private String email;
     private String password;
-    private List<Role>  roles;               // "BUYER", "SELLER", "ADMIN"
+    private List<Role> roles;               // "BUYER", "SELLER", "ADMIN"
     private String phone;
     private String gender;
     private boolean isActive;
     private Date createdAt;
     private String upiId;
-
+    private Date passwordChangedAt = new Date(); // Initialize during registration
     // Seller-specific fields (nullable for non-sellers)
     private Double rating;
     private String shopName;

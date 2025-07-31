@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/product")
 public class ProductController { // admin, seller
 
     @Autowired

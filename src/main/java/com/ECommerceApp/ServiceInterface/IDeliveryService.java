@@ -1,6 +1,7 @@
 package com.ECommerceApp.ServiceInterface;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
+import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationResponse;
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Order.Order;
@@ -11,7 +12,7 @@ public interface IDeliveryService {
 
     DeliveryPerson assignDeliveryPerson(String deliveryAddress);
 
-    DeliveryPerson register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto);
+    DeliveryPersonRegistrationResponse register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto);
 
     String registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson);
 

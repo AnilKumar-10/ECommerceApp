@@ -6,13 +6,16 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserLoginRequest {
+
+public class PasswordUpdate {
+    @Email(message = "Invalid email")
     @NotBlank(message = "Email is required")
-    @Email(message = "Please enter a valid email")
-    private String mail;
+    private String email;
+
+    @NotBlank(message = "OTP is required")
+    private long otp;
 
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
-    private String password;
-
+    private String newPassword;
 }

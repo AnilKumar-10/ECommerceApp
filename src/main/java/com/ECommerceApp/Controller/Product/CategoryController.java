@@ -11,6 +11,7 @@ import java.util.*;
 
 
 @RestController
+@RequestMapping("/category")
 public class CategoryController { // admin,seller
 
     @Autowired

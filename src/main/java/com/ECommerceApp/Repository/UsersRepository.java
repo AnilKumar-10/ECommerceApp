@@ -1,6 +1,8 @@
 package com.ECommerceApp.Repository;
 
 import com.ECommerceApp.Model.User.Users;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -21,5 +23,5 @@ public interface UsersRepository extends MongoRepository<Users,String> {
     long count();
 
 
-
+    boolean existsByEmail(@Email(message = "Invalid email") @NotBlank(message = "Email is required") String email);
 }

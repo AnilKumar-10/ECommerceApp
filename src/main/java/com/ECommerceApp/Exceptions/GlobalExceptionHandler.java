@@ -1,5 +1,6 @@
 package com.ECommerceApp.Exceptions;
 import com.ECommerceApp.Exceptions.Delivery.DeliveryNotFoundException;
+import com.ECommerceApp.Exceptions.Delivery.DeliveryPersonNotFound;
 import com.ECommerceApp.Exceptions.Notification.MailSendException;
 import com.ECommerceApp.Exceptions.Order.*;
 import com.ECommerceApp.Exceptions.Payment.InvoiceNotFoundException;
@@ -34,6 +35,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             AddressNotFoundException.class,
             CategoryNotFoundException.class,
+            DeliveryPersonNotFound.class,
             CouponNotFoundException.class,
             DeliveryNotFoundException.class,
             InvoiceNotFoundException.class,

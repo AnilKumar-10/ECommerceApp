@@ -1,6 +1,8 @@
 package com.ECommerceApp.Repository;
 
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -21,5 +23,7 @@ public interface DeliveryRepository extends MongoRepository<DeliveryPerson,Strin
     )
     Optional<DeliveryPerson> findByOrderId(String orderId);
 
+    boolean existsByEmail(@Email(message = "Invalid email") @NotBlank(message = "Email is required") String email);
 
+    Optional<DeliveryPerson> findByEmail(String email);
 }

@@ -2,7 +2,7 @@ package com.ECommerceApp.ServiceInterface;
 
 import com.ECommerceApp.DTO.User.SellerResponse;
 import com.ECommerceApp.DTO.User.UserRegistrationRequest;
-import com.ECommerceApp.DTO.User.UserResponse;
+import com.ECommerceApp.DTO.User.UserRegistrationResponse;
 import com.ECommerceApp.Model.User.Users;
 
 import java.util.List;
@@ -21,11 +21,11 @@ public interface UserServiceInterface {
 
     Users getUserByEmail(String email);
 
-    List<UserResponse> getUsersByRole(String role);
+    List<UserRegistrationResponse> getUsersByRole(String role);
 
-    UserResponse addRoleToUser(String userId, Users.Role newRole);
+    UserRegistrationResponse addRoleToUser(String userId, Users.Role newRole);
 
-    List<UserResponse> getAllUsers();
+    List<UserRegistrationResponse> getAllUsers();
 
     List<SellerResponse> getAllSellers();
 
@@ -34,5 +34,7 @@ public interface UserServiceInterface {
     long getTotalSellersCount();
 
     Users saveUser(Users users);
+
+    public boolean existsByMail(String email);
 }
 

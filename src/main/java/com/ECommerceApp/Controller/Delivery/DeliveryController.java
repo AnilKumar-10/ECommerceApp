@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
+@RequestMapping("/delivery")
 public class DeliveryController { // admin, delivery person
 
     @Autowired

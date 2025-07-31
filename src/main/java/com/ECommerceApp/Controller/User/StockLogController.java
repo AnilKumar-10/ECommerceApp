@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@RequestMapping("/stockLog")
 public class StockLogController { // admin, seller
 
     @Autowired

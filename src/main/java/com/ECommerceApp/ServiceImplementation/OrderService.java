@@ -14,6 +14,7 @@ import com.ECommerceApp.Model.User.Address;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.OrderRepository;
 import com.ECommerceApp.ServiceInterface.IOrderService;
+import com.ECommerceApp.Util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,9 @@ public class OrderService implements IOrderService {
     private IEmailService emailService;
     @Autowired
     private UserServiceInterface userService;
+
+
+    String userId = SecurityUtils.getCurrentUserId();
 
     public Order createOrder(PlaceOrderRequest orderDto){
         log.info("Creating the order for : "+orderDto.getUserId());
@@ -92,7 +96,7 @@ public class OrderService implements IOrderService {
             ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
-            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com","Anil", order1, shippingDetails);
+            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com",userId, order1, shippingDetails);
         }
         else{
             log.info("The payment mode is UPI/ONLINE so shipping is processes after the payment.");
@@ -144,7 +148,7 @@ public class OrderService implements IOrderService {
         ShippingDetails shippingDetails = shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
         updateStockLogAfterOrderConfirmed(orderId); // after the order is confirmed the stock details get updated.
         cartService.removeOrderedItemsFromCart(order1); // this will remove the ordered items from the cart.
-        emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", order1.getBuyerId(), order1,shippingDetails);
+        emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", userId, order1,shippingDetails);
 
     }
 

@@ -1,4 +1,6 @@
 package com.ECommerceApp.ServiceImplementation;
+import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationResponse;
+import com.ECommerceApp.Exceptions.Delivery.DeliveryPersonNotFound;
 import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.*;
 import com.ECommerceApp.DTO.Delivery.DeliveryItems;
@@ -16,9 +18,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -54,7 +58,8 @@ public class DeliveryService implements IDeliveryService {
     }
 
 
-    public DeliveryPerson register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto){
+    public DeliveryPersonRegistrationResponse register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto){
+
         DeliveryPerson deliveryPerson  = new DeliveryPerson();
         BeanUtils.copyProperties(deliveryPersonRegistrationDto,deliveryPerson);
         deliveryPerson.setToReturnItems(new ArrayList<>());
@@ -62,15 +67,19 @@ public class DeliveryService implements IDeliveryService {
         deliveryPerson.setToDeliveryCount(0);
         deliveryPerson.setDeliveredCount(0);
         deliveryPerson.setActive(true);
+        deliveryPerson.setPasswordChangedAt(new Date());
         log.info("Delivery person registration is success: "+deliveryPerson);
-        return save(deliveryPerson);
+        DeliveryPerson deliveryPerson1 =save(deliveryPerson);
+        DeliveryPersonRegistrationResponse deliveryPersonRegistrationResponse = new DeliveryPersonRegistrationResponse();
+        BeanUtils.copyProperties(deliveryPerson1,deliveryPersonRegistrationResponse);
+        return deliveryPersonRegistrationResponse;
     }
 
 
     public String registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson){
         int c=0;
         for(DeliveryPersonRegistrationRequest person: deliveryPerson){
-            save(register(person));
+            register(person);
             c++;
         }
         return "inserted: "+c;
@@ -184,4 +193,12 @@ public class DeliveryService implements IDeliveryService {
         return deliveryRepository.count();
     }
 
+
+    public boolean existsByMail(String email){
+        return deliveryRepository.existsByEmail(email);
+    }
+
+    public DeliveryPerson getDeliverryPersonByEmail(String email){
+        return deliveryRepository.findByEmail(email).orElseThrow(()-> new DeliveryPersonNotFound("There is no delivery person with mail: "+email));
+    }
 }

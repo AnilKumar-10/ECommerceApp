@@ -11,6 +11,7 @@ import java.util.List;
 
 
 @RestController
+@RequestMapping("/coupon")
 public class CouponController { // admin , seller
 
     @Autowired

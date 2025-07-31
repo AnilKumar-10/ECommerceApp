@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.DTO.User.SellerResponse;
 import com.ECommerceApp.DTO.User.UserRegistrationRequest;
-import com.ECommerceApp.DTO.User.UserResponse;
+import com.ECommerceApp.DTO.User.UserRegistrationResponse;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.ServiceInterface.IDeliveryService;
 import com.ECommerceApp.ServiceInterface.UserServiceInterface;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/user")
 public class UserController {
     @Autowired
     private UserServiceInterface userService;
@@ -22,8 +23,8 @@ public class UserController {
     private IDeliveryService deliveryService;
 
     @PostMapping("/insertUser")
-    public UserResponse insertUser(@Valid @RequestBody UserRegistrationRequest users){
-        UserResponse userResponse = new UserResponse();
+    public UserRegistrationResponse insertUser(@Valid @RequestBody UserRegistrationRequest users){
+        UserRegistrationResponse userResponse = new UserRegistrationResponse();
         Users user =userService.registerUser(users);
         BeanUtils.copyProperties(userResponse,user);
         return  userResponse;
@@ -37,7 +38,7 @@ public class UserController {
 
 
     @GetMapping("/getAllUsers")
-    public List<UserResponse> getAllUsers(){
+    public List<UserRegistrationResponse> getAllUsers(){
         return userService.getAllUsers();
     }
 
@@ -67,13 +68,13 @@ public class UserController {
 
 
     @GetMapping("/getUserByRole/{role}")
-    public List<UserResponse> getUserByRole(@PathVariable String role){
+    public List<UserRegistrationResponse> getUserByRole(@PathVariable String role){
         return userService.getUsersByRole(role);
     }
 
 
     @PutMapping("/addRole")
-    public UserResponse addRoleToUser(@RequestBody Map<String, String> map){
+    public UserRegistrationResponse addRoleToUser(@RequestBody Map<String, String> map){
         String userId = map.get("userId");
         Users.Role newRole = Users.Role.valueOf(map.get("newRole"));
         return  userService.addRoleToUser(userId,newRole);

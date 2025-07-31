@@ -4,12 +4,10 @@ import com.ECommerceApp.DTO.ReturnAndExchange.*;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import com.ECommerceApp.ServiceInterface.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/return")
 public class ReturnController {  // buyer
 
     @Autowired

@@ -11,6 +11,7 @@ import com.ECommerceApp.Model.Product.StockLogModification;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.ServiceInterface.IReturnService;
+import com.ECommerceApp.Util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ public class ReturnService  implements IReturnService {
     private SequenceGeneratorService sequenceGeneratorService;
     @Autowired
     private IPaymentService paymentService;
+    String userId = SecurityUtils.getCurrentUserId();
 
     public ShippingDetails updateShippingStatusForRefundAndReturn(String orderId){
         log.info("Updating the shipping details of the returning product");

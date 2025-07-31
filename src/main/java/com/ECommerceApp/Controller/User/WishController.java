@@ -5,10 +5,12 @@ import com.ECommerceApp.Model.User.Wishlist;
 
 import com.ECommerceApp.Model.User.WishlistItem;
 import com.ECommerceApp.ServiceInterface.IWishListService;
+import com.ECommerceApp.Util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/wishList")
 public class WishController { // user.
 
     @Autowired
@@ -16,31 +18,39 @@ public class WishController { // user.
 
     @GetMapping("/getWish")
     public Wishlist getWish(){
-        return  wishListService.getWishlistByBuyerId("USER1019");
+        String userId = SecurityUtils.getCurrentUserId();
+        return  wishListService.getWishlistByBuyerId(userId);
     } // user
 
 
     @DeleteMapping("/removeWishListItem/{productId}")
     public Wishlist removeProductFromWishList(@PathVariable String productId){
-        return wishListService.removeFromWishlist("USER1019",productId);
+        String userId = SecurityUtils.getCurrentUserId();
+
+        return wishListService.removeFromWishlist(userId,productId);
     }
 
 
     @DeleteMapping("/clearWishList")  // user
     public String clearWishList(){
-        return wishListService.clearWishlist("USER1019");
+        String userId = SecurityUtils.getCurrentUserId();
+
+        return wishListService.clearWishlist(userId);
     }
 
 
     @PostMapping("/addWish")
     public Wishlist insertWish(@RequestBody WishlistItem item){ // user
-        return wishListService.addToWishlist("USER1019",item); // there the userId is taken from JWT after implementation
+        String userId = SecurityUtils.getCurrentUserId();
+
+        return wishListService.addToWishlist(userId,item); // there the userId is taken from JWT after implementation
     }
 
 
     @PostMapping("/moveToCart/{productId}")
     public Cart moveWishToCart(@PathVariable String productId){
-        return wishListService.moveWishTOCart("USER1019",productId);
+        String userId = SecurityUtils.getCurrentUserId();
+        return wishListService.moveWishTOCart(userId,productId);
     }
 
 

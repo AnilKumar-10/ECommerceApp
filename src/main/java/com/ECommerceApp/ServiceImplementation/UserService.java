@@ -1,8 +1,6 @@
 package com.ECommerceApp.ServiceImplementation;
 
-import com.ECommerceApp.DTO.User.SellerResponse;
-import com.ECommerceApp.DTO.User.UserRegistrationRequest;
-import com.ECommerceApp.DTO.User.UserResponse;
+import com.ECommerceApp.DTO.User.*;
 import com.ECommerceApp.Exceptions.User.UserNotFoundException;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.UsersRepository;
@@ -10,6 +8,11 @@ import com.ECommerceApp.ServiceInterface.UserServiceInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,13 +22,17 @@ import java.util.*;
 public class UserService implements UserServiceInterface {
     @Autowired
     private UsersRepository  usersRepository;
+//    @Autowired
+//    private PasswordEncoder encoder;
 
-    public Users registerUser(UserRegistrationRequest user) {
+    public Users registerUser(UserRegistrationRequest registerRequest) {
+
         Users users = new Users();
-        BeanUtils.copyProperties(user,users);
+        BeanUtils.copyProperties(registerRequest,users);
         validateUserForRoles(users);
-        user.setActive(true);
-        user.setCreatedAt(new Date());
+        users.setActive(true);
+        users.setCreatedAt(new Date());
+        users.setPasswordChangedAt(new Date());
         return usersRepository.save(users);
     }
 
@@ -47,7 +54,7 @@ public class UserService implements UserServiceInterface {
         // Update common fields
         existing.setName(updatedData.getName());
         existing.setPhone(updatedData.getPhone());
-        existing.setGender(updatedData.getGender());
+        existing.setUpiId(updatedData.getUpiId());
 
         // If role contains SELLER, update seller-specific fields
         if (existing.getRoles().contains(Users.Role.SELLER)) {
@@ -81,11 +88,11 @@ public class UserService implements UserServiceInterface {
     }
 
     // 6. Get all users with a specific role
-    public List<UserResponse> getUsersByRole(String role) {
+    public List<UserRegistrationResponse> getUsersByRole(String role) {
         List<Users> users = usersRepository.findByRolesContaining(role.toUpperCase());
-        List<UserResponse> userResponses  = new ArrayList<>();
+        List<UserRegistrationResponse> userResponses  = new ArrayList<>();
         for(Users user : users){
-            UserResponse userResponse = new UserResponse();
+            UserRegistrationResponse userResponse = new UserRegistrationResponse();
             BeanUtils.copyProperties(user,userResponse);
             userResponses.add(userResponse);
         }
@@ -93,7 +100,7 @@ public class UserService implements UserServiceInterface {
     }
 
     // 7. Add new role to existing user (e.g., buyer becomes seller), This can be done my only ADMIN
-    public UserResponse addRoleToUser(String userId, Users.Role newRole) {
+    public UserRegistrationResponse addRoleToUser(String userId, Users.Role newRole) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -107,7 +114,7 @@ public class UserService implements UserServiceInterface {
             validateSellerFields(user);
         }
         Users users =usersRepository.save(user);
-        UserResponse userResponse = new UserResponse();
+        UserRegistrationResponse userResponse = new UserRegistrationResponse();
         BeanUtils.copyProperties(users,userResponse);
         return userResponse;
     }
@@ -145,11 +152,11 @@ public class UserService implements UserServiceInterface {
     }
 
 
-    public List<UserResponse> getAllUsers(){
+    public List<UserRegistrationResponse> getAllUsers(){
         List<Users> users = usersRepository.findAll();
-        List<UserResponse> userResponses  = new ArrayList<>();
+        List<UserRegistrationResponse> userResponses  = new ArrayList<>();
         for(Users user : users){
-            UserResponse userResponse = new UserResponse();
+            UserRegistrationResponse userResponse = new UserRegistrationResponse();
             BeanUtils.copyProperties(user,userResponse);
             userResponses.add(userResponse);
         }
@@ -183,6 +190,15 @@ public class UserService implements UserServiceInterface {
     @Override
     public Users saveUser(Users users) {
         return usersRepository.save(users);
+    }
+
+
+    public boolean existsByMail(String email){
+        return usersRepository.existsByEmail(email);
+    }
+
+    public String updatePassword(PasswordUpdate passwordUpdate){
+return null;
     }
 
 

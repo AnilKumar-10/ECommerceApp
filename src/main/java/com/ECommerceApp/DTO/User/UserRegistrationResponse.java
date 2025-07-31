@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class UserResponse {
+public class UserRegistrationResponse {
     private String id;
     private String name;
     private String email;

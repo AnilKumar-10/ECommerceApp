@@ -13,8 +13,10 @@ import com.ECommerceApp.Model.Order.OrderItem;
 import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
+import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.RefundRepository;
 import com.ECommerceApp.ServiceInterface.IRefundService;
+import com.ECommerceApp.Util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -48,6 +50,8 @@ public class RefundService implements IRefundService {
     private IDeliveryService deliveryService;
     @Autowired
     private IStockLogService stockLogService;
+
+    String userId = SecurityUtils.getCurrentUserId();
 
     //1. Raising the refund request
     public RefundAndReturnResponse requestRefund(RaiseRefundRequest refundRequestDto) {
@@ -86,7 +90,7 @@ public class RefundService implements IRefundService {
         order.setRefundId(refund1.getRefundId());
         orderService.saveOrder(order);
 
-        return returnService. getRefundAndReturnResponce(deliveryPerson,approveRefund(refund1.getRefundId(),"admin")); // this will return the refund and return details of the product
+        return returnService. getRefundAndReturnResponce(deliveryPerson,approveRefund(refund1.getRefundId(), Users.Role.ADMIN.name())); // this will return the refund and return details of the product
     }
 
     //2. Approve the refund request (admin) if the reason is genuine
@@ -115,7 +119,7 @@ public class RefundService implements IRefundService {
         refund.setProcessedAt(new Date());
         refund.setReason(refund.getReason() + " | Rejected: " + reason);
         //  sends the mail after the refund request is rejected.
-        emailService.sendRefundRejectedEmail("iamanil3121@gmail.com",refund.getUserId(),refund.getOrderId());
+        emailService.sendRefundRejectedEmail("iamanil3121@gmail.com",userId,refund.getOrderId());
         return saveRefund(refund);
     }
 
@@ -136,7 +140,7 @@ public class RefundService implements IRefundService {
         order.setRefundAmount(refundAmount);
         order.setReturned(true);
         Order order1 = orderService.saveOrder(order); // updating the final amount after the refund is completed.
-        emailService.sendReturnCompletedEmail("iamanil3121@gmail.com",order1.getBuyerId(),order1);
+        emailService.sendReturnCompletedEmail("iamanil3121@gmail.com",userId,order1);
         // this will remove the return product details from the delivery persons to return fields.
         deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
 //        returnService.updateStockLogAfterOrderCancellation(order1.getId()); // we have to update the stock log  after the order cancellation.
@@ -245,7 +249,7 @@ public class RefundService implements IRefundService {
         deliveryService.removeDeliveredOrderFromToDeliveryItems(shippingService.getShippingByOrderId(orderId).getDeliveryPersonId(),orderId);
         deliveryService.updateDeliveryCountAfterOrderCancellation(shippingService.getShippingByOrderId(orderId).getDeliveryPersonId());
         // sends the mail about the order cancellation to user
-        emailService.sendOrderCancellationEmail(order1,"Anil","iamanil3121@gmail.com");
+        emailService.sendOrderCancellationEmail(order1,userId,"iamanil3121@gmail.com");
         returnService.updateStockLogAfterOrderCancellation(orderId); // this will update the stock after the order is cancelled.
         return order1;
     }

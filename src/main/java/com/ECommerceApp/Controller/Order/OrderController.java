@@ -9,32 +9,33 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/order")
 public class OrderController { //user from service classes
 
     @Autowired
     private IOrderService orderService;
 
-    @PostMapping("/placeOrder")
+    @PostMapping("/placeOrder") // user
     public Order placeOrder(@RequestBody PlaceOrderRequest orderDto){
         return orderService.createOrder(orderDto);
     }
 
-    @GetMapping("/getOrder/{id}")
+    @GetMapping("/getOrder/{id}") // admin
     public Order getOrder(@PathVariable String id){
         return orderService.getOrder(id);
     }
 
-    @GetMapping("/getAllOrderByUser/{userId}")
+    @GetMapping("/getAllOrderByUser/{userId}") // admin
     public List<Order> getAllOrdersByUser(@PathVariable String userId){
         return orderService.getAllOrderByUserId(userId);
     }
 
-    @GetMapping("/getAllOrders")
+    @GetMapping("/getAllOrders") // admin
     public List<Order> getAllOrders(){
         return orderService.getAllOrders();
     }
 
-    @GetMapping("/getPendingOrders")
+    @GetMapping("/getPendingOrders") // admin
     public List<Order> getAllPendingOrders(){
         return orderService.getAllPendingOrders();
     }
