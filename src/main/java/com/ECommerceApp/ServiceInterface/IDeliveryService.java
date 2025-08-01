@@ -12,10 +12,6 @@ public interface IDeliveryService {
 
     DeliveryPerson assignDeliveryPerson(String deliveryAddress);
 
-    DeliveryPersonRegistrationResponse register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto);
-
-    String registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson);
-
     DeliveryPerson getDeliveryPerson(String id);
 
     DeliveryPerson assignProductsToDelivery(String deliveryPersonId, Order order);
@@ -39,4 +35,6 @@ public interface IDeliveryService {
     DeliveryPerson save(DeliveryPerson deliveryPerson);
 
     long totalCount();
+
+    DeliveryPerson getDeliveryPeronData();
 }

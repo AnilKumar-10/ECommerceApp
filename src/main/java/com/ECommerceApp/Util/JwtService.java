@@ -33,7 +33,7 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", getRolesFromAuthorities(customUser.getAuthorities()));
         claims.put("pwdChangedAt", customUser.getPasswordChangedAt().getTime());
-
+        claims.put("userId",customUser.getUserId());
         return buildToken(claims, userDetails);
     }
 

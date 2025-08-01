@@ -1,14 +1,10 @@
 package com.ECommerceApp.Controller;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
-import com.ECommerceApp.DTO.User.LoginResponse;
-import com.ECommerceApp.DTO.User.UserLoginRequest;
-import com.ECommerceApp.DTO.User.UserRegistrationRequest;
-import com.ECommerceApp.DTO.User.UserRegistrationResponse;
+import com.ECommerceApp.DTO.User.*;
+import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.User.Users;
-import com.ECommerceApp.ServiceImplementation.DeliveryService;
-import com.ECommerceApp.ServiceImplementation.UserDetailsServiceImpl;
-import com.ECommerceApp.ServiceImplementation.UserService;
+import com.ECommerceApp.ServiceImplementation.*;
 import com.ECommerceApp.Util.JwtService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -36,34 +32,39 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
-    // ✅ 1. Register USER / SELLER / ADMIN
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private OtpService otpService;
 
+
+    //  1. Register USER / SELLER / ADMIN
+    @PostMapping("/user/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
         if (userService.existsByMail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
         }
         UserRegistrationResponse userResponse = new UserRegistrationResponse();
         request.setPassword(passwordEncoder.encode(request.getPassword()));
-        Users user =userService.registerUser(request);
+        Users user = authService.registerUser(request);
         BeanUtils.copyProperties(user,userResponse);
         return ResponseEntity.ok(userResponse);
     }
 
-    // ✅ 2. Register DELIVERY_PERSON
-    @PostMapping("/register/delivery")
+    //  2. Register DELIVERY_PERSON
+    @PostMapping("/delivery/register")
     public ResponseEntity<?> registerDeliveryPerson(@Valid @RequestBody DeliveryPersonRegistrationRequest request) {
         if (deliveryService.existsByMail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone already in use");
         }
         request.setPassword(passwordEncoder.encode(request.getPassword()));
-        return ResponseEntity.ok(deliveryService.register(request));
+        return ResponseEntity.ok(authService.register(request));
     }
 
-    // ✅ 3. Login (for USERS only, not delivery personnel)
-    @PostMapping("/login")
+    // 3. Login (for USERS only, not delivery personnel)
+    @PostMapping("/user/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequest request) {
-        Users user = userService.getUserByEmail(request.getMail());
+        Users user = userService.getUserByEmail(request.getEmail());
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
@@ -78,11 +79,38 @@ public class AuthController {
         return ResponseEntity.ok(loginResponse);
 
     }
+
+
+    @PostMapping("/delivery/login")
+    public ResponseEntity<?> deliveryLogin(@Valid @RequestBody UserLoginRequest request) {
+        log.info("inside delver login");
+        DeliveryPerson deliveryPerson = deliveryService.getDeliveryPersonByEmail(request.getEmail());
+        if (!passwordEncoder.matches(request.getPassword(), deliveryPerson.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(deliveryPerson.getEmail());
+        String token = jwtService.generateToken(userDetails);
+        log.info("toke is: "+token);
+        log.info("user is: "+deliveryPerson);
+        LoginResponse loginResponse = new LoginResponse();
+        BeanUtils.copyProperties(deliveryPerson,loginResponse);
+        loginResponse.setToken(token);
+        return ResponseEntity.ok(loginResponse);
+
+    }
+
+
     @GetMapping("/auth-check")
     public ResponseEntity<String> checkAuth() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails customUserDetails = (CustomUserDetails) auth.getPrincipal();
         System.out.println("User Authorities: " + auth.getAuthorities());
-
+        System.out.println("User mail: " + auth.getName());
+        System.out.println("User id: " + customUserDetails.getUserId());
         return ResponseEntity.ok("Checked roles, see console log.");
     }
+
+
+
 }

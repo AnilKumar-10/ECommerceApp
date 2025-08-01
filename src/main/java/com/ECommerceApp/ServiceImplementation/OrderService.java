@@ -51,10 +51,11 @@ public class OrderService implements IOrderService {
     private UserServiceInterface userService;
 
 
-    String userId = SecurityUtils.getCurrentUserId();
+
 
     public Order createOrder(PlaceOrderRequest orderDto){
         log.info("Creating the order for : "+orderDto.getUserId());
+        String userId =new SecurityUtils().getCurrentUserId();
         Users users = userService.getUserById(orderDto.getUserId());
         List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
         for(OrderItem item : orderItem){
@@ -138,6 +139,7 @@ public class OrderService implements IOrderService {
 
     // update the order and payment status after the completion of payment.
     public void markOrderAsPaid(String orderId, String paymentId) {
+        String userId = new SecurityUtils().getCurrentUserId();
         log.info("updating UPI payment success in order details");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));

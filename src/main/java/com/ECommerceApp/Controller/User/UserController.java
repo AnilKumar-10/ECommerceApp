@@ -1,14 +1,21 @@
 package com.ECommerceApp.Controller.User;
 
+import com.ECommerceApp.DTO.User.PasswordUpdate;
 import com.ECommerceApp.DTO.User.SellerResponse;
 import com.ECommerceApp.DTO.User.UserRegistrationRequest;
 import com.ECommerceApp.DTO.User.UserRegistrationResponse;
 import com.ECommerceApp.Model.User.Users;
+import com.ECommerceApp.ServiceImplementation.AuthService;
+import com.ECommerceApp.ServiceImplementation.OtpService;
 import com.ECommerceApp.ServiceInterface.IDeliveryService;
 import com.ECommerceApp.ServiceInterface.UserServiceInterface;
+import com.ECommerceApp.Util.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,19 +28,30 @@ public class UserController {
     private UserServiceInterface userService;
     @Autowired
     private IDeliveryService deliveryService;
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private OtpService otpService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/insertUser")
-    public UserRegistrationResponse insertUser(@Valid @RequestBody UserRegistrationRequest users){
-        UserRegistrationResponse userResponse = new UserRegistrationResponse();
-        Users user =userService.registerUser(users);
-        BeanUtils.copyProperties(userResponse,user);
-        return  userResponse;
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<String> sendOtp() {
+        String email = new SecurityUtils().getCurrentUserMail();
+        otpService.sendOtpToEmail(email);
+        return ResponseEntity.ok("OTP sent to " + email);
     }
 
-
-    @PostMapping("/insertUsers")
-    public String insertUsers(@Valid @RequestBody List<UserRegistrationRequest> users){
-        return  userService.registerUsers(users);
+    @PostMapping("/resetPassword")
+    public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordUpdate request) {
+        boolean isValidOtp = otpService.validateOtp(request.getEmail(), request.getOtp());
+        if (!isValidOtp) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+        request.setNewPassword(passwordEncoder.encode(request.getNewPassword()));
+        String response = authService.updateUserPassword(request);
+        return ResponseEntity.ok(response);
     }
 
 
@@ -51,6 +69,7 @@ public class UserController {
 
     @PutMapping("/updateUser")
     public Users updateUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest){
+        userRegistrationRequest.setPassword(passwordEncoder.encode(userRegistrationRequest.getPassword()));
         return  userService.updateUser(userRegistrationRequest.getId(), userRegistrationRequest);
     }
 

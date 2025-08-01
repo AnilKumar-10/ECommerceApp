@@ -11,6 +11,7 @@ import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Repository.DeliveryRepository;
 import com.ECommerceApp.ServiceInterface.IDeliveryService;
+import com.ECommerceApp.Util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -55,34 +57,6 @@ public class DeliveryService implements IDeliveryService {
         }
         log.info("There is no delivery agent available for that address: "+deliveryAddress);
         return null;
-    }
-
-
-    public DeliveryPersonRegistrationResponse register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto){
-
-        DeliveryPerson deliveryPerson  = new DeliveryPerson();
-        BeanUtils.copyProperties(deliveryPersonRegistrationDto,deliveryPerson);
-        deliveryPerson.setToReturnItems(new ArrayList<>());
-        deliveryPerson.setToDeliveryItems(new ArrayList<>());
-        deliveryPerson.setToDeliveryCount(0);
-        deliveryPerson.setDeliveredCount(0);
-        deliveryPerson.setActive(true);
-        deliveryPerson.setPasswordChangedAt(new Date());
-        log.info("Delivery person registration is success: "+deliveryPerson);
-        DeliveryPerson deliveryPerson1 =save(deliveryPerson);
-        DeliveryPersonRegistrationResponse deliveryPersonRegistrationResponse = new DeliveryPersonRegistrationResponse();
-        BeanUtils.copyProperties(deliveryPerson1,deliveryPersonRegistrationResponse);
-        return deliveryPersonRegistrationResponse;
-    }
-
-
-    public String registerPersons(List<DeliveryPersonRegistrationRequest> deliveryPerson){
-        int c=0;
-        for(DeliveryPersonRegistrationRequest person: deliveryPerson){
-            register(person);
-            c++;
-        }
-        return "inserted: "+c;
     }
 
 
@@ -193,12 +167,24 @@ public class DeliveryService implements IDeliveryService {
         return deliveryRepository.count();
     }
 
+    @Override
+    public DeliveryPerson getDeliveryPeronData() {
+        String email = new SecurityUtils().getCurrentUserMail();
+        return deliveryRepository.findByEmail(email).get();
+    }
+
 
     public boolean existsByMail(String email){
         return deliveryRepository.existsByEmail(email);
     }
 
-    public DeliveryPerson getDeliverryPersonByEmail(String email){
+    public DeliveryPerson getDeliveryPersonByEmail(String email){
+        log.info("inside delver service");
         return deliveryRepository.findByEmail(email).orElseThrow(()-> new DeliveryPersonNotFound("There is no delivery person with mail: "+email));
+    }
+
+
+    public Optional<DeliveryPerson> loadDeliveryByMail(String email){
+        return deliveryRepository.findByEmail(email);
     }
 }

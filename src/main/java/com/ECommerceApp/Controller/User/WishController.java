@@ -18,14 +18,14 @@ public class WishController { // user.
 
     @GetMapping("/getWish")
     public Wishlist getWish(){
-        String userId = SecurityUtils.getCurrentUserId();
+        String userId = new SecurityUtils().getCurrentUserId();
         return  wishListService.getWishlistByBuyerId(userId);
     } // user
 
 
     @DeleteMapping("/removeWishListItem/{productId}")
     public Wishlist removeProductFromWishList(@PathVariable String productId){
-        String userId = SecurityUtils.getCurrentUserId();
+        String userId = new SecurityUtils().getCurrentUserId();
 
         return wishListService.removeFromWishlist(userId,productId);
     }
@@ -33,7 +33,7 @@ public class WishController { // user.
 
     @DeleteMapping("/clearWishList")  // user
     public String clearWishList(){
-        String userId = SecurityUtils.getCurrentUserId();
+        String userId = new SecurityUtils().getCurrentUserId();
 
         return wishListService.clearWishlist(userId);
     }
@@ -41,7 +41,7 @@ public class WishController { // user.
 
     @PostMapping("/addWish")
     public Wishlist insertWish(@RequestBody WishlistItem item){ // user
-        String userId = SecurityUtils.getCurrentUserId();
+        String userId = new SecurityUtils().getCurrentUserId();
 
         return wishListService.addToWishlist(userId,item); // there the userId is taken from JWT after implementation
     }
@@ -49,7 +49,7 @@ public class WishController { // user.
 
     @PostMapping("/moveToCart/{productId}")
     public Cart moveWishToCart(@PathVariable String productId){
-        String userId = SecurityUtils.getCurrentUserId();
+        String userId = new SecurityUtils().getCurrentUserId();
         return wishListService.moveWishTOCart(userId,productId);
     }
 

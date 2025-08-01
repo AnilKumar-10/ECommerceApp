@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.Order.PlaceOrderRequest;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.ServiceInterface.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,26 +16,36 @@ public class OrderController { //user from service classes
     @Autowired
     private IOrderService orderService;
 
+
+    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") //USER
     @PostMapping("/placeOrder") // user
     public Order placeOrder(@RequestBody PlaceOrderRequest orderDto){
         return orderService.createOrder(orderDto);
     }
 
+
+    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") //ADMIN,SELLER
     @GetMapping("/getOrder/{id}") // admin
     public Order getOrder(@PathVariable String id){
         return orderService.getOrder(id);
     }
 
+
+    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") // ADMIN, USER
     @GetMapping("/getAllOrderByUser/{userId}") // admin
     public List<Order> getAllOrdersByUser(@PathVariable String userId){
         return orderService.getAllOrderByUserId(userId);
     }
 
+
+    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") // ADMIN
     @GetMapping("/getAllOrders") // admin
     public List<Order> getAllOrders(){
         return orderService.getAllOrders();
     }
 
+
+    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") //ADMIN
     @GetMapping("/getPendingOrders") // admin
     public List<Order> getAllPendingOrders(){
         return orderService.getAllPendingOrders();

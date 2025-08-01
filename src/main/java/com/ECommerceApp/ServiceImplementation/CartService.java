@@ -33,7 +33,7 @@ public class CartService implements ICartService {
                     newCart.setItems(new ArrayList<>());
                     newCart.setTotalAmount(0.0);
                     newCart.setUpdatedAt(new Date());
-                    return cartRepository.save(newCart);
+                    return saveCart(newCart);
                 });
     }
 
@@ -65,15 +65,20 @@ public class CartService implements ICartService {
         }
         cart.setTotalAmount(totalAmount);
         cart.setUpdatedAt(new Date());
-        return cartRepository.save(cart);
+        return saveCart(cart);
     }
 
     // this will remove one item from the cart.
     public Cart removeOneItemFromCart(String buyerId, String  productId) {
         Cart cart = getCartByBuyerId(buyerId);
         cart.getItems().removeIf(item -> item.getProductId().equals(productId));
+        double totalAmount=0;
+        for(CartItem itm :cart.getItems()){
+            totalAmount+= itm.getPrice();
+        }
+        cart.setTotalAmount(totalAmount);
         cart.setUpdatedAt(new Date());
-        return cartRepository.save(cart);
+        return saveCart(cart);
     }
 
     public void removeOrderedItemsFromCart(Order order) {
@@ -112,7 +117,7 @@ public class CartService implements ICartService {
             i++;
         }
         cart.setUpdatedAt(new Date());
-        cartRepository.save(cart);
+        saveCart(cart);
     }
 
     // Clear all the items in the cart.
@@ -121,7 +126,7 @@ public class CartService implements ICartService {
         cart.setItems(new ArrayList<>());
         cart.setTotalAmount(0);
         cart.setUpdatedAt(new Date());
-        return cartRepository.save(cart);
+        return saveCart(cart);
     }
 
 
@@ -129,7 +134,7 @@ public class CartService implements ICartService {
     public List<OrderItem> checkOutForOrder(List<Integer> itemIds, String userId){
         log.info("adding the cart items: "+itemIds+"  to the order items list");
         List<OrderItem> items = new ArrayList<>();
-        for(CartItem item : cartRepository.findByBuyerId(userId).get().getItems()){
+        for(CartItem item : getCartByBuyerId(userId).getItems()){
             if(itemIds.contains((int)item.getItemId())){
                 OrderItem orderItem = new OrderItem();
                 BeanUtils.copyProperties(item,orderItem); // BeanUtils.copyProperties(Object source, Object target): Copies all matching properties from source to target.
@@ -138,6 +143,11 @@ public class CartService implements ICartService {
         }
         log.info("order items after adding the cart items : "+items);
         return items;
+    }
+
+
+    public Cart saveCart(Cart cart){
+        return cartRepository.save(cart);
     }
 
 

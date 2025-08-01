@@ -32,9 +32,10 @@ public class Users {
 
     public enum Role {
         ADMIN,
-        USER,
+        BUYER,
         SELLER,
-        DELIVERY_PERSON
+        DELIVERY
+
     }
 
 }

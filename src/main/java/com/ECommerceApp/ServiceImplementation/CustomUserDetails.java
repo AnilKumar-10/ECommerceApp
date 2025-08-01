@@ -24,7 +24,7 @@ public class CustomUserDetails implements UserDetails {
     private  Date passwordChangedAt;
     private  Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(Users user) {
+    public  CustomUserDetails(Users user) {
         this.userId = user.getId();
         this.username = user.getEmail();
         this.password = user.getPassword();

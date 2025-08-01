@@ -25,25 +25,7 @@ public class UserService implements UserServiceInterface {
 //    @Autowired
 //    private PasswordEncoder encoder;
 
-    public Users registerUser(UserRegistrationRequest registerRequest) {
 
-        Users users = new Users();
-        BeanUtils.copyProperties(registerRequest,users);
-        validateUserForRoles(users);
-        users.setActive(true);
-        users.setCreatedAt(new Date());
-        users.setPasswordChangedAt(new Date());
-        return usersRepository.save(users);
-    }
-
-    public String registerUsers(List<UserRegistrationRequest> users){
-        int c=0;
-        for(UserRegistrationRequest user:users){
-            usersRepository.save(registerUser(user));
-            c++;
-        }
-        return "users registration is done: "+c;
-    }
 
 
     // 2. Update user profile based on roles
@@ -55,7 +37,9 @@ public class UserService implements UserServiceInterface {
         existing.setName(updatedData.getName());
         existing.setPhone(updatedData.getPhone());
         existing.setUpiId(updatedData.getUpiId());
-
+        existing.setActive(true);
+        existing.setPasswordChangedAt(new Date());
+        existing.setPassword(updatedData.getPassword());
         // If role contains SELLER, update seller-specific fields
         if (existing.getRoles().contains(Users.Role.SELLER)) {
             existing.setShopName(updatedData.getShopName());
@@ -120,7 +104,7 @@ public class UserService implements UserServiceInterface {
     }
 
     // Validate required fields of Users
-    private void validateUserForRoles(Users user) {
+    public void validateUserForRoles(Users user) {
         List<Users.Role> roles = user.getRoles();
         if (roles.contains(Users.Role.SELLER)) {
             user.setRating(0.0);
@@ -197,9 +181,9 @@ public class UserService implements UserServiceInterface {
         return usersRepository.existsByEmail(email);
     }
 
-    public String updatePassword(PasswordUpdate passwordUpdate){
-return null;
-    }
 
+    public Optional<Users> loadUserByMail(String email){
+        return usersRepository.findByEmail(email);
+    }
 
 }

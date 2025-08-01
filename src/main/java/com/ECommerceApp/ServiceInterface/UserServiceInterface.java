@@ -9,9 +9,6 @@ import java.util.List;
 
 public interface UserServiceInterface {
 
-    Users registerUser(UserRegistrationRequest user);
-
-    String registerUsers(List<UserRegistrationRequest> users);
 
     Users updateUser(String userId, UserRegistrationRequest updatedData);
 

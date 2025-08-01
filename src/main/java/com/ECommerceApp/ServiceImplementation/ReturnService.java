@@ -47,7 +47,7 @@ public class ReturnService  implements IReturnService {
     private SequenceGeneratorService sequenceGeneratorService;
     @Autowired
     private IPaymentService paymentService;
-    String userId = SecurityUtils.getCurrentUserId();
+
 
     public ShippingDetails updateShippingStatusForRefundAndReturn(String orderId){
         log.info("Updating the shipping details of the returning product");

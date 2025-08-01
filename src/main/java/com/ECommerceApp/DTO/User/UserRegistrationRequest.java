@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class UserRegistrationRequest {
+public class    UserRegistrationRequest {
     @NotBlank(message = "ID is required")
     private String id;
 

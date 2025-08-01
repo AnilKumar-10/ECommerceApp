@@ -51,7 +51,7 @@ public class RefundService implements IRefundService {
     @Autowired
     private IStockLogService stockLogService;
 
-    String userId = SecurityUtils.getCurrentUserId();
+
 
     //1. Raising the refund request
     public RefundAndReturnResponse requestRefund(RaiseRefundRequest refundRequestDto) {
@@ -110,6 +110,7 @@ public class RefundService implements IRefundService {
 
 //  3. Reject refund if any damages are there (admin)
     public Refund rejectRefund(String refundId, String reason) {
+        String userId = new SecurityUtils().getCurrentUserId();
         log.info("Rejecting the return and refund");
         Refund refund = getRefundById(refundId);
         if (!(refund.getStatus()==Refund.RefundStatus.APPROVED)) {
@@ -126,6 +127,7 @@ public class RefundService implements IRefundService {
     //4. Complete the refund
     public Refund completeRefund(ReturnUpdateRequest returnUpdate) {
         log.info("Making Refund to completed when the product is picked.");
+        String userId =new SecurityUtils().getCurrentUserId();
         Refund refund = getRefundsByOrderId(returnUpdate.getOrderId());
         if (!(refund.getStatus()==Refund.RefundStatus.APPROVED)) {
             throw new IllegalStateException("Only APPROVED refunds can be completed");
@@ -229,6 +231,7 @@ public class RefundService implements IRefundService {
     // ORDER CANCELLATION
     public Order cancelOrder(String orderId,String cancelReason){
         log.warn("Requesting to cancel the order: "+orderId);
+        String userId = new SecurityUtils().getCurrentUserId();
         Order order = orderService.getOrder(orderId);
         if(order.getOrderStatus()== Order.OrderStatus.SHIPPED){
             log.warn("Order cannot be cancelled because the cancellation time is expired.!");
