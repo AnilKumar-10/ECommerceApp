@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,8 @@ public class UserController {
     private PasswordEncoder passwordEncoder;
 
 
+    //  SELF (READ) - only logged-in user
+    @PreAuthorize("hasPermission('USER', 'READ')")
     @PostMapping("/send-otp")
     public ResponseEntity<String> sendOtp() {
         String email = new SecurityUtils().getCurrentUserMail();
@@ -43,6 +46,8 @@ public class UserController {
         return ResponseEntity.ok("OTP sent to " + email);
     }
 
+    //  SELF (UPDATE)
+    @PreAuthorize("hasPermission('USER', 'UPDATE')")
     @PostMapping("/resetPassword")
     public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordUpdate request) {
         boolean isValidOtp = otpService.validateOtp(request.getEmail(), request.getOtp());
@@ -54,60 +59,70 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-
+    //  ADMIN (READ)
+    @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getAllUsers")
-    public List<UserRegistrationResponse> getAllUsers(){
+    public List<UserRegistrationResponse> getAllUsers() {
         return userService.getAllUsers();
     }
 
-
+    //  ADMIN (READ)
+    @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getUserById/{userId}")
-    public Users getUserById(@PathVariable String userId){
+    public Users getUserById(@PathVariable String userId) {
         return userService.getUserById(userId);
     }
 
-
+    //  SELF (UPDATE)
+    @PreAuthorize("hasPermission('USER', 'UPDATE')")
     @PutMapping("/updateUser")
-    public Users updateUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest){
+    public Users updateUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
         userRegistrationRequest.setPassword(passwordEncoder.encode(userRegistrationRequest.getPassword()));
-        return  userService.updateUser(userRegistrationRequest.getId(), userRegistrationRequest);
+        return userService.updateUser(userRegistrationRequest.getId(), userRegistrationRequest);
     }
 
-
+    //  ADMIN (DELETE)
+    @PreAuthorize("hasPermission('USER', 'DELETE')")
     @PostMapping("/deactivateUser/{userId}")
-    public Users deActivateUser(@PathVariable String userId){
+    public Users deActivateUser(@PathVariable String userId) {
         return userService.deactivateUser(userId);
     }
 
-
+    //  ADMIN/SELF (READ)
+    @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getUserByMail")
-    public Users getUserByEmail(@Valid @RequestBody Map<String,String > map){
+    public Users getUserByEmail(@Valid @RequestBody Map<String, String> map) {
         return userService.getUserByEmail(map.get("email"));
     }
 
-
+    //  ADMIN (READ)
+    @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getUserByRole/{role}")
-    public List<UserRegistrationResponse> getUserByRole(@PathVariable String role){
+    public List<UserRegistrationResponse> getUserByRole(@PathVariable String role) {
         return userService.getUsersByRole(role);
     }
 
-
+    //  ADMIN (UPDATE)
+    @PreAuthorize("hasPermission('USER', 'UPDATE')")
     @PutMapping("/addRole")
-    public UserRegistrationResponse addRoleToUser(@RequestBody Map<String, String> map){
+    public UserRegistrationResponse addRoleToUser(@RequestBody Map<String, String> map) {
         String userId = map.get("userId");
         Users.Role newRole = Users.Role.valueOf(map.get("newRole"));
-        return  userService.addRoleToUser(userId,newRole);
+        return userService.addRoleToUser(userId, newRole);
     }
 
-
+    //  ADMIN (READ)
+    @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getSellers")
-    public List<SellerResponse> getAllSellers(){
+    public List<SellerResponse> getAllSellers() {
         return userService.getAllSellers();
     }
 
-
+    //  ADMIN (READ)
+    @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getDeliveryCount")
-    public long getDeliveryAgentCount(){
-        return  deliveryService.totalCount();
+    public long getDeliveryAgentCount() {
+        return deliveryService.totalCount();
     }
+
 }

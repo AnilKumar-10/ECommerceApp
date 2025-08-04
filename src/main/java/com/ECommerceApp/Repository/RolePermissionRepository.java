@@ -15,4 +15,7 @@ public interface RolePermissionRepository extends MongoRepository<RolePermission
 
     // Optional: For full permission check logic
     List<RolePermission> findByRoleIn(List<String> roles);
+
+    RolePermission findByRole(String role);
+
 }

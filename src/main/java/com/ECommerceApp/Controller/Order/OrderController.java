@@ -17,38 +17,39 @@ public class OrderController { //user from service classes
     private IOrderService orderService;
 
 
-    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") //USER
-    @PostMapping("/placeOrder") // user
-    public Order placeOrder(@RequestBody PlaceOrderRequest orderDto){
+    //  BUYER places an order → INSERT permission
+    @PreAuthorize("hasPermission('ORDER', 'INSERT')")
+    @PostMapping("/placeOrder")
+    public Order placeOrder(@RequestBody PlaceOrderRequest orderDto) {
         return orderService.createOrder(orderDto);
     }
 
-
-    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") //ADMIN,SELLER
-    @GetMapping("/getOrder/{id}") // admin
-    public Order getOrder(@PathVariable String id){
+    //  ADMIN/SELLER(SELF) reads any order → scope: ALL
+    @PreAuthorize("hasPermission(#id, 'com.ECommerceApp.Model.Order', 'READ')")
+    @GetMapping("/getOrder/{id}")
+    public Order getOrder(@PathVariable String id) {
         return orderService.getOrder(id);
     }
 
-
-    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") // ADMIN, USER
-    @GetMapping("/getAllOrderByUser/{userId}") // admin
-    public List<Order> getAllOrdersByUser(@PathVariable String userId){
+    //  BUYER (SELF) reads their own orders → scope: SELF
+    //  ADMIN reads any user's orders → scope: ALL
+    @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.User', 'READ')")
+    @GetMapping("/getAllOrderByUser/{userId}")
+    public List<Order> getAllOrdersByUser(@PathVariable String userId) {
         return orderService.getAllOrderByUserId(userId);
     }
 
-
-    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") // ADMIN
-    @GetMapping("/getAllOrders") // admin
-    public List<Order> getAllOrders(){
+    //  ADMIN only
+    @PreAuthorize("hasPermission('ORDER', 'READ')")
+    @GetMapping("/getAllOrders")
+    public List<Order> getAllOrders() {
         return orderService.getAllOrders();
     }
 
-
-    @PreAuthorize("@permissionService.hasPermission('ORDER', 'READ')") //ADMIN
-    @GetMapping("/getPendingOrders") // admin
-    public List<Order> getAllPendingOrders(){
+    //  ADMIN only
+    @PreAuthorize("hasPermission('ORDER', 'READ')")
+    @GetMapping("/getPendingOrders")
+    public List<Order> getAllPendingOrders() {
         return orderService.getAllPendingOrders();
     }
-
 }

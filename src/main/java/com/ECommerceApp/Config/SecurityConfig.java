@@ -1,11 +1,14 @@
 package com.ECommerceApp.Config;
 
+import com.ECommerceApp.ServiceImplementation.CustomPermissionEvaluator;
 import com.ECommerceApp.ServiceImplementation.UserDetailsServiceImpl;
 import com.ECommerceApp.Util.JwtAuthenticationFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -64,6 +67,16 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+
+    @Autowired
+    private CustomPermissionEvaluator customPermissionEvaluator;
+
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setPermissionEvaluator(customPermissionEvaluator); // ✅ Register it
+        return handler;
+    }
 
 }
 

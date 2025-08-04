@@ -49,8 +49,8 @@ public class DeliveryController { // admin, delivery person
 //    public ResponseEntity<?>  insertDeliveryPersons(@Valid @RequestBody List<@Valid DeliveryPersonRegistrationRequest> deliveryPerson){
 //        return  ResponseEntity.ok(deliveryService.registerPersons(deliveryPerson));
 //    }
-
-    @PreAuthorize("@permissionService.hasPermission('DELIVERY', 'READ')")
+//  SELF: current delivery person requesting OTP
+    @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/sendOtp")
     public ResponseEntity<String> sendOtp() {
         String email = new SecurityUtils().getCurrentUserMail();
@@ -58,7 +58,8 @@ public class DeliveryController { // admin, delivery person
         return ResponseEntity.ok("OTP sent to " + email);
     }
 
-    @PreAuthorize("@permissionService.hasPermission('DELIVERY', 'UPDATE')")
+    //  SELF: delivery person resets their own password
+    @PreAuthorize("hasPermission('DELIVERY', 'UPDATE')")
     @PostMapping("/resetPassword")
     public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordUpdate request) {
         boolean isValidOtp = otpService.validateOtp(request.getEmail(), request.getOtp());
@@ -70,51 +71,47 @@ public class DeliveryController { // admin, delivery person
         return ResponseEntity.ok(response);
     }
 
-
-    @PreAuthorize("@permissionService.hasPermission('DELIVERY', 'UPDATE')")
+    // SELF: delivery person updates their delivery status
+    @PreAuthorize("hasPermission('DELIVERY', 'UPDATE')")
     @PutMapping("/updateDelivery")
     public ResponseEntity<?> updateDelivery(@Valid @RequestBody DeliveryUpdate deliveryUpdateDTO){
-        if(orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod()== Payment.PaymentMethod.COD){
-            System.out.println("inside the if of update: "+deliveryUpdateDTO);
+        if (orderService.getOrder(deliveryUpdateDTO.getOrderId()).getPaymentMethod() == Payment.PaymentMethod.COD) {
             PaymentRequest paymentDto = new PaymentRequest();
             paymentDto.setPaymentId(deliveryUpdateDTO.getPaymentId());
             paymentDto.setTransactionId(orderService.generateTransactionIdForCOD());
             paymentDto.setStatus(Payment.PaymentStatus.SUCCESS);
-            paymentService.confirmCODPayment(paymentDto); // updating the payment success details
-            orderService.updateCODPaymentStatus(deliveryUpdateDTO);// updating the order payment status
+
+            paymentService.confirmCODPayment(paymentDto);
+            orderService.updateCODPaymentStatus(deliveryUpdateDTO);
         }
         return ResponseEntity.ok(shippingService.updateDeliveryStatus(deliveryUpdateDTO));
     }
 
-
-    @PreAuthorize("@permissionService.hasPermission('DELIVERY', 'DELETE')")
+    // ADMIN ONLY: delete any delivery person
+    @PreAuthorize("hasPermission(#id, 'com.ECommerceApp.Model.DeliveryPerson', 'DELETE')")
     @DeleteMapping("/deleteDeliveryPerson/{id}")
-    public String deleteDeliveryPerson(@PathVariable String id){
+    public String deleteDeliveryPerson(@PathVariable String id) {
         return deliveryService.deleteDeliveryMan(id);
     }
 
-
-
-    @PreAuthorize("@permissionService.hasPermission('DELIVERY', 'READ')")
+    // ADMIN or SELF: read a specific delivery person by ID
+    @PreAuthorize("hasPermission(#id, 'com.ECommerceApp.Model.DeliveryPerson', 'READ')")
     @GetMapping("/getDeliveryPerson/{id}")
-    public DeliveryPerson getDeliveryPerson(@PathVariable String id){
+    public DeliveryPerson getDeliveryPerson(@PathVariable String id) {
         return deliveryService.getDeliveryPerson(id);
     }
 
-
-
-    @PreAuthorize("@permissionService.hasPermission('DELIVERY', 'READ')")
+    // ADMIN ONLY: get delivery person by order
+    @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getDelPersonByOrder/{orderId}")
-    public DeliveryPersonResponse getByOrderId(@PathVariable String orderId){
+    public DeliveryPersonResponse getByOrderId(@PathVariable String orderId) {
         return deliveryService.getDeliveryPersonByOrderId(orderId);
     }
 
-
-
-    @PreAuthorize("@permissionService.hasPermission('DELIVERY', 'READ')")
+    // SELF ONLY: logged-in delivery person reads their own profile
+    @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getData")
-    public DeliveryPerson getDeliveryPersonData(){
-        return deliveryService.getDeliveryPeronData();
+    public DeliveryPerson getDeliveryPersonData() {
+        return deliveryService.getDeliveryPeronData(); // current user ID from JWT internally
     }
-
 }

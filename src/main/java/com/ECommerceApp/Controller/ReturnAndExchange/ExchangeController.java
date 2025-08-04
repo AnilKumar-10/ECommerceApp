@@ -9,6 +9,7 @@ import com.ECommerceApp.ServiceInterface.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -24,16 +25,22 @@ public class ExchangeController {
     private IPaymentService paymentService;
 
 
+    //  BUYER: Request an exchange
+    @PreAuthorize("hasPermission('EXCHANGE', 'INSERT')")
     @PostMapping("/RequestReturnExchange")
     public ExchangeResponse exchangeProduct(@RequestBody ProductExchangeRequest productExchangeDto){
         return exchangeService.exchangeRequest(productExchangeDto);
     }
 
+    //  BUYER: View exchange info for own order
+    @PreAuthorize("hasPermission('EXCHANGE', 'READ')")
     @PostMapping("/getExchangeInfo/{orderId}")
-    public ProductExchangeInfo getExchangeInformation(@PathVariable String  orderId){
+    public ProductExchangeInfo getExchangeInformation(@PathVariable String orderId){
         return exchangeService.getExchangeInformation(orderId);
     }
 
+    //  DELIVERY: Update exchange status
+    @PreAuthorize("hasPermission('EXCHANGE', 'UPDATE')")
     @PostMapping("/updateExchange")
     public ResponseEntity<?> exchangeUpdate(@RequestBody ExchangeUpdateRequest exchangeUpdateRequest){
         log.info("inside the exchange update: "+exchangeUpdateRequest);

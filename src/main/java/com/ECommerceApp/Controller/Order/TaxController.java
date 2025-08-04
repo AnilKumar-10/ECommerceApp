@@ -6,6 +6,7 @@ import com.ECommerceApp.ServiceInterface.ITaxRuleService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -21,29 +22,38 @@ public class TaxController { //admin
     @Autowired
     private ITaxRuleService taxRuleService;
 
-
+    // ADMIN only
+    @PreAuthorize("hasPermission('TAX', 'INSERT')")
     @PostMapping("/createTaxrules")
-    public ResponseEntity<?>  createTax(@Valid @RequestBody List<TaxRuleCreationRequest> rule){
+    public ResponseEntity<?> createTax(@Valid @RequestBody List<TaxRuleCreationRequest> rule) {
         return ResponseEntity.ok(taxRuleService.createMultiTaxRules(rule));
     }
 
+    //ADMIN only
+    @PreAuthorize("hasPermission('TAX', 'INSERT')")
     @PostMapping("/createTaxRule")
-    public TaxRule createTacRule(@RequestBody TaxRuleCreationRequest rule){
+    public TaxRule createTaxRule(@RequestBody TaxRuleCreationRequest rule) {
         return taxRuleService.createOneTaxRule(rule);
     }
 
+    // ADMIN only
+    @PreAuthorize("hasPermission('TAX', 'UPDATE')")
     @PutMapping("/updateTaxRule")
-    public ResponseEntity<?> updateTaxRule(@Valid @RequestBody TaxRuleCreationRequest rule){
+    public ResponseEntity<?> updateTaxRule(@Valid @RequestBody TaxRuleCreationRequest rule) {
         return ResponseEntity.ok(taxRuleService.updateTaxRule(rule));
     }
 
+    // ADMIN only
+    @PreAuthorize("hasPermission('TAX', 'DELETE')")
     @DeleteMapping("/deleteTaxRule/{ruleId}")
-    public String deleteTaxRule(@PathVariable String ruleId){
+    public String deleteTaxRule(@PathVariable String ruleId) {
         return taxRuleService.deleteTaxRule(ruleId);
     }
 
+    // All roles can READ
+    @PreAuthorize("hasPermission('TAX', 'READ')")
     @GetMapping("/getAllTaxRules")
-    public List<TaxRule> getAllTaxRules(){
+    public List<TaxRule> getAllTaxRules() {
         return taxRuleService.getAllTaxRules();
     }
 

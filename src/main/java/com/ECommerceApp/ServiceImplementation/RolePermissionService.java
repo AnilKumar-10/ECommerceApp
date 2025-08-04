@@ -11,8 +11,11 @@ import org.springframework.stereotype.Service;
 public class RolePermissionService {
     @Autowired
     private RolePermissionRepository rolePermissionRepository;
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
 
     public RolePermission createRolePermission(RolePermission rolePermission) {
+        rolePermission.setId(String.valueOf(sequenceGeneratorService.getNextSequence("roleId")));
         return rolePermissionRepository.save(rolePermission);
     }
 }

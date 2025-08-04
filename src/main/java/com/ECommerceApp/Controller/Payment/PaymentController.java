@@ -6,6 +6,7 @@ import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,12 +25,15 @@ public class PaymentController { //user
     @Autowired
     private IExchangeService exchangeService;
 
+    //  BUYER / DELIVERY → make a new payment
+    @PreAuthorize("hasPermission('PAYMENT', 'INSERT')")
     @PostMapping("/initPay")
-    public Payment initiatePayment(@RequestBody InitiatePaymentRequest initiatePaymentDto){
+    public Payment initiatePayment(@RequestBody InitiatePaymentRequest initiatePaymentDto) {
         return paymentService.initiatePayment(initiatePaymentDto);
     }
 
-
+    //  BUYER / DELIVERY → finalize payment
+    @PreAuthorize("hasPermission('PAYMENT', 'UPDATE')")
     @PostMapping("/pay")
     public Payment pay(@Valid @RequestBody PaymentRequest paymentDto) {
         return paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS
@@ -37,33 +41,37 @@ public class PaymentController { //user
                 : paymentService.failPayment(paymentDto);
     }
 
-
+    //  ADMIN → get payment by ID
+    @PreAuthorize("hasPermission('PAYMENT', 'READ')")
     @GetMapping("/getPayment/{paymentId}")
-    public Payment getPaymentDetails(@PathVariable String paymentId){
+    public Payment getPaymentDetails(@PathVariable String paymentId) {
         return paymentService.getPaymentById(paymentId);
     }
 
+    //  ADMIN → view all failed payments
+    @PreAuthorize("hasPermission('PAYMENT', 'READ')")
     @GetMapping("/getAllFailedPayments")
-    public List<Payment> getFailedPayments(){
+    public List<Payment> getFailedPayments() {
         return paymentService.getAllFailedPayments();
     }
 
-
+    //  BUYER / DELIVERY → exchange payment initiation
+    @PreAuthorize("hasPermission('PAYMENT', 'INSERT')")
     @PostMapping("/initExchangePay")
-    public Payment initiateExchangePay(@RequestBody InitiatePaymentRequest initiatePaymentDto){
+    public Payment initiateExchangePay(@RequestBody InitiatePaymentRequest initiatePaymentDto) {
         return paymentService.initiateExchangePayment(initiatePaymentDto);
     }
 
-    @PostMapping("/payExchange")// for upi payment.
-    public String  upiPayExchangeAmount(@RequestBody PaymentRequest paymentDto){
-        if(paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS){
-            Payment payment =  paymentService.confirmUPIPaymentForExchange(paymentDto);
-            exchangeService.processExchangeAfterUpiPayDone(payment.getOrderId(),payment.getId());
-            return "Payment Successful ";
+    //  BUYER / DELIVERY → complete exchange payment
+    @PreAuthorize("hasPermission('PAYMENT', 'UPDATE')")
+    @PostMapping("/payExchange")
+    public String upiPayExchangeAmount(@RequestBody PaymentRequest paymentDto) {
+        if (paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS) {
+            Payment payment = paymentService.confirmUPIPaymentForExchange(paymentDto);
+            exchangeService.processExchangeAfterUpiPayDone(payment.getOrderId(), payment.getId());
+            return "Payment Successful";
         }
-        return "Payment Failed.! , Please try again";
+        return "Payment Failed! Please try again.";
     }
-
-
 
 }

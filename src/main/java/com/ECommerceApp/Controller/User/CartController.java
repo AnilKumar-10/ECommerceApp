@@ -20,7 +20,7 @@ public class  CartController { //buyer
     @Autowired
     private IWishListService wishListService;
 
-    @PreAuthorize("@permissionService.hasPermission('CART', 'INSERT')")
+    @PreAuthorize("hasPermission('CART', 'INSERT')")
     @PostMapping("/addToCart")
     public Cart addToCart(@RequestBody CartItem items){
         items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
@@ -29,7 +29,7 @@ public class  CartController { //buyer
         return cartService.addItemToCart(userId,items); // userid is taken from the jwt token
     }
 
-    @PreAuthorize("@permissionService.hasPermission('CART', 'READ')")
+    @PreAuthorize("hasPermission('CART', 'READ')")
     @GetMapping("/getCart")
     public Cart getCart(){
         String id =  new SecurityUtils().getCurrentUserId();
@@ -38,21 +38,21 @@ public class  CartController { //buyer
         return cartService.getCartByBuyerId(id);
     }
 
-    @PreAuthorize("@permissionService.hasPermission('CART', 'DELETE')")
+    @PreAuthorize("hasPermission('CART', 'DELETE')")
     @PostMapping("/clearCart")
     public Cart clearCart(){
         String userId = new SecurityUtils().getCurrentUserId();
         return cartService.clearCart(userId);
     }
 
-    @PreAuthorize("@permissionService.hasPermission('CART', 'UPDATE')")
+    @PreAuthorize("hasPermission('CART', 'UPDATE')")
     @DeleteMapping("/removeCartItem/{itemNo}")
     public Cart removeItemFromCart(@PathVariable String itemNo){ // we get userid from jwt
         String userId = new SecurityUtils().getCurrentUserId();
         return cartService.removeOneItemFromCart(userId,itemNo);
     }
 
-    @PreAuthorize("@permissionService.hasPermission('CART', 'UPDATE')")
+    @PreAuthorize("hasPermission('CART', 'UPDATE')")
     @PostMapping("/cartToWish/{productId}")
     public Cart moveCartToWish(@PathVariable String productId){
         String userId = new SecurityUtils().getCurrentUserId();

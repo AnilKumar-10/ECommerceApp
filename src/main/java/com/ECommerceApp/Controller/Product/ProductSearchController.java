@@ -8,6 +8,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -19,22 +20,23 @@ public class ProductSearchController { // everyone
     @Autowired
     private IProductSearchService productSearchService;
 
+
     @GetMapping("/product/{name}")
-    public List<ProductSearchResponse> getProductByCategoryName(@PathVariable String name){
+    public List<ProductSearchResponse> getProductByCategoryName(@PathVariable String name) {
         List<Product> products = productSearchService.getProductsByCategoryName(name);
-        System.out.println("products are: "+products);
-        List<ProductSearchResponse> productSearchDtos  = new ArrayList<>();
-        for(Product product : products){
-            ProductSearchResponse productSearchDto = new ProductSearchResponse();
-            BeanUtils.copyProperties(product , productSearchDto);
-            productSearchDtos.add(productSearchDto);
+        List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
+        for (Product product : products) {
+            ProductSearchResponse dto = new ProductSearchResponse();
+            BeanUtils.copyProperties(product, dto);
+            productSearchDtos.add(dto);
         }
         return productSearchDtos;
     }
 
 
+
     @GetMapping("/search")
-//    http://localhost:9090/search?categories=Shirts&sortOrder=desc
+    //    http://localhost:9090/search?categories=Shirts&sortOrder=desc
 //    http://localhost:9090/search?categories=Shirts&sortOrder=desc&sortBy=rating
 //    http://localhost:9090/search?categories=Footwear,Women&brand=Nike&sortOrder=desc&sortBy=rating
     public List<ProductSearchResponse> searchProductsByCategoryNames(
@@ -45,30 +47,29 @@ public class ProductSearchController { // everyone
         return productSearchService.searchRequest(categories, brand, sortOrder, sortBy);
     }
 
+
     @GetMapping("/searchBrand/{brandName}")
     public ResponseEntity<?> getProductByBrand(@PathVariable String brandName) {
-        List<ProductSearchResponse> productSearchResponses = productSearchService.getProductByBrand(brandName);
-        if(productSearchResponses.isEmpty()){
-            return ResponseEntity.ok("There is no products found with: "+brandName);
+        List<ProductSearchResponse> results = productSearchService.getProductByBrand(brandName);
+        if (results.isEmpty()) {
+            return ResponseEntity.ok("There is no product found with brand: " + brandName);
         }
-        return ResponseEntity.ok(productSearchResponses);
+        return ResponseEntity.ok(results);
     }
 
+
     @GetMapping("/viewAll")
-//  viewAll?page=1&size=5
-//  the size decides the no of objects to be displayed in the page.
+    //  viewAll?page=1&size=5
     public Page<ProductSearchResponse> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        System.out.println(page+" : "+size);
         return productSearchService.getAllProducts(page, size);
     }
 
 
     @GetMapping("/UserFeed")
-    public List<ProductSearchResponse> feedByWishList(){
+    public List<ProductSearchResponse> feedByWishList() {
         return productSearchService.feedByWishProducts();
     }
-
 
 }

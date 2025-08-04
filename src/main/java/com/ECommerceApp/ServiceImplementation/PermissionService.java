@@ -5,11 +5,13 @@ import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.RolePermissionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.List;
 @Slf4j
 @Service("permissionService")
@@ -20,22 +22,22 @@ public class PermissionService {
 
     public boolean hasPermission(String resource, String action) {
 
-        log.info("Checking the permissions:  resource: "+resource+"    action: "+action);
+        log.info("Checking the permissions:  resource: " + resource + "    action: " + action);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) return false;
         List<String> roles = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(role -> role.replace("ROLE_", ""))
                 .toList();
-        log.info("role  are: "+roles);
-        if(roles.contains(Users.Role.ADMIN.name())){
+        log.info("role  are: " + roles);
+        if (roles.contains(Users.Role.ADMIN.name())) {
             return true;
         }
         List<RolePermission> rolePermissions = rolePermissionRepository.findByRoleIn(roles);
-        log.info("role permissions are: "+rolePermissions);
+        log.info("role permissions are: " + rolePermissions);
         return rolePermissions.stream().anyMatch(rp ->
                 rp.getPermissions().stream().anyMatch(p ->
-                        p.getResource().equalsIgnoreCase(resource)  &&  p.getAction().equalsIgnoreCase(action)
+                        p.getResource().equalsIgnoreCase(resource) && p.getAction().equalsIgnoreCase(action)
                 )
         );
     }
