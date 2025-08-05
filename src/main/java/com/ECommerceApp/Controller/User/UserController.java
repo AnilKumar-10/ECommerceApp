@@ -5,17 +5,15 @@ import com.ECommerceApp.DTO.User.SellerResponse;
 import com.ECommerceApp.DTO.User.UserRegistrationRequest;
 import com.ECommerceApp.DTO.User.UserRegistrationResponse;
 import com.ECommerceApp.Model.User.Users;
-import com.ECommerceApp.ServiceImplementation.AuthService;
-import com.ECommerceApp.ServiceImplementation.OtpService;
-import com.ECommerceApp.ServiceInterface.IDeliveryService;
-import com.ECommerceApp.ServiceInterface.UserServiceInterface;
+import com.ECommerceApp.ServiceImplementation.User.AuthService;
+import com.ECommerceApp.ServiceImplementation.User.OtpService;
+import com.ECommerceApp.ServiceInterface.Delivery.IDeliveryService;
+import com.ECommerceApp.ServiceInterface.User.UserServiceInterface;
 import com.ECommerceApp.Util.SecurityUtils;
 import jakarta.validation.Valid;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +50,7 @@ public class UserController {
     public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordUpdate request) {
         boolean isValidOtp = otpService.validateOtp(request.getEmail(), request.getOtp());
         if (!isValidOtp) {
-            throw new RuntimeException("Invalid or expired OTP");
+            throw new RuntimeException("Invalid OTP");
         }
         request.setNewPassword(passwordEncoder.encode(request.getNewPassword()));
         String response = authService.updateUserPassword(request);
@@ -67,7 +65,7 @@ public class UserController {
     }
 
     //  ADMIN (READ)
-    @PreAuthorize("hasPermission('USER', 'READ')")
+    @PreAuthorize("hasPermission('#userId','com.ECommerceApp.Model.User','READ')")
     @GetMapping("/getUserById/{userId}")
     public Users getUserById(@PathVariable String userId) {
         return userService.getUserById(userId);
@@ -77,8 +75,8 @@ public class UserController {
     @PreAuthorize("hasPermission('USER', 'UPDATE')")
     @PutMapping("/updateUser")
     public Users updateUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
-        userRegistrationRequest.setPassword(passwordEncoder.encode(userRegistrationRequest.getPassword()));
-        return userService.updateUser(userRegistrationRequest.getId(), userRegistrationRequest);
+        String userId = new SecurityUtils().getCurrentUserId();
+        return userService.updateUser(userId, userRegistrationRequest);
     }
 
     //  ADMIN (DELETE)

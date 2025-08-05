@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.DTO.User.AddressRegistrationRequest;
 import com.ECommerceApp.Model.User.Address;
-import com.ECommerceApp.ServiceInterface.*;
+import com.ECommerceApp.ServiceInterface.User.IAddressService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

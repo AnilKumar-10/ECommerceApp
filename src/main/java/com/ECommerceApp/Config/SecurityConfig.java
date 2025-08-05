@@ -1,7 +1,7 @@
 package com.ECommerceApp.Config;
 
-import com.ECommerceApp.ServiceImplementation.CustomPermissionEvaluator;
-import com.ECommerceApp.ServiceImplementation.UserDetailsServiceImpl;
+import com.ECommerceApp.ServiceImplementation.UserDetailService.CustomPermissionEvaluator;
+import com.ECommerceApp.ServiceImplementation.UserDetailService.UserDetailsServiceImpl;
 import com.ECommerceApp.Util.JwtAuthenticationFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/browse/**","/user/**").permitAll()
+                        .requestMatchers("/auth/**", "/browse/**").permitAll()
                         .requestMatchers("/roles/**").hasRole( "ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -67,14 +67,13 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-
     @Autowired
     private CustomPermissionEvaluator customPermissionEvaluator;
 
     @Bean
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-        handler.setPermissionEvaluator(customPermissionEvaluator); // ✅ Register it
+        handler.setPermissionEvaluator(customPermissionEvaluator);
         return handler;
     }
 

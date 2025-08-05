@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.DTO.Product.StockLogModificationRequest;
 import com.ECommerceApp.Model.Product.StockLog;
-import com.ECommerceApp.ServiceInterface.IStockLogService;
+import com.ECommerceApp.ServiceInterface.Product.IStockLogService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +45,12 @@ public class StockLogController { // admin, seller
         return stockLogService.getByProductId(productId);
     }
 
+
+    // SELLER INSERT
+    @PreAuthorize("hasPermission('STOCK', 'INSERT')")
+    @PostMapping("/insertStockLog")
+    public ResponseEntity<?> insertStockLogs(@Valid @RequestBody StockLogModificationRequest stockLogModificationDTO) {
+        return ResponseEntity.ok(stockLogService.modifyStock(stockLogModificationDTO));
+    }
 
 }

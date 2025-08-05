@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.Product;
 
 
 import com.ECommerceApp.Model.Product.Category;
-import com.ECommerceApp.ServiceInterface.*;
+import com.ECommerceApp.ServiceInterface.Product.ICategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

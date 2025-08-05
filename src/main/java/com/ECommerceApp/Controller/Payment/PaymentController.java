@@ -1,9 +1,10 @@
 package com.ECommerceApp.Controller.Payment;
 import com.ECommerceApp.DTO.Payment.InitiatePaymentRequest;
 import com.ECommerceApp.DTO.Payment.PaymentRequest;
-import com.ECommerceApp.DTO.ReturnAndExchange.ProductExchangeInfo;
 import com.ECommerceApp.Model.Payment.Payment;
-import com.ECommerceApp.ServiceInterface.*;
+import com.ECommerceApp.ServiceInterface.Order.IExchangeService;
+import com.ECommerceApp.ServiceInterface.Order.IReturnService;
+import com.ECommerceApp.ServiceInterface.Payment.IPaymentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +34,7 @@ public class PaymentController { //user
     }
 
     //  BUYER / DELIVERY → finalize payment
-    @PreAuthorize("hasPermission('PAYMENT', 'UPDATE')")
+    @PreAuthorize("hasPermission('PAYMENT', 'INSERT')")
     @PostMapping("/pay")
     public Payment pay(@Valid @RequestBody PaymentRequest paymentDto) {
         return paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS
@@ -63,7 +64,7 @@ public class PaymentController { //user
     }
 
     //  BUYER / DELIVERY → complete exchange payment
-    @PreAuthorize("hasPermission('PAYMENT', 'UPDATE')")
+    @PreAuthorize("hasPermission('PAYMENT', 'INSERT')")
     @PostMapping("/payExchange")
     public String upiPayExchangeAmount(@RequestBody PaymentRequest paymentDto) {
         if (paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS) {

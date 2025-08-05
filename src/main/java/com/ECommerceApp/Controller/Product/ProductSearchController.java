@@ -2,13 +2,11 @@ package com.ECommerceApp.Controller.Product;
 
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Model.Product.Product;
-import com.ECommerceApp.ServiceInterface.IProductSearchService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.ECommerceApp.ServiceInterface.Product.IProductSearchService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -36,9 +34,9 @@ public class ProductSearchController { // everyone
 
 
     @GetMapping("/search")
-    //    http://localhost:9090/search?categories=Shirts&sortOrder=desc
-//    http://localhost:9090/search?categories=Shirts&sortOrder=desc&sortBy=rating
-//    http://localhost:9090/search?categories=Footwear,Women&brand=Nike&sortOrder=desc&sortBy=rating
+    // http://localhost:9090/search?categories=Shirts&sortOrder=desc
+    // http://localhost:9090/search?categories=Shirts&sortOrder=desc&sortBy=rating
+    // http://localhost:9090/search?categories=Footwear,Women&brand=Nike&sortOrder=desc&sortBy=rating
     public List<ProductSearchResponse> searchProductsByCategoryNames(
             @RequestParam List<String> categories,
             @RequestParam(name = "brand", required = false) String brand,

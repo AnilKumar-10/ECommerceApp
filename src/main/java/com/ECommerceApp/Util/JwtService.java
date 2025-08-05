@@ -1,7 +1,7 @@
 package com.ECommerceApp.Util;
 
 import com.ECommerceApp.Model.User.Users;
-import com.ECommerceApp.ServiceImplementation.CustomUserDetails;
+import com.ECommerceApp.ServiceImplementation.UserDetailService.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -17,7 +17,7 @@ import java.util.function.Function;
 public class JwtService {
 
     private static final String SECRET_KEY = "mySuperSecretKey12345678901234567890123456789012";
-    private final long EXPIRATION = 1000 * 60 * 60;
+    private final long EXPIRATION = 1000 * 60 * 60; //1 hour
 
     private Key getSignInKey() {
         log.info("inside the getSignKey()");
@@ -64,11 +64,6 @@ public class JwtService {
         return extractClaims(token, Claims::getSubject);
     }
 
-
-    public String extractPassword(String token) {
-        log.info("inside the extractPasswordHash");
-        return extractClaims(token, claims -> claims.get("pwd", String.class));
-    }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         log.info("inside the isTokenValid()");

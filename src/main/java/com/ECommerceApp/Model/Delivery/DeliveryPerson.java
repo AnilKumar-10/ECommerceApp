@@ -22,7 +22,7 @@ public class DeliveryPerson {
     private String password;
     private List<Users.Role> roles;
     private boolean isActive;
-    private Date passwordChangedAt = new Date(); // Initialize during registration
+    private Date passwordChangedAt;
     private int deliveredCount;
     private int toDeliveryCount;
     private List<String> assignedAreas; // Areas/zones they deliver to

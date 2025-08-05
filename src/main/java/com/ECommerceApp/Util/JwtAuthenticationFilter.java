@@ -1,6 +1,6 @@
 package com.ECommerceApp.Util;
 
-import com.ECommerceApp.ServiceImplementation.UserDetailsServiceImpl;
+import com.ECommerceApp.ServiceImplementation.UserDetailService.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

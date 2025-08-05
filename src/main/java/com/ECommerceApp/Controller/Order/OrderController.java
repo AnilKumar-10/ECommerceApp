@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.Order;
 
 import com.ECommerceApp.DTO.Order.PlaceOrderRequest;
 import com.ECommerceApp.Model.Order.Order;
-import com.ECommerceApp.ServiceInterface.*;
+import com.ECommerceApp.ServiceInterface.Order.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +25,7 @@ public class OrderController { //user from service classes
     }
 
     //  ADMIN/SELLER(SELF) reads any order → scope: ALL
-    @PreAuthorize("hasPermission(#id, 'com.ECommerceApp.Model.Order', 'READ')")
+    @PreAuthorize("hasPermission('ORDER', 'READ')")
     @GetMapping("/getOrder/{id}")
     public Order getOrder(@PathVariable String id) {
         return orderService.getOrder(id);

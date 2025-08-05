@@ -1,7 +1,7 @@
 package com.ECommerceApp.Controller.Product;
 
 import com.ECommerceApp.Model.Order.Coupon;
-import com.ECommerceApp.ServiceInterface.ICouponService;
+import com.ECommerceApp.ServiceInterface.Order.ICouponService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,35 +19,35 @@ public class CouponController { // admin , seller
     private ICouponService couponService;
 
 
-    // ✅ ADMIN, SELLER
+    // ADMIN, SELLER
     @PreAuthorize("hasPermission('COUPON', 'INSERT')")
     @PostMapping("/insertCoupon")
     public ResponseEntity<?> insertCoupon(@Valid @RequestBody Coupon coupon) {
         return ResponseEntity.ok(couponService.createCoupon(coupon));
     }
 
-    // ✅ ADMIN, SELLER
+    // ADMIN, SELLER
     @PreAuthorize("hasPermission('COUPON', 'INSERT')")
     @PostMapping("/insertCoupons")
     public ResponseEntity<?> insertCouponsList(@Valid @RequestBody List<@Valid Coupon> coupon) {
         return ResponseEntity.ok(couponService.createCouponsList(coupon));
     }
 
-    // ✅ ADMIN, SELLER
+    // ADMIN, SELLER
     @PreAuthorize("hasPermission('COUPON', 'UPDATE')")
     @PutMapping("/updateCoupon")
     public ResponseEntity<?> updateCoupon(@Valid @RequestBody Coupon coupon) {
         return ResponseEntity.ok(couponService.updateCoupon(coupon));
     }
 
-    // ✅ ALL ROLES
+    // ALL ROLES
     @PreAuthorize("hasPermission('COUPON', 'READ')")
     @GetMapping("/getCoupon/{couponCode}")
     public Coupon getCoupon(@PathVariable String couponCode) {
         return couponService.getCouponById(couponCode);
     }
 
-    // ✅ ALL ROLES
+    // ALL ROLES
     @PreAuthorize("hasPermission('COUPON', 'READ')")
     @GetMapping("/getAllCoupons")
     public List<Coupon> getAllCoupons() {

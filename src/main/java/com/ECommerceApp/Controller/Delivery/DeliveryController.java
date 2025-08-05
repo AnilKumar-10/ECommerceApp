@@ -6,10 +6,13 @@ import com.ECommerceApp.DTO.Payment.PaymentRequest;
 import com.ECommerceApp.DTO.User.PasswordUpdate;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Payment.Payment;
-import com.ECommerceApp.ServiceImplementation.AuthService;
-import com.ECommerceApp.ServiceImplementation.OtpService;
-import com.ECommerceApp.ServiceInterface.*;
-import com.ECommerceApp.ServiceInterface.IPaymentService;
+import com.ECommerceApp.ServiceImplementation.User.AuthService;
+import com.ECommerceApp.ServiceImplementation.User.OtpService;
+import com.ECommerceApp.ServiceInterface.Delivery.IDeliveryService;
+import com.ECommerceApp.ServiceInterface.Order.IShippingService;
+import com.ECommerceApp.ServiceInterface.Payment.IPaymentService;
+import com.ECommerceApp.ServiceInterface.Order.IExchangeService;
+import com.ECommerceApp.ServiceInterface.Order.IOrderService;
 import com.ECommerceApp.Util.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,17 +42,7 @@ public class DeliveryController { // admin, delivery person
     @Autowired
     private AuthService authService;
 
-//    @PostMapping("/insertDelivery")
-//    public ResponseEntity<?> insertDelivery(@Valid @RequestBody DeliveryPersonRegistrationRequest deliveryPerson ){
-//        return  ResponseEntity.ok(deliveryService.register(deliveryPerson));
-//    }
-//
-//
-//    @PostMapping("/insertDeliveries")
-//    public ResponseEntity<?>  insertDeliveryPersons(@Valid @RequestBody List<@Valid DeliveryPersonRegistrationRequest> deliveryPerson){
-//        return  ResponseEntity.ok(deliveryService.registerPersons(deliveryPerson));
-//    }
-//  SELF: current delivery person requesting OTP
+    //  SELF: current delivery person requesting OTP
     @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/sendOtp")
     public ResponseEntity<String> sendOtp() {
@@ -96,7 +89,7 @@ public class DeliveryController { // admin, delivery person
 
     // ADMIN or SELF: read a specific delivery person by ID
     @PreAuthorize("hasPermission(#id, 'com.ECommerceApp.Model.DeliveryPerson', 'READ')")
-    @GetMapping("/getDeliveryPerson/{id}")
+        @GetMapping("/getDeliveryPerson/{id}")
     public DeliveryPerson getDeliveryPerson(@PathVariable String id) {
         return deliveryService.getDeliveryPerson(id);
     }
@@ -113,5 +106,11 @@ public class DeliveryController { // admin, delivery person
     @GetMapping("/getData")
     public DeliveryPerson getDeliveryPersonData() {
         return deliveryService.getDeliveryPeronData(); // current user ID from JWT internally
+    }
+
+    @PutMapping("/update")
+    public DeliveryPerson updateDelivery(@RequestBody DeliveryPerson deliveryPerson){
+        deliveryPerson.setPassword(passwordEncoder.encode(deliveryPerson.getPassword()));
+        return deliveryService.updateDelivery(deliveryPerson);
     }
 }

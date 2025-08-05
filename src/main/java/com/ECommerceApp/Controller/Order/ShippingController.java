@@ -2,7 +2,7 @@ package com.ECommerceApp.Controller.Order;
 
 import com.ECommerceApp.DTO.Order.ShippingUpdateRequest;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
-import com.ECommerceApp.ServiceInterface.IShippingService;
+import com.ECommerceApp.ServiceInterface.Order.IShippingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

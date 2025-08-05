@@ -3,7 +3,7 @@ package com.ECommerceApp.Controller.Product;
 import com.ECommerceApp.DTO.User.ReviewCreationRequest;
 import com.ECommerceApp.DTO.User.ReviewDeletion;
 import com.ECommerceApp.Model.Product.Review;
-import com.ECommerceApp.ServiceInterface.IReviewService;
+import com.ECommerceApp.ServiceInterface.Product.IReviewService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -55,9 +55,13 @@ public class ReviewController { // buyyer
 
     //  ALL: View all reviews by a specific user
     @PreAuthorize("hasPermission('REVIEW', 'READ')")
-    @GetMapping("/getAllUserReviews/{userID}")
-    public List<Review> getAllReviewsByUser(@PathVariable String userID) {
-        return reviewService.getAllUserReviews(userID);
+        @GetMapping("/getAllUserReviews/{userID}")
+    public ResponseEntity<?> getAllReviewsByUser(@PathVariable String userID) {
+        List<Review> reviews = reviewService.getAllUserReviews(userID);
+        if(!reviews.isEmpty()){
+            return ResponseEntity.ok(reviews);
+        }
+        return ResponseEntity.ok("The user haven't posted review");
     }
 
 

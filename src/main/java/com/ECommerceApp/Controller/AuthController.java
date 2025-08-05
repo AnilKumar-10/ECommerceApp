@@ -4,7 +4,12 @@ import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
 import com.ECommerceApp.DTO.User.*;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.User.Users;
-import com.ECommerceApp.ServiceImplementation.*;
+import com.ECommerceApp.ServiceImplementation.Delivery.DeliveryService;
+import com.ECommerceApp.ServiceImplementation.User.AuthService;
+import com.ECommerceApp.ServiceImplementation.User.OtpService;
+import com.ECommerceApp.ServiceImplementation.User.UserService;
+import com.ECommerceApp.ServiceImplementation.UserDetailService.CustomUserDetails;
+import com.ECommerceApp.ServiceImplementation.UserDetailService.UserDetailsServiceImpl;
 import com.ECommerceApp.Util.JwtService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -71,8 +76,6 @@ public class AuthController {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
-        log.info("toke is: "+token);
-        log.info("user is: "+user);
         LoginResponse loginResponse = new LoginResponse();
         BeanUtils.copyProperties(user,loginResponse);
         loginResponse.setToken(token);
@@ -91,8 +94,6 @@ public class AuthController {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(deliveryPerson.getEmail());
         String token = jwtService.generateToken(userDetails);
-        log.info("toke is: "+token);
-        log.info("user is: "+deliveryPerson);
         LoginResponse loginResponse = new LoginResponse();
         BeanUtils.copyProperties(deliveryPerson,loginResponse);
         loginResponse.setToken(token);

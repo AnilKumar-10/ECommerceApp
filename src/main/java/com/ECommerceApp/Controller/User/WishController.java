@@ -4,7 +4,7 @@ import com.ECommerceApp.Model.User.Cart;
 import com.ECommerceApp.Model.User.Wishlist;
 
 import com.ECommerceApp.Model.User.WishlistItem;
-import com.ECommerceApp.ServiceInterface.IWishListService;
+import com.ECommerceApp.ServiceInterface.User.IWishListService;
 import com.ECommerceApp.Util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;

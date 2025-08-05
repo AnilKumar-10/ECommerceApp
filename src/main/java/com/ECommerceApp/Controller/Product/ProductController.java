@@ -3,19 +3,15 @@ package com.ECommerceApp.Controller.Product;
 import com.ECommerceApp.DTO.Product.ProductCreationRequest;
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Model.Product.Product;
-import com.ECommerceApp.ServiceInterface.IProductService;
+import com.ECommerceApp.ServiceInterface.Product.IProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/product")

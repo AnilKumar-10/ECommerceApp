@@ -2,12 +2,15 @@ package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.Model.User.Cart;
 import com.ECommerceApp.Model.User.CartItem;
+import com.ECommerceApp.ServiceInterface.Product.IProductService;
+import com.ECommerceApp.ServiceInterface.User.ICartService;
+import com.ECommerceApp.ServiceInterface.User.IWishListService;
 import com.ECommerceApp.Util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.ECommerceApp.ServiceInterface.*;
+
 @Slf4j
 @RestController
 @RequestMapping("/cart")
@@ -26,28 +29,24 @@ public class  CartController { //buyer
         items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
         System.out.println(items);
         String userId = new SecurityUtils().getCurrentUserId();
-        return cartService.addItemToCart(userId,items); // userid is taken from the jwt token
+        return cartService.addItemToCart(userId,items);
     }
 
-    @PreAuthorize("hasPermission('CART', 'READ')")
-    @GetMapping("/getCart")
-    public Cart getCart(){
-        String id =  new SecurityUtils().getCurrentUserId();
-        log.info("getting cart: "+id);
-        log.info("Inside /cart/getCart/{}", id);
-        return cartService.getCartByBuyerId(id);
+    @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.User', 'READ')")
+    @GetMapping("/getCart/{userId}")
+    public Cart getCart(@PathVariable String userId){
+        return cartService.getCartByBuyerId(userId);
     }
 
-    @PreAuthorize("hasPermission('CART', 'DELETE')")
-    @PostMapping("/clearCart")
-    public Cart clearCart(){
-        String userId = new SecurityUtils().getCurrentUserId();
+    @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.User', 'DELETE')")
+    @PostMapping("/clearCart/{userId}")
+    public Cart clearCart(@PathVariable String userId){
         return cartService.clearCart(userId);
     }
 
     @PreAuthorize("hasPermission('CART', 'UPDATE')")
     @DeleteMapping("/removeCartItem/{itemNo}")
-    public Cart removeItemFromCart(@PathVariable String itemNo){ // we get userid from jwt
+    public Cart removeItemFromCart(@PathVariable String itemNo){
         String userId = new SecurityUtils().getCurrentUserId();
         return cartService.removeOneItemFromCart(userId,itemNo);
     }
@@ -59,8 +58,5 @@ public class  CartController { //buyer
         return wishListService.cartToWish(productId,userId);
     }
 
-    public Cart updateCart(){
-        return null;
-    }
 
 }
