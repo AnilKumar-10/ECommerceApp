@@ -22,7 +22,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
-    private  JwtService jwtService;
+    private JwtUtils jwtService;
     @Autowired
     private  UserDetailsServiceImpl userDetailsService;
 
@@ -54,10 +54,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
-                log.info("Setting SecurityContext with roles: " + userDetails.getAuthorities());
-
+                log.info("Setting SecurityContext with roles: {}", userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+            log.info("the token is In Valid");
         }
         filterChain.doFilter(request, response);
     }

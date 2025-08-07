@@ -30,15 +30,15 @@ public class ExchangeController {
     //  BUYER: Request an exchange
     @PreAuthorize("hasPermission('EXCHANGE', 'INSERT')")
     @PostMapping("/RequestReturnExchange")
-    public ExchangeResponse exchangeProduct(@RequestBody ProductExchangeRequest productExchangeDto){
-        return exchangeService.exchangeRequest(productExchangeDto);
+    public ResponseEntity<?> exchangeProduct(@RequestBody ProductExchangeRequest productExchangeDto){
+        return ResponseEntity.ok(exchangeService.exchangeRequest(productExchangeDto));
     }
 
     //  BUYER: View exchange info for own order
     @PreAuthorize("hasPermission('EXCHANGE', 'READ')")
     @PostMapping("/getExchangeInfo/{orderId}")
-    public ProductExchangeInfo getExchangeInformation(@PathVariable String orderId){
-        return exchangeService.getExchangeInformation(orderId);
+    public ResponseEntity<?> getExchangeInformation(@PathVariable String orderId){
+        return ResponseEntity.ok(exchangeService.getExchangeInformation(orderId));
     }
 
     //  DELIVERY: Update exchange status

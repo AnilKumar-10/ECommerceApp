@@ -1,11 +1,13 @@
 package com.ECommerceApp.Controller.ReturnAndExchange;
 
+import com.ECommerceApp.DTO.Order.CancelOrderRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.*;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
 import com.ECommerceApp.ServiceInterface.Delivery.IDeliveryService;
 import com.ECommerceApp.ServiceInterface.Order.IRefundService;
 import com.ECommerceApp.ServiceInterface.Order.IReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,28 +26,29 @@ public class ReturnController {  // buyer
     // BUYER: Raise refund request
     @PreAuthorize("hasPermission('RETURN', 'INSERT')")
     @PostMapping("/requestRefund")
-    public RefundAndReturnResponse raiseRefundReq(@RequestBody RaiseRefundRequest refundRequestDto){
-        return refundService.requestRefund(refundRequestDto);
+    public ResponseEntity<?> raiseRefundReq(@RequestBody RaiseRefundRequest refundRequestDto){
+        return ResponseEntity.ok(refundService.requestRefund(refundRequestDto));
     }
 
     //  DELIVERY: Update return status
     @PreAuthorize("hasPermission('RETURN', 'UPDATE')")
     @PostMapping("/updateReturn")
-    public Refund updateReturn(@RequestBody ReturnUpdateRequest returnUpdate){
+    public ResponseEntity<?> updateReturn(@RequestBody ReturnUpdateRequest returnUpdate){
         if(returnUpdate.getPicked()){
             returnService.updateReturnSuccess(returnUpdate.getOrderId());
-            return refundService.completeRefund(returnUpdate);
+            return ResponseEntity.ok(refundService.completeRefund(returnUpdate));
         }
         returnService.updateReturnFailed(returnUpdate.getOrderId());
         Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
-        return refundService.rejectRefund(refund.getRefundId(),"Product Damaged.");
+        return ResponseEntity.ok(refundService.rejectRefund(refund.getRefundId(),"Product Damaged."));
     }
 
     // BUYER: Cancel the order
-    @PreAuthorize("hasPermission('ORDER', 'DELETE')")
-    @PostMapping("/cancelOrder/{orderId}")
-    public void cancelOrder(@PathVariable String orderId){
-        refundService.cancelOrder(orderId,"Ordered by mistake");
+    @PreAuthorize("hasPermission('ORDER', 'UPDATE')")
+    @PutMapping("/cancelOrder")
+    public ResponseEntity<?> cancelOrder(@RequestBody CancelOrderRequest cancelOrderRequest){
+        refundService.cancelOrder(cancelOrderRequest.getOrderId(), cancelOrderRequest.getReason());
+        return ResponseEntity.ok("Order is cancelled.");
     }
 
 

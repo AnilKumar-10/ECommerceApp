@@ -57,7 +57,6 @@ public class WishListService implements IWishListService {
 
         // Check if already in wishlist
         boolean alreadyExists = isInWishlist(buyerId, wishItem.getProductId());
-        System.out.println("already: "+alreadyExists);
         if (!alreadyExists) {
             Product product = productService.getProductById(wishItem.getProductId());
             wishItem.setAvailable(product.isAvailable());
@@ -65,7 +64,6 @@ public class WishListService implements IWishListService {
             wishItem.setPrice(product.getPrice()*wishItem.getQuantity());
             wishItem.setAddedAt(new Date());
             wishlist.setUpdatedAt(new Date());
-            System.out.println("before");
             wishlist.getItems().add(wishItem);
             wishlist = wishlistRepository.save(wishlist);
         }

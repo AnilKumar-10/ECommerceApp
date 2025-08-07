@@ -76,6 +76,12 @@ public class CartService implements ICartService {
             totalAmount+= itm.getPrice();
         }
         cart.setTotalAmount(totalAmount);
+        int i=0;
+        for(CartItem cartItem : cart.getItems()){
+            cartItem.setItemId(i);
+            i++;
+        }
+        cart.setUpdatedAt(new Date());
         cart.setUpdatedAt(new Date());
         return saveCart(cart);
     }

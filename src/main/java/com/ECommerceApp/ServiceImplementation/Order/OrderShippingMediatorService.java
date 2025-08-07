@@ -16,7 +16,6 @@ public class OrderShippingMediatorService {
 
     public Order saveOrder(Order order){
         Order order1 = orderRepository.save(order);
-        System.out.println("status after: "+order1.getOrderStatus());
         return order1;
     }
 

@@ -65,7 +65,6 @@ public class DeliveryService implements IDeliveryService {
 
     // assigning the packages to the delivery person
     public DeliveryPerson assignProductsToDelivery(String deliveryPersonId,Order order){
-        System.out.println("inside the assignProductsToDelivery: "+deliveryPersonId);
         log.info("Assigning the products to be delivered to the delivery person");
         DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
         DeliveryItems deliveryItems = new DeliveryItems();
@@ -141,7 +140,6 @@ public class DeliveryService implements IDeliveryService {
 
     public DeliveryPersonResponse getDeliveryPersonByOrderId(String orderId){
         log.info("Getting the delivery person by order id: "+orderId);
-        System.out.println("inside delivery service: "+orderId);
         DeliveryPerson deliveryPerson = deliveryRepository.findByOrderId(orderId).get();
         System.out.println(deliveryPerson);
         DeliveryPersonResponse deliveryPersonResponseDto = new DeliveryPersonResponse();

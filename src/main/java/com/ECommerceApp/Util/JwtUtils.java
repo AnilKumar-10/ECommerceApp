@@ -14,10 +14,10 @@ import java.util.*;
 import java.util.function.Function;
 @Slf4j
 @Service
-public class JwtService {
+public class JwtUtils {
 
     private static final String SECRET_KEY = "mySuperSecretKey12345678901234567890123456789012";
-    private final long EXPIRATION = 1000 * 60 * 60; //1 hour
+    private final long EXPIRATION = 1000 * 60 * 60; //valid for 1 hour
 
     private Key getSignInKey() {
         log.info("inside the getSignKey()");
@@ -86,9 +86,6 @@ public class JwtService {
         return extractClaims(token, Claims::getExpiration).before(new Date());
     }
 
-    public List<Users.Role> extractRoles(String token) {
-        return extractClaims(token, claims -> (List<Users.Role>) claims.get("roles"));
-    }
 
     private List<String> getRolesFromAuthorities(Collection<?> authorities) {
         List<String> roles = new ArrayList<>();

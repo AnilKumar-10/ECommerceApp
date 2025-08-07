@@ -1,4 +1,4 @@
-package com.ECommerceApp.Controller;
+package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
 import com.ECommerceApp.DTO.User.*;
@@ -10,7 +10,7 @@ import com.ECommerceApp.ServiceImplementation.User.OtpService;
 import com.ECommerceApp.ServiceImplementation.User.UserService;
 import com.ECommerceApp.ServiceImplementation.UserDetailService.CustomUserDetails;
 import com.ECommerceApp.ServiceImplementation.UserDetailService.UserDetailsServiceImpl;
-import com.ECommerceApp.Util.JwtService;
+import com.ECommerceApp.Util.JwtUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
     @Autowired
-    private JwtService jwtService;
+    private JwtUtils jwtService;
     @Autowired
     private UserService userService;
     @Autowired
@@ -60,7 +60,7 @@ public class AuthController {
     @PostMapping("/delivery/register")
     public ResponseEntity<?> registerDeliveryPerson(@Valid @RequestBody DeliveryPersonRegistrationRequest request) {
         if (deliveryService.existsByMail(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone already in use");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
         }
         request.setPassword(passwordEncoder.encode(request.getPassword()));
         return ResponseEntity.ok(authService.register(request));
@@ -101,7 +101,7 @@ public class AuthController {
 
     }
 
-
+    // for checking the authentication object.
     @GetMapping("/auth-check")
     public ResponseEntity<String> checkAuth() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

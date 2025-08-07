@@ -37,7 +37,6 @@ public class ProductSearchService implements IProductSearchService {
     public List<Product> getProductsByCategoryName(String categoryName) {
         log.info("getting the product based on the category: "+categoryName);
         List<Category> rootCategory = categoryService.getCategoryByNameIgnoreCase(categoryName);
-        System.out.println("root: "+rootCategory);
         if (rootCategory == null) return Collections.emptyList();
         Set<String> allCategoryIds = new HashSet<>();
         for (Category category : rootCategory) {

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/delivery")
-public class DeliveryController { // admin, delivery person
+public class  DeliveryController { // admin, delivery person
 
     @Autowired
     private IOrderService orderService;
@@ -53,7 +53,7 @@ public class DeliveryController { // admin, delivery person
 
     //  SELF: delivery person resets their own password
     @PreAuthorize("hasPermission('DELIVERY', 'UPDATE')")
-    @PostMapping("/resetPassword")
+    @PutMapping("/resetPassword")
     public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordUpdate request) {
         boolean isValidOtp = otpService.validateOtp(request.getEmail(), request.getOtp());
         if (!isValidOtp) {
@@ -83,34 +83,34 @@ public class DeliveryController { // admin, delivery person
     // ADMIN ONLY: delete any delivery person
     @PreAuthorize("hasPermission(#id, 'com.ECommerceApp.Model.DeliveryPerson', 'DELETE')")
     @DeleteMapping("/deleteDeliveryPerson/{id}")
-    public String deleteDeliveryPerson(@PathVariable String id) {
-        return deliveryService.deleteDeliveryMan(id);
+    public ResponseEntity<?> deleteDeliveryPerson(@PathVariable String id) {
+        return ResponseEntity.ok(deliveryService.deleteDeliveryMan(id));
     }
 
     // ADMIN or SELF: read a specific delivery person by ID
     @PreAuthorize("hasPermission(#id, 'com.ECommerceApp.Model.DeliveryPerson', 'READ')")
         @GetMapping("/getDeliveryPerson/{id}")
-    public DeliveryPerson getDeliveryPerson(@PathVariable String id) {
-        return deliveryService.getDeliveryPerson(id);
+    public ResponseEntity<?> getDeliveryPerson(@PathVariable String id) {
+        return ResponseEntity.ok(deliveryService.getDeliveryPerson(id));
     }
 
     // ADMIN ONLY: get delivery person by order
     @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getDelPersonByOrder/{orderId}")
-    public DeliveryPersonResponse getByOrderId(@PathVariable String orderId) {
-        return deliveryService.getDeliveryPersonByOrderId(orderId);
+    public ResponseEntity<?> getByOrderId(@PathVariable String orderId) {
+        return ResponseEntity.ok(deliveryService.getDeliveryPersonByOrderId(orderId));
     }
 
     // SELF ONLY: logged-in delivery person reads their own profile
     @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getData")
-    public DeliveryPerson getDeliveryPersonData() {
-        return deliveryService.getDeliveryPeronData(); // current user ID from JWT internally
+    public ResponseEntity<?> getDeliveryPersonData() {
+        return ResponseEntity.ok(deliveryService.getDeliveryPeronData()); // current user ID from JWT internally
     }
 
     @PutMapping("/update")
-    public DeliveryPerson updateDelivery(@RequestBody DeliveryPerson deliveryPerson){
+    public ResponseEntity<?> updateDelivery(@RequestBody DeliveryPerson deliveryPerson){
         deliveryPerson.setPassword(passwordEncoder.encode(deliveryPerson.getPassword()));
-        return deliveryService.updateDelivery(deliveryPerson);
+        return ResponseEntity.ok(deliveryService.updateDelivery(deliveryPerson));
     }
 }

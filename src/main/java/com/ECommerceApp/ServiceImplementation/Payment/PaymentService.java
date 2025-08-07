@@ -33,7 +33,6 @@ public class PaymentService implements IPaymentService {
         Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
         if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
-            System.out.println("org: "+order.getFinalAmount()+"  new: "+initiatePaymentDto.getAmount());
             throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
         }
         long nextId = sequenceGeneratorService.getNextSequence("paymentId");

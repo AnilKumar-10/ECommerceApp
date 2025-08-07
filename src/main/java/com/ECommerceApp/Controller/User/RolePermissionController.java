@@ -1,4 +1,4 @@
-package com.ECommerceApp.Controller;
+package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.Model.User.RolePermission;
 import com.ECommerceApp.ServiceImplementation.UserDetailService.RolePermissionService;

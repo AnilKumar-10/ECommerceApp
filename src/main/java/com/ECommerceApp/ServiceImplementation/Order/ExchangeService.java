@@ -60,12 +60,11 @@ public class ExchangeService  implements IExchangeService {
     public ExchangeResponse exchangeRequest(ProductExchangeRequest productExchangeDto){
         log.info("Request to exchange.");
         Order order = orderService.getOrder(productExchangeDto.getOrderId());
-        System.out.println("in exchange method; "+order);
         double oldPrice=0;
         double oldTax=0;
         for(OrderItem orderItem : order.getOrderItems()){
             if(orderItem.getProductId().equalsIgnoreCase(productExchangeDto.getProductIdToReplace())){
-                orderItem.setStatus(Order.OrderStatus.REQUESTED_TO_EXCHANGE.name());
+                orderItem.setStatus(Order.OrderStatus.REQUESTED_TO_RETURN.name());
                 oldTax = orderItem.getTax();
                 oldPrice = orderItem.getPrice()+oldTax;
             }
@@ -93,7 +92,6 @@ public class ExchangeService  implements IExchangeService {
         ){
             DeliveryPerson deliveryPerson =  assignDeliveryForExchange(order);
             updateNewProductStockToReplace(item); // this will update stock of new product.
-            System.out.println("delivery Person after exchange is assigned:"+deliveryPerson);
             ProductExchangeInfo productExchangeInfo = getExchangeInformation(order.getId());
             emailService.sendExchangeConfirmationEmail("iamanil3121@gmail.com",productExchangeInfo,order.getUpiId());
             // here we send the mail about the exchange confirmation because
@@ -104,7 +102,7 @@ public class ExchangeService  implements IExchangeService {
         // updating the shipping status.
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
-        shippingUpdateDTO.setNewValue(Order.OrderStatus.REQUESTED_TO_EXCHANGE);
+        shippingUpdateDTO.setNewValue(Order.OrderStatus.REQUESTED_TO_RETURN);
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingService.updateShippingStatus(shippingUpdateDTO); // this updates the shipping status for exchange.
 
@@ -153,14 +151,15 @@ public class ExchangeService  implements IExchangeService {
             exchangeDetails.setRefundMode(ExchangeDetails.RefundMode.UPI);
             exchangeDetails.setRefundStatus(Refund.RefundStatus.PENDING); // assuming you have a RefundStatus enum
             order.setRefundAmount(roundToTwoDecimals(exchangePrice));
-
+            order.setExchangeDetails(exchangeDetails);
             Refund refund = initiateRefundForExchange(order); // this initiates the refund
             exchangeDetails.setRefundId(refund.getRefundId());
 
         } else {
             // customer has to pay the remaining amount
             exchangeDetails.setPaymentMode(order.getPaymentMethod());
-            exchangeDetails.setPaymentStatus(Payment.PaymentStatus.PENDING); // assuming you have a PaymentStatus enum
+            exchangeDetails.setPaymentStatus(Payment.PaymentStatus.PENDING);
+            order.setExchangeDetails(exchangeDetails);// assuming you have a PaymentStatus enum
         }
 
         exchangeDetails.setExchangeDifferenceAmount(exchangePrice);
@@ -182,7 +181,6 @@ public class ExchangeService  implements IExchangeService {
         item.setStatus(Order.OrderStatus.TO_DELIVER.name());
         double tax = (item.getPrice() * taxRate) / 100;
         item.setTax(tax);
-        System.out.println("new item: "+item);
         return item;
     }
 
@@ -330,6 +328,9 @@ public class ExchangeService  implements IExchangeService {
         productExchangeResponse.setExpectedReturnDate(calculateExpectedDate()); // just getting one sample expected date.
         productExchangeResponse.setDeliveryPersonId(deliveryPerson.getId());
         productExchangeResponse.setDeliveryPersonName(deliveryPerson.getName());
+        if(order.getExchangeDetails().getExchangeType().equals(ExchangeDetails.ExchangeType.REFUNDABLE)){
+            productExchangeResponse.setPaymentStatus(ExchangeDetails.ExchangeType.REFUNDABLE.name());
+        }
         productExchangeResponse.setPaymentStatus(order.getExchangeDetails().getPaymentStatus().name());
 
         return productExchangeResponse;
@@ -341,7 +342,6 @@ public class ExchangeService  implements IExchangeService {
         Order order = orderService.getOrder(orderId);
         updateStockAfterExchangeSuccess(orderId);// updating the stock of returned object.
         for(OrderItem orderItem : order.getOrderItems()){
-            System.out.println("orderItem status:  "+orderItem.getStatus());
             if(orderItem.getStatus().equalsIgnoreCase(Order.OrderStatus.REQUESTED_TO_RETURN.name())){
                 orderItem.setStatus(Order.OrderStatus.EXCHANGE_RETURNED.name());
             }
@@ -358,7 +358,7 @@ public class ExchangeService  implements IExchangeService {
         order.getExchangeDetails().setUpdatedAt(new Date());
         order.setReturned(true);
         if(order.getExchangeDetails().getExchangeType() == ExchangeDetails.ExchangeType.REFUNDABLE){
-            completeRefundAfterExchangeSuccess(order.getRefundId()); // update the refund status after the exchange completed.
+            completeRefundAfterExchangeSuccess(order.getExchangeDetails().getRefundId()); // update the refund status after the exchange completed.
         }
         return orderService.saveOrder(order);
     }

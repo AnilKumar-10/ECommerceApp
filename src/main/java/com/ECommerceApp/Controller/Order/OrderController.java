@@ -3,7 +3,9 @@ package com.ECommerceApp.Controller.Order;
 import com.ECommerceApp.DTO.Order.PlaceOrderRequest;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.ServiceInterface.Order.IOrderService;
+import com.ECommerceApp.Util.OwnershipGuard;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,36 +22,39 @@ public class OrderController { //user from service classes
     //  BUYER places an order → INSERT permission
     @PreAuthorize("hasPermission('ORDER', 'INSERT')")
     @PostMapping("/placeOrder")
-    public Order placeOrder(@RequestBody PlaceOrderRequest orderDto) {
-        return orderService.createOrder(orderDto);
+    public ResponseEntity<?> placeOrder(@RequestBody PlaceOrderRequest orderDto) {
+        return ResponseEntity.ok(orderService.createOrder(orderDto));
     }
 
-    //  ADMIN/SELLER(SELF) reads any order → scope: ALL
+    //  ADMIN/SELLER reads any order → scope: ALL
     @PreAuthorize("hasPermission('ORDER', 'READ')")
     @GetMapping("/getOrder/{id}")
-    public Order getOrder(@PathVariable String id) {
-        return orderService.getOrder(id);
+    public ResponseEntity<?> getOrder(@PathVariable String id) {
+        Order order = orderService.getOrder(id);
+        new OwnershipGuard().checkSelf(order.getBuyerId()); // this checks the ownership
+        return ResponseEntity.ok(orderService.getOrder(id));
     }
 
     //  BUYER (SELF) reads their own orders → scope: SELF
     //  ADMIN reads any user's orders → scope: ALL
     @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.User', 'READ')")
     @GetMapping("/getAllOrderByUser/{userId}")
-    public List<Order> getAllOrdersByUser(@PathVariable String userId) {
-        return orderService.getAllOrderByUserId(userId);
+    public ResponseEntity<?> getAllOrdersByUser(@PathVariable String userId) {
+        return ResponseEntity.ok(orderService.getAllOrderByUserId(userId));
     }
 
     //  ADMIN only
     @PreAuthorize("hasPermission('ORDER', 'READ')")
     @GetMapping("/getAllOrders")
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
+    public ResponseEntity<?> getAllOrders() {
+
+        return ResponseEntity.ok(orderService.getAllOrders());
     }
 
     //  ADMIN only
     @PreAuthorize("hasPermission('ORDER', 'READ')")
     @GetMapping("/getPendingOrders")
-    public List<Order> getAllPendingOrders() {
-        return orderService.getAllPendingOrders();
+    public ResponseEntity<?> getAllPendingOrders() {
+        return ResponseEntity.ok(orderService.getAllPendingOrders());
     }
 }

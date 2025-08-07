@@ -65,7 +65,7 @@ public class TaxRuleService implements ITaxRuleService {
 
     // 5. Get applicable tax rate based on state and category
     public double getApplicableTaxRate(String categoryId , String state) {
-        log.info("getting the applicable taxrules for: "+categoryId+"  in state: "+state);
+        log.info("getting the applicable tax rules for: "+categoryId+"  in state: "+state);
         TaxRule rule = taxRuleRepository.findByStateAndCategoryIdAndIsActiveTrue(state, categoryId)
                 .orElse(null);
         if (rule == null) {

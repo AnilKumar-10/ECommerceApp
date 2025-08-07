@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // Try to load user by email (for BUYER, SELLER, ADMIN)
-        log.info("inside uds: "+email);
+        log.info("inside uds: {}", email);
         Optional<Users> userOpt = userService.loadUserByMail(email);
         if (userOpt.isPresent()) {
             return new CustomUserDetails(userOpt.get());

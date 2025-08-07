@@ -62,8 +62,7 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
                     //  Allow if SELF and user owns the resource (by ID match)
                     if ("SELF".equals(scope)) {
                         if (targetId == null) {
-                            log.debug("SELF scope without ID: assuming ownership will be checked in service layer.");
-                            System.out.println("SELF scope without ID: assuming ownership will be checked in service layer.");
+                            log.info("SELF scope without ID: assuming ownership will be checked in service layer.");
                             return true;
                         }
                         return targetId.equals(currentUserId);

@@ -72,7 +72,7 @@ public class AuthService {
         user.setPasswordChangedAt(new Date());
         userService.saveUser(user);
         otpService.clearOtp(request.getEmail());
-        return "Password updated successfully, Login again.";
+        return "Password updated successfully, Please Login again.";
     }
 
 
@@ -83,6 +83,6 @@ public class AuthService {
         deliveryPerson.setPasswordChangedAt(new Date());
         deliveryService.save(deliveryPerson);
         otpService.clearOtp(request.getEmail());
-        return "Password updated successfully, Login again.";
+        return "Password updated successfully, Please Login again.";
     }
 }

@@ -61,7 +61,7 @@ public class RefundService implements IRefundService {
 
     //1. Raising the refund request
     public RefundAndReturnResponse requestRefund(RaiseRefundRequest refundRequestDto) {
-        log.info("Requesting for the refund on returning the products: "+refundRequestDto.getProductIds());
+        log.info("Requesting for the refund on returning the products: {}", refundRequestDto.getProductIds());
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         if(!(order.getOrderStatus() == Order.OrderStatus.DELIVERED)){
             throw new RuntimeException("The order must be delivered before the refund..");
@@ -101,14 +101,12 @@ public class RefundService implements IRefundService {
 
     //2. Approve the refund request (admin) if the reason is genuine
     public Refund approveRefund(String refundId, String adminId) {
-        log.info("Approve the refund for: "+refundId);
+        log.info("Approve the refund for: {}", refundId);
         Refund refund = getRefundById(refundId);
         if (!(refund.getStatus()==Refund.RefundStatus.PENDING)) {
             throw new IllegalStateException("Only PENDING refunds can be approved");
         }
-        System.out.println("refund status: "+refund.getStatus());
         refund.setStatus(Refund.RefundStatus.APPROVED);
-        System.out.println("refund status: "+refund.getStatus());
         refund.setProcessedAt(new Date());
 
         return saveRefund(refund);
@@ -185,8 +183,9 @@ public class RefundService implements IRefundService {
         refundRepository.deleteById(refundId);
     }
 
+
     public void checkProductReturnable(String productId,String shippingId){
-        log.info("Checking weather the product is eligible for return or not: "+productId);
+        log.info("Checking weather the product is eligible for return or not: {}", productId);
         Product product = productService.getProductById(productId);
         int returnBefore = product.getReturnBefore(); // e.g., 7
         Date deliveredDate = getDeliveredTimestamp(shippingId);
@@ -201,6 +200,7 @@ public class RefundService implements IRefundService {
         }
 
     }
+
 
     public boolean isReturnAvailable(Date deliveredDate, int returnBeforeDays) {
         log.info("Checking is the return period is expired or not");
@@ -236,7 +236,7 @@ public class RefundService implements IRefundService {
 
     // ORDER CANCELLATION
     public Order cancelOrder(String orderId,String cancelReason){
-        log.warn("Requesting to cancel the order: "+orderId);
+        log.warn("Requesting to cancel the order: {}", orderId);
         String userId = new SecurityUtils().getCurrentUserId();
         Order order = orderService.getOrder(orderId);
         if(order.getOrderStatus()== Order.OrderStatus.SHIPPED){

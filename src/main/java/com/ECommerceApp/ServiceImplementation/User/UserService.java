@@ -17,10 +17,6 @@ import java.util.*;
 public class UserService implements UserServiceInterface {
     @Autowired
     private UsersRepository  usersRepository;
-//    @Autowired
-//    private PasswordEncoder encoder;
-
-
 
 
     // 2. Update user profile based on roles
@@ -146,7 +142,6 @@ public class UserService implements UserServiceInterface {
 
     public List<SellerResponse> getAllSellers() {
         List<Users> users = usersRepository.findByRolesContainingSellerRole();
-        System.out.println("users response"+users);
         List<SellerResponse> sellerResponses  = new ArrayList<>();
         for(Users user : users){
             SellerResponse sellerResponse = new SellerResponse();

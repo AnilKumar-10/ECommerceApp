@@ -41,8 +41,8 @@ public class StockLogController { // admin, seller
     //  SELLER, ADMIN — READ
     @PreAuthorize("hasPermission('STOCK', 'READ')")
     @GetMapping("/getStockLogByProduct/{productId}")
-    public StockLog getStockLogByProduct(@PathVariable String productId) {
-        return stockLogService.getByProductId(productId);
+    public ResponseEntity<?> getStockLogByProduct(@PathVariable String productId) {
+        return ResponseEntity.ok(stockLogService.getByProductId(productId));
     }
 
 

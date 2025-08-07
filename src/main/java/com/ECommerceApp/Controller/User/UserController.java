@@ -60,60 +60,60 @@ public class UserController {
     //  ADMIN (READ)
     @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getAllUsers")
-    public List<UserRegistrationResponse> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     //  ADMIN (READ)
     @PreAuthorize("hasPermission('#userId','com.ECommerceApp.Model.User','READ')")
     @GetMapping("/getUserById/{userId}")
-    public Users getUserById(@PathVariable String userId) {
-        return userService.getUserById(userId);
+    public ResponseEntity<?> getUserById(@PathVariable String userId) {
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 
     //  SELF (UPDATE)
     @PreAuthorize("hasPermission('USER', 'UPDATE')")
     @PutMapping("/updateUser")
-    public Users updateUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
+    public ResponseEntity<?> updateUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
         String userId = new SecurityUtils().getCurrentUserId();
-        return userService.updateUser(userId, userRegistrationRequest);
+        return ResponseEntity.ok(userService.updateUser(userId, userRegistrationRequest));
     }
 
     //  ADMIN (DELETE)
     @PreAuthorize("hasPermission('USER', 'DELETE')")
     @PostMapping("/deactivateUser/{userId}")
-    public Users deActivateUser(@PathVariable String userId) {
-        return userService.deactivateUser(userId);
+    public ResponseEntity<?> deActivateUser(@PathVariable String userId) {
+        return ResponseEntity.ok(userService.deactivateUser(userId));
     }
 
     //  ADMIN/SELF (READ)
     @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getUserByMail")
-    public Users getUserByEmail(@Valid @RequestBody Map<String, String> map) {
-        return userService.getUserByEmail(map.get("email"));
+    public ResponseEntity<?> getUserByEmail(@Valid @RequestBody Map<String, String> map) {
+        return ResponseEntity.ok(userService.getUserByEmail(map.get("email")));
     }
 
     //  ADMIN (READ)
     @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getUserByRole/{role}")
-    public List<UserRegistrationResponse> getUserByRole(@PathVariable String role) {
-        return userService.getUsersByRole(role);
+    public ResponseEntity<?> getUserByRole(@PathVariable String role) {
+        return ResponseEntity.ok(userService.getUsersByRole(role));
     }
 
     //  ADMIN (UPDATE)
     @PreAuthorize("hasPermission('USER', 'UPDATE')")
     @PutMapping("/addRole")
-    public UserRegistrationResponse addRoleToUser(@RequestBody Map<String, String> map) {
+    public ResponseEntity<?> addRoleToUser(@RequestBody Map<String, String> map) {
         String userId = map.get("userId");
         Users.Role newRole = Users.Role.valueOf(map.get("newRole"));
-        return userService.addRoleToUser(userId, newRole);
+        return ResponseEntity.ok(userService.addRoleToUser(userId, newRole));
     }
 
     //  ADMIN (READ)
     @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getSellers")
-    public List<SellerResponse> getAllSellers() {
-        return userService.getAllSellers();
+    public ResponseEntity<?> getAllSellers() {
+        return ResponseEntity.ok(userService.getAllSellers());
     }
 
     //  ADMIN (READ)

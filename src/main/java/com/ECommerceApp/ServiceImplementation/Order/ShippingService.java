@@ -86,7 +86,6 @@ public class ShippingService implements IShippingService {
     // 2. Update shipping status
     public ShippingDetails updateShippingStatus(ShippingUpdateRequest shippingUpdateDTO) {
         log.info("Updating the shipping status on every stage, present new status is: "+shippingUpdateDTO.getNewValue());
-        System.out.println("inside update shipping stats: "+shippingUpdateDTO);
         ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
         Order order = mediatorService.getOrder(shipping.getOrderId());
@@ -94,11 +93,8 @@ public class ShippingService implements IShippingService {
         Order.OrderStatus newStatus = shippingUpdateDTO.getNewValue();
         if (!Objects.equals(oldStatus, newStatus) && !Order.OrderStatus.CANCELLED.equals(order.getOrderStatus())) {
             shipping.setStatus(newStatus);
-            log.info("inside if: "+newStatus);
             order.setOrderStatus(newStatus); //here the order status is not updating in the db.
-            log.info("inside if order: "+order.getOrderStatus());
             ModificationLog log = new ModificationLog();
-            log.setField("STATUS");
             log.setUpdatedBy(shippingUpdateDTO.getUpdateBy());
             log.setOldValue(oldStatus);
             log.setNewValue(newStatus);
@@ -149,10 +145,10 @@ public class ShippingService implements IShippingService {
         shippingUpdateDTO.setShippingId(deliveryUpdateDTO.getShippingId());
         shippingUpdateDTO.setNewValue(deliveryUpdateDTO.getNewValue());
         updateShippingStatus(shippingUpdateDTO); // to update the shipping status to delivered
-        Order order = updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to delivered.
+        Order order = updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to deliver.
         String deliveryPersonId = shippingRepo.findById(deliveryUpdateDTO.getShippingId()).get().getDeliveryPersonId();
         deliveryService.updateDeliveryCount(deliveryPersonId); // updates the count
-//      here we have to update the delivery history
+        // here we have to update the delivery history
         deliveryHistoryService.insertDelivery(order.getId(),deliveryPersonId);
         // removes the order details from to deliver list
         deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());

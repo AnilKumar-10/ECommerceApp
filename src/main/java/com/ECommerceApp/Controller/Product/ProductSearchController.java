@@ -20,7 +20,7 @@ public class ProductSearchController { // everyone
 
 
     @GetMapping("/product/{name}")
-    public List<ProductSearchResponse> getProductByCategoryName(@PathVariable String name) {
+    public ResponseEntity<?> getProductByCategoryName(@PathVariable String name) {
         List<Product> products = productSearchService.getProductsByCategoryName(name);
         List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
         for (Product product : products) {
@@ -28,7 +28,7 @@ public class ProductSearchController { // everyone
             BeanUtils.copyProperties(product, dto);
             productSearchDtos.add(dto);
         }
-        return productSearchDtos;
+        return ResponseEntity.ok(productSearchDtos);
     }
 
 
@@ -37,12 +37,12 @@ public class ProductSearchController { // everyone
     // http://localhost:9090/search?categories=Shirts&sortOrder=desc
     // http://localhost:9090/search?categories=Shirts&sortOrder=desc&sortBy=rating
     // http://localhost:9090/search?categories=Footwear,Women&brand=Nike&sortOrder=desc&sortBy=rating
-    public List<ProductSearchResponse> searchProductsByCategoryNames(
+    public ResponseEntity<?> searchProductsByCategoryNames(
             @RequestParam List<String> categories,
             @RequestParam(name = "brand", required = false) String brand,
             @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder,
             @RequestParam(name = "sortBy", required = false) String sortBy) {
-        return productSearchService.searchRequest(categories, brand, sortOrder, sortBy);
+        return ResponseEntity.ok(productSearchService.searchRequest(categories, brand, sortOrder, sortBy));
     }
 
 
@@ -58,16 +58,16 @@ public class ProductSearchController { // everyone
 
     @GetMapping("/viewAll")
     //  viewAll?page=1&size=5
-    public Page<ProductSearchResponse> getAllProducts(
+    public ResponseEntity<?> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return productSearchService.getAllProducts(page, size);
+        return ResponseEntity.ok(productSearchService.getAllProducts(page, size));
     }
 
 
     @GetMapping("/UserFeed")
-    public List<ProductSearchResponse> feedByWishList() {
-        return productSearchService.feedByWishProducts();
+    public ResponseEntity<?> feedByWishList() {
+        return ResponseEntity.ok(productSearchService.feedByWishProducts());
     }
 
 }
