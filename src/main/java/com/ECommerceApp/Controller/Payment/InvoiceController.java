@@ -3,6 +3,8 @@ package com.ECommerceApp.Controller.Payment;
 
 import com.ECommerceApp.Model.Payment.Invoice;
 import com.ECommerceApp.ServiceImplementation.Payment.InvoiceService;
+import com.ECommerceApp.ServiceInterface.Order.IOrderService;
+import com.ECommerceApp.Util.OwnershipGuard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +21,8 @@ public class InvoiceController { // admin, user
 
     @Autowired
     private InvoiceService invoiceService;
+    @Autowired
+    private IOrderService orderService;
 
     //  BUYER (self) — reads own invoice by orderId
     @PreAuthorize("hasPermission('INVOICE', 'READ')")
@@ -38,6 +42,7 @@ public class InvoiceController { // admin, user
     @PreAuthorize("hasPermission('INVOICE', 'READ')")
     @GetMapping("/getInvoiceByOrder/{orderId}")
     public ResponseEntity<?> getInVoiceByOrder(@PathVariable String orderId) {
+        new OwnershipGuard().checkSelf(orderService.getOrder(orderId).getBuyerId());
         return ResponseEntity.ok(invoiceService.getInvoiceByOrderId(orderId));
     }
 
@@ -52,6 +57,7 @@ public class InvoiceController { // admin, user
     @PreAuthorize("hasPermission('INVOICE', 'READ')")
     @GetMapping("/getAllInvoices")
     public ResponseEntity<?> getALlInvoices() {
+        new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(invoiceService.getAllInvoices());
     }
 

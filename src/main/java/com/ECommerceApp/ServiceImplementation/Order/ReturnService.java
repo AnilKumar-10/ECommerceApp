@@ -115,12 +115,12 @@ public class ReturnService  implements IReturnService {
     public void updateReturnSuccess(String orderId){
         log.info("Updating the return status after the product picked safely.");
         Order order = orderService.getOrder(orderId);
+        updateOrderItemsForReturnSuccess(order);
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
         shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURNED);
         shippingService.updateShippingStatus(shippingUpdateDTO);
-        updateOrderItemsForReturnSuccess(order);
         updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
 
     }

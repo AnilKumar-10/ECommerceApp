@@ -46,16 +46,18 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         String currentUserId = new SecurityUtils().getCurrentUserId();
 
         for (String role : roles) {
+            log.info("role is: "+role);
             RolePermission rolePermission = rolePermissionRepository.findByRole(role);
             if (rolePermission == null || rolePermission.getPermissions() == null) continue;
-
+            log.info("after if");
             for (RolePermission.Permission p : rolePermission.getPermissions()) {
+                log.info("permission is: "+p);
                 boolean resourceMatch = "*".equals(p.getResource()) || p.getResource().equalsIgnoreCase(resource);
                 boolean actionMatch = "*".equals(p.getAction()) || p.getAction().equalsIgnoreCase(action);
-
+                log.info("in for: "+resourceMatch   +"  "+actionMatch);
                 if (resourceMatch && actionMatch) {
                     String scope = p.getScope() != null ? p.getScope().toUpperCase() : "ALL";
-
+                    log.info("scope: "+scope);
                     //  Allow if scope is ALL
                     if ("ALL".equals(scope)) return true;
 

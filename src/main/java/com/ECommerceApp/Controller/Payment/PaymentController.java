@@ -5,6 +5,7 @@ import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.Order.IExchangeService;
 import com.ECommerceApp.ServiceInterface.Order.IReturnService;
 import com.ECommerceApp.ServiceInterface.Payment.IPaymentService;
+import com.ECommerceApp.Util.OwnershipGuard;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,7 @@ public class PaymentController { //user
     @PreAuthorize("hasPermission('PAYMENT', 'READ')")
     @GetMapping("/getPayment/{paymentId}")
     public ResponseEntity<?> getPaymentDetails(@PathVariable String paymentId) {
+        new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(paymentService.getPaymentById(paymentId));
     }
 
@@ -54,6 +56,7 @@ public class PaymentController { //user
     @PreAuthorize("hasPermission('PAYMENT', 'READ')")
     @GetMapping("/getAllFailedPayments")
     public ResponseEntity<?> getFailedPayments() {
+        new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(paymentService.getAllFailedPayments());
     }
 

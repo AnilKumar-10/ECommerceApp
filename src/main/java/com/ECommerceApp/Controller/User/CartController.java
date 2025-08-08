@@ -33,26 +33,26 @@ public class  CartController { //buyer
         return ResponseEntity.ok(cartService.addItemToCart(userId,items));
     }
 
-    @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.User', 'READ')")
+    @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.Cart', 'READ')")
     @GetMapping("/getCart/{userId}")
     public ResponseEntity<?> getCart(@PathVariable String userId){
         return ResponseEntity.ok(cartService.getCartByBuyerId(userId));
     }
 
-    @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.User', 'DELETE')")
-    @PostMapping("/clearCart/{userId}")
+    @PreAuthorize("hasPermission(#userId, 'com.ECommerceApp.Model.Cart', 'DELETE')")
+    @DeleteMapping("/clearCart/{userId}")
     public ResponseEntity<?> clearCart(@PathVariable String userId){
         return ResponseEntity.ok(cartService.clearCart(userId));
     }
 
     @PreAuthorize("hasPermission('CART', 'UPDATE')")
-    @DeleteMapping("/removeCartItem/{itemNo}")
+    @PutMapping("/removeCartItem/{itemNo}")
     public ResponseEntity<?> removeItemFromCart(@PathVariable String itemNo){
         String userId = new SecurityUtils().getCurrentUserId();
         return ResponseEntity.ok(cartService.removeOneItemFromCart(userId,itemNo));
     }
 
-    @PreAuthorize("hasPermission('CART', 'UPDATE')")
+    @PreAuthorize("hasPermission('CART', 'INSERT')")
     @PostMapping("/cartToWish/{productId}")
     public ResponseEntity<?> moveCartToWish(@PathVariable String productId){
         String userId = new SecurityUtils().getCurrentUserId();

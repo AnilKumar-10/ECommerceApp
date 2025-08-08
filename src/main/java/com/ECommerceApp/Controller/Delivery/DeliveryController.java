@@ -13,6 +13,7 @@ import com.ECommerceApp.ServiceInterface.Order.IShippingService;
 import com.ECommerceApp.ServiceInterface.Payment.IPaymentService;
 import com.ECommerceApp.ServiceInterface.Order.IExchangeService;
 import com.ECommerceApp.ServiceInterface.Order.IOrderService;
+import com.ECommerceApp.Util.OwnershipGuard;
 import com.ECommerceApp.Util.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,7 @@ public class  DeliveryController { // admin, delivery person
     @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getDelPersonByOrder/{orderId}")
     public ResponseEntity<?> getByOrderId(@PathVariable String orderId) {
+        new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(deliveryService.getDeliveryPersonByOrderId(orderId));
     }
 
@@ -108,7 +110,7 @@ public class  DeliveryController { // admin, delivery person
         return ResponseEntity.ok(deliveryService.getDeliveryPeronData()); // current user ID from JWT internally
     }
 
-    @PutMapping("/update")
+    @PutMapping("/update")//update the delivery person.
     public ResponseEntity<?> updateDelivery(@RequestBody DeliveryPerson deliveryPerson){
         deliveryPerson.setPassword(passwordEncoder.encode(deliveryPerson.getPassword()));
         return ResponseEntity.ok(deliveryService.updateDelivery(deliveryPerson));

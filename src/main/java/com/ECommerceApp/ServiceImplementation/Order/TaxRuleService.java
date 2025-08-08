@@ -78,4 +78,11 @@ public class TaxRuleService implements ITaxRuleService {
     public Optional<TaxRule> getTaxRule(String categoryId, String state ) {
         return taxRuleRepository.findByStateAndCategoryIdAndIsActiveTrue(state, categoryId);
     }
+
+
+    public List<TaxRule> getAllTaxRulesByState(String state) {
+        return taxRuleRepository.findAllByState(state);
+    }
+
+
 }

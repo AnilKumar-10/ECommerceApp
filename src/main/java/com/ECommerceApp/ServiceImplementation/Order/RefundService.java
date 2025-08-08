@@ -67,16 +67,13 @@ public class RefundService implements IRefundService {
             throw new RuntimeException("The order must be delivered before the refund..");
         }
         List<OrderItem> orderItems = order.getOrderItems();
-        double totalAmount = order.getFinalAmount();
-        double refundAmount = 0.0;
+        double refundAmount = 0.0, removableTax=0.0;
         for(OrderItem item : orderItems){
             if(refundRequestDto.getProductIds().contains(item.getProductId())){
                 checkProductReturnable(item.getProductId(),order.getShippingId());
-                refundAmount += item.getPrice() + item.getTax();
-
+                refundAmount += processRefundForItem(order,item);
             }
         }
-        totalAmount = totalAmount-refundAmount;
         Refund refund = new Refund();
         refund.setRefundId(String.valueOf(sequenceGeneratorService.getNextSequence("refundId")));
         refund.setUserId(order.getBuyerId());
@@ -87,14 +84,14 @@ public class RefundService implements IRefundService {
         refund.setRefundAmount(amount);
         refund.setStatus(Refund.RefundStatus.PENDING);
         refund.setRequestedAt(new Date());
+        Refund refund1 = saveRefund(refund);
+        order.setRefundId(refund1.getRefundId());
+        orderService.saveOrder(order);
         ShippingDetails shippingDetails = returnService.updateShippingStatusForRefundAndReturn(order.getId());
         // this will update the status in shipping details
         returnService.updateOrderItemsForReturn(orderItems,refundRequestDto); //update the status of product to request to return
         DeliveryPerson deliveryPerson = returnService.assignReturnProductToDeliveryPerson(shippingDetails,refundRequestDto.getReason());
         // this will assign the delivery person to pick the items
-        Refund refund1 = saveRefund(refund);
-        order.setRefundId(refund1.getRefundId());
-        orderService.saveOrder(order);
 
         return returnService. getRefundAndReturnResponce(deliveryPerson,approveRefund(refund1.getRefundId(), Users.Role.ADMIN.name())); // this will return the refund and return details of the product
     }
@@ -131,7 +128,6 @@ public class RefundService implements IRefundService {
     //4. Complete the refund
     public Refund completeRefund(ReturnUpdateRequest returnUpdate) {
         log.info("Making Refund to completed when the product is picked.");
-        String userId =new SecurityUtils().getCurrentUserId();
         Refund refund = getRefundsByOrderId(returnUpdate.getOrderId());
         if (!(refund.getStatus()==Refund.RefundStatus.APPROVED)) {
             throw new IllegalStateException("Only APPROVED refunds can be completed");
@@ -146,7 +142,7 @@ public class RefundService implements IRefundService {
         order.setRefundAmount(refundAmount);
         order.setReturned(true);
         Order order1 = orderService.saveOrder(order); // updating the final amount after the refund is completed.
-        emailService.sendReturnCompletedEmail("iamanil3121@gmail.com",userId,order1);
+        emailService.sendReturnCompletedEmail("iamanil3121@gmail.com", refund.getUserId(), order1);
         // this will remove the return product details from the delivery persons to return fields.
         deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
 //        returnService.updateStockLogAfterOrderCancellation(order1.getId()); // we have to update the stock log  after the order cancellation.
@@ -283,5 +279,34 @@ public class RefundService implements IRefundService {
     public Refund saveRefund(Refund refund){
         return refundRepository.save(refund);
     }
+
+
+
+
+    public double processRefundForItem(Order order, OrderItem returnItem) {
+
+        double itemTotalPrice = returnItem.getPrice() * returnItem.getQuantity();
+        double itemTotalTax = returnItem.getTax() * returnItem.getQuantity();
+
+        double itemDiscountShare = 0.0;
+        if (order.getDiscount() > 0 ) {
+            itemDiscountShare = (itemTotalPrice / order.getTotalAmount()) * order.getDiscount();
+        }
+
+        double itemRefundAmount = itemTotalPrice - itemDiscountShare + itemTotalTax;
+        double existingRefund = order.getRefundAmount() != null ? order.getRefundAmount() : 0.0;
+        order.setRefundAmount(existingRefund + itemRefundAmount);
+        order.setTotalAmount(order.getTotalAmount() - itemTotalPrice);
+        order.setTax(order.getTax() - itemTotalTax);
+        order.setDiscount(order.getDiscount() - itemDiscountShare);
+        double updatedFinalAmount = order.getTotalAmount() - order.getDiscount() + order.getTax();
+        order.setFinalAmount(updatedFinalAmount);
+
+        log.info("   Processed return for item: {}", returnItem.getProductId());
+        log.info("   Refund Amount: {}", itemRefundAmount);
+        log.info("   Updated Final Amount: {}", updatedFinalAmount);
+        return itemRefundAmount;
+    }
+
 
 }

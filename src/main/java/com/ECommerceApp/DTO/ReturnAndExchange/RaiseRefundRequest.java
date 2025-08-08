@@ -11,7 +11,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class    RaiseRefundRequest {
+public class        RaiseRefundRequest {
 
     @NotBlank(message = "Order ID cannot be blank")
     private String orderId;

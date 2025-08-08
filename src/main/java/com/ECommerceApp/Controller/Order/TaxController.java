@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +29,8 @@ public class TaxController { //admin
     //ADMIN only
     @PreAuthorize("hasPermission('TAX', 'INSERT')")
     @PostMapping("/createTaxRule")
-    public TaxRule createTaxRule(@RequestBody TaxRuleCreationRequest rule) {
-        return taxRuleService.createOneTaxRule(rule);
+    public ResponseEntity<?> createTaxRule(@RequestBody TaxRuleCreationRequest rule) {
+        return ResponseEntity.ok(taxRuleService.createOneTaxRule(rule));
     }
 
     // ADMIN only
@@ -42,15 +43,20 @@ public class TaxController { //admin
     // ADMIN only
     @PreAuthorize("hasPermission('TAX', 'DELETE')")
     @DeleteMapping("/deleteTaxRule/{ruleId}")
-    public String deleteTaxRule(@PathVariable String ruleId) {
-        return taxRuleService.deleteTaxRule(ruleId);
+    public ResponseEntity<?> deleteTaxRule(@PathVariable String ruleId) {
+        return ResponseEntity.ok(taxRuleService.deleteTaxRule(ruleId));
     }
 
     // All roles can READ
     @PreAuthorize("hasPermission('TAX', 'READ')")
     @GetMapping("/getAllTaxRules")
-    public List<TaxRule> getAllTaxRules() {
-        return taxRuleService.getAllTaxRules();
+    public ResponseEntity<?> getAllTaxRules() {
+        return ResponseEntity.ok(taxRuleService.getAllTaxRules());
     }
 
+    @PreAuthorize("hasPermission('TAX', 'READ')")
+    @GetMapping("/getTaxRulesByState/{state}")
+    public ResponseEntity<?> getTaxByState(@PathVariable String state){
+        return ResponseEntity.ok(taxRuleService.getAllTaxRulesByState(state));
+    }
 }

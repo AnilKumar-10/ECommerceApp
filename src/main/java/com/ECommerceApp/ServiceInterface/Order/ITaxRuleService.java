@@ -21,5 +21,7 @@ public interface ITaxRuleService {
     double getApplicableTaxRate(String categoryId, String state);
 
     Optional<TaxRule> getTaxRule(String categoryId, String state);
+
+    List<TaxRule> getAllTaxRulesByState(String state);
 }
 

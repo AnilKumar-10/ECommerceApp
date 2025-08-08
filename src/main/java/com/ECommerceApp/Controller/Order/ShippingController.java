@@ -38,7 +38,7 @@ public class ShippingController { //admin,deliveryman/seller
     }
 
     //  ADMIN/DELIVERY: delivery person accesses their assigned shipments
-    @PreAuthorize("hasPermission('SHIPPING', 'READ')")
+    @PreAuthorize("hasPermission(#personId, 'com.ECommerceApp.Model.User' 'READ')")
     @GetMapping("/getAllShippingByDelPerson/{personId}")
     public ResponseEntity<?> getAllShippingDetailsByDelPersonId(@PathVariable String personId) {
         return ResponseEntity.ok(shippingService.getByDeliveryPersonId(personId));

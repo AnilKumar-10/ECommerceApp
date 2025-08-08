@@ -32,7 +32,7 @@ public class OrderController { //user from service classes
     public ResponseEntity<?> getOrder(@PathVariable String id) {
         Order order = orderService.getOrder(id);
         new OwnershipGuard().checkSelf(order.getBuyerId()); // this checks the ownership
-        return ResponseEntity.ok(orderService.getOrder(id));
+        return ResponseEntity.ok(order);
     }
 
     //  BUYER (SELF) reads their own orders → scope: SELF
@@ -47,7 +47,7 @@ public class OrderController { //user from service classes
     @PreAuthorize("hasPermission('ORDER', 'READ')")
     @GetMapping("/getAllOrders")
     public ResponseEntity<?> getAllOrders() {
-
+        new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
@@ -55,6 +55,7 @@ public class OrderController { //user from service classes
     @PreAuthorize("hasPermission('ORDER', 'READ')")
     @GetMapping("/getPendingOrders")
     public ResponseEntity<?> getAllPendingOrders() {
+        new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(orderService.getAllPendingOrders());
     }
 }
