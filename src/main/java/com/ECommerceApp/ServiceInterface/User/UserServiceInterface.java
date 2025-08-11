@@ -33,5 +33,7 @@ public interface UserServiceInterface {
     Users saveUser(Users users);
 
     public boolean existsByMail(String email);
+
+    public String getUserName(String userId);
 }
 

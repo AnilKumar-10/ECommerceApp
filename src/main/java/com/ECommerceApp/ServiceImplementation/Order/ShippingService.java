@@ -41,9 +41,8 @@ public class ShippingService implements IShippingService {
     private OrderShippingMediatorService mediatorService;
 
 
-
     public ShippingDetails createShippingDetails(Order order) {
-        log.info("Creating the shipping details for the order: "+order.getId());
+        log.info("Creating the shipping details for the order: {}", order.getId());
         ShippingDetails shipping = new ShippingDetails();
         long nextId = sequenceGeneratorService.getNextSequence("shippingId");
         shipping.setId(String.valueOf(nextId));
@@ -55,12 +54,7 @@ public class ShippingService implements IShippingService {
         shipping.setExpectedDate(calculateExpectedDate());
         shipping.setModificationLogs(new ArrayList<>());
 
-        // Assign delivery person based on area
-        String address  = order.getAddressId();
-
         DeliveryPerson assigned = deliveryService.assignDeliveryPerson(order.getAddressId());
-
-        System.out.println("inside the service with: "+assigned);
         if (assigned != null) {
             shipping.setDeliveryPersonId(assigned.getId());
             assigned.setToDeliveryCount(assigned.getToDeliveryCount() + 1);
@@ -85,15 +79,15 @@ public class ShippingService implements IShippingService {
 
     // 2. Update shipping status
     public ShippingDetails updateShippingStatus(ShippingUpdateRequest shippingUpdateDTO) {
-        log.info("Updating the shipping status on every stage, present new status is: "+shippingUpdateDTO.getNewValue());
-        ShippingDetails shipping = shippingRepo.findById(shippingUpdateDTO.getShippingId())
-                .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
+        log.info("Updating the shipping status on every stage, present new status is: {}", shippingUpdateDTO.getNewValue());
+        ShippingDetails shipping = getByShippingId(shippingUpdateDTO.getShippingId());
+
         Order order = mediatorService.getOrder(shipping.getOrderId());
         Order.OrderStatus oldStatus = shipping.getStatus();
         Order.OrderStatus newStatus = shippingUpdateDTO.getNewValue();
         if (!Objects.equals(oldStatus, newStatus) && !Order.OrderStatus.CANCELLED.equals(order.getOrderStatus())) {
             shipping.setStatus(newStatus);
-            order.setOrderStatus(newStatus); //here the order status is not updating in the db.
+            order.setOrderStatus(newStatus);
             ModificationLog log = new ModificationLog();
             log.setUpdatedBy(shippingUpdateDTO.getUpdateBy());
             log.setOldValue(oldStatus);
@@ -107,7 +101,7 @@ public class ShippingService implements IShippingService {
 
     // 5. Get shipping by order ID
     public ShippingDetails getShippingByOrderId(String orderId) {
-        log.info("getting the shipping details with order: "+orderId);
+        log.info("getting the shipping details with order: {}", orderId);
         return shippingRepo.findByOrderId(orderId)
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping not found for order ID"));
     }
@@ -146,23 +140,20 @@ public class ShippingService implements IShippingService {
         shippingUpdateDTO.setNewValue(deliveryUpdateDTO.getNewValue());
         updateShippingStatus(shippingUpdateDTO); // to update the shipping status to delivered
         Order order = updateOrderItemsDeliveredStatus(shippingUpdateDTO); //  to update the orderItems status to deliver.
-        String deliveryPersonId = shippingRepo.findById(deliveryUpdateDTO.getShippingId()).get().getDeliveryPersonId();
+        String deliveryPersonId = getByShippingId(deliveryUpdateDTO.getShippingId()).getDeliveryPersonId();
         deliveryService.updateDeliveryCount(deliveryPersonId); // updates the count
         // here we have to update the delivery history
         deliveryHistoryService.insertDelivery(order.getId(),deliveryPersonId);
         // removes the order details from to deliver list
         deliveryService.removeDeliveredOrderFromToDeliveryItems(deliveryPersonId,deliveryUpdateDTO.getOrderId());
-        emailService.sendOrderDeliveredEmail("iamanil3121@gmail.com",deliveryPersonId,order);
-        return "Your order is delivered successfully please rate us..!";
-
-
-
+        emailService.sendOrderDeliveredEmail("iamanil3121@gmail.com",deliveryService.getNameById(deliveryPersonId),order);
+        return "Order is delivered successfully.!";
 
     }
 
 
     public ShippingDetails getByShippingId(String shippingId){
-        return shippingRepo.findById(shippingId).get();
+        return shippingRepo.findById(shippingId).orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping record not found"));
     }
 
     public String generateTrackingId() {
@@ -172,7 +163,7 @@ public class ShippingService implements IShippingService {
     // this updates the status of the ordered items delivered when the order is delivered.
     public  Order updateOrderItemsDeliveredStatus(ShippingUpdateRequest shippingUpdateDTO){
         log.info("updating the product status to delivered after the delivery success.");
-        ShippingDetails shippingDetails = shippingRepo.findById(shippingUpdateDTO.getShippingId()).get();
+        ShippingDetails shippingDetails = getByShippingId(shippingUpdateDTO.getShippingId());
         Order order = mediatorService.getOrder(shippingDetails.getOrderId());
         List<OrderItem> orderItems = new ArrayList<>();
         if(shippingUpdateDTO.getNewValue()== Order.OrderStatus.DELIVERED){
@@ -196,9 +187,6 @@ public class ShippingService implements IShippingService {
         );
         return courierNames.get(ThreadLocalRandom.current().nextInt(courierNames.size()));
     }
-
-
-
 
 
 }

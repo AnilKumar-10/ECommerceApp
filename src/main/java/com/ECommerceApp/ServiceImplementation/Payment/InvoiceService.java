@@ -31,7 +31,7 @@ public class InvoiceService implements IInvoiceService {
 
     public Invoice generateInvoice(String orderId) {
         // Validate order
-        log.info("Generating the invoice for order: "+orderId);
+        log.info("Generating the invoice for order: {}", orderId);
         Order order = orderService.getOrder(orderId);
 
         if (!(order.getPaymentStatus()== Payment.PaymentStatus.SUCCESS)) {
@@ -68,7 +68,7 @@ public class InvoiceService implements IInvoiceService {
 
     // Get invoice by order ID
     public Invoice getInvoiceByOrderId(String orderId) {
-        return invoiceRepository.findByOrderId(orderId).get();
+        return invoiceRepository.findByOrderId(orderId).orElseThrow(() -> new InvoiceNotFoundException("Invoice not found"));
     }
 
 

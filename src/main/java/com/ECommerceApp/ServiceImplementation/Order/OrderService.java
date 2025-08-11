@@ -1,6 +1,7 @@
 package com.ECommerceApp.ServiceImplementation.Order;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
+import com.ECommerceApp.DTO.Order.OrderStatusCount;
 import com.ECommerceApp.DTO.Order.PlaceOrderRequest;
 import com.ECommerceApp.DTO.Product.StockLogModificationRequest;
 import com.ECommerceApp.Exceptions.Order.OrderNotFoundException;
@@ -61,10 +62,10 @@ public class OrderService implements IOrderService {
 
 
     public Order createOrder(PlaceOrderRequest orderDto){
-        log.info("Creating the order for : "+orderDto.getUserId());
+        log.info("Creating the order for : {}", orderDto.getUserId());
         String userId =new SecurityUtils().getCurrentUserId();
-        Users users = userService.getUserById(orderDto.getUserId());
-        List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),orderDto.getUserId());
+        Users users = userService.getUserById(userId);
+        List<OrderItem> orderItem = cartService.checkOutForOrder(orderDto.getProductIds(),userId);
         for(OrderItem item : orderItem){
             Product product = productService.getProductById(item.getProductId());
             if(!product.isAvailable()){
@@ -76,8 +77,8 @@ public class OrderService implements IOrderService {
         long nextId = sequenceService.getNextSequence("orderId");
         order.setId(String.valueOf(nextId)); // If id is String
         order.setOrderItems(orderItem);
-        order.setBuyerId(orderDto.getUserId());
-        String addressId = getAddress(orderDto.getUserId(),orderDto.getAddressType());
+        order.setBuyerId(userId);
+        String addressId = getAddress(userId,orderDto.getAddressType());
         order.setAddressId(addressId);
         order.setOrderDate(new Date());
         double amount = getTotalAmount(orderDto);
@@ -97,14 +98,14 @@ public class OrderService implements IOrderService {
         order.setUpiId(users.getUpiId());
         order.setOrderStatus(orderDto.getPayMode() == Payment.PaymentMethod.COD? Order.OrderStatus.PLACED: Order.OrderStatus.PENDING);
         order.setPaymentStatus(Payment.PaymentStatus.PENDING); // pending until the payment is successful
-        Order order1 = orderRepository.save(order);
+        Order order1 = saveOrder(order);
         if(orderDto.getPayMode() == Payment.PaymentMethod.COD){
             // if the pay mode is UPI then the shipping details must be generated after the payment.
             log.info("The payment mode is COD so process the shipping.");
             ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
             updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
             cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
-            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com",userId, order1, shippingDetails);
+            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com",userService.getUserName(userId), order1, shippingDetails);
         }
         else{
             log.info("The payment mode is UPI/ONLINE so shipping is processes after the payment.");
@@ -128,7 +129,7 @@ public class OrderService implements IOrderService {
         couponService.recordCouponUsage(orderDto.getCoupon(),orderDto.getUserId());// this is used to track the no of time the coupon is used by user
         Coupon coupon = couponService.validateCoupon(orderDto.getCoupon(),orderDto.getUserId(),amount);
         double discount = couponService.getDiscountAmount(coupon,amount);
-        log.info("The calculated discount is: "+discount);
+        log.info("The calculated discount is: {}", discount);
         return Math.round(discount * 100.0)/100.0;
     }
 
@@ -140,7 +141,7 @@ public class OrderService implements IOrderService {
         for(OrderItem item : orderItem){
             amount += item.getPrice();
         }
-        log.info("The total amount of product excluding the tax is: "+amount);
+        log.info("The total amount of product excluding the tax is: {}", amount);
         return Math.round(amount * 100.0) / 100.0;
     }
 
@@ -148,29 +149,27 @@ public class OrderService implements IOrderService {
     public void markOrderAsPaid(String orderId, String paymentId) {
         String userId = new SecurityUtils().getCurrentUserId();
         log.info("updating UPI payment success in order details");
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+        Order order = getOrder(orderId);
         order.setPaymentStatus(Payment.PaymentStatus.SUCCESS);
         order.setOrderStatus(Order.OrderStatus.PLACED);
         order.setPaymentId(paymentId);
-        Order order1 = orderRepository.save(order);
+        Order order1 = saveOrder(order);
         ShippingDetails shippingDetails = shippingService.createShippingDetails(order1); // after successful payment we generate the shipping details.
         updateStockLogAfterOrderConfirmed(orderId); // after the order is confirmed the stock details get updated.
         cartService.removeOrderedItemsFromCart(order1); // this will remove the ordered items from the cart.
-        emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", userId, order1,shippingDetails);
+        emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com", userService.getUserName(userId), order1,shippingDetails);
 
     }
 
     public void markOrderAsPaymentFailed(String orderId) {
         log.info("updating UPI payment failed in order details");
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+        Order order = getOrder(orderId);
         order.setPaymentStatus(Payment.PaymentStatus.FAILED);
         order.setOrderStatus(Order.OrderStatus.CANCELLED);
         order.setCancelled(true);
         order.setCancelReason("Payment failed");
         order.setCancellationTime(new Date());
-        orderRepository.save(order);
+        saveOrder(order);
     }
 
 
@@ -196,7 +195,7 @@ public class OrderService implements IOrderService {
     }
 
     public Order getOrder(String id){
-        log.info("getting the order with id: "+id);
+        log.info("getting the order with id: {}", id);
         return orderRepository.findById(id).orElseThrow(()-> new OrderNotFoundException("There is no order found with id: "+id));
     }
 
@@ -246,6 +245,11 @@ public class OrderService implements IOrderService {
 
     public List<Order> getAllPendingOrders() {
         return orderRepository.findAllPendingOrders();
+    }
+
+
+    public List<OrderStatusCount> getOrderCountByStatus() {
+        return orderRepository.countOrdersByStatus();
     }
 
 

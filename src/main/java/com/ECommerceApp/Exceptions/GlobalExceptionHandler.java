@@ -50,7 +50,8 @@ public class GlobalExceptionHandler {
             ShippingNotFoundException.class,
             TaxRuleNotFoundException.class,
             UserNotFoundException.class,
-            ReviewAlreadyExistsException.class
+            ReviewAlreadyExistsException.class,
+            InValidActionException.class
     })
     public ResponseEntity<ExceptionResponse> handleNotFoundExceptions(Exception ex, HttpServletRequest request) {
         return buildResponse(ex, HttpStatus.NOT_FOUND, request.getRequestURI());
@@ -71,14 +72,14 @@ public class GlobalExceptionHandler {
         return buildResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
     }
 
-    private ResponseEntity<ExceptionResponse> buildResponse(Exception ex, HttpStatus status, String path) {
-        ExceptionResponse response = new ExceptionResponse(status.value(), status.getReasonPhrase(), ex.getMessage(), path, LocalDateTime.now());
-        return new ResponseEntity<>(response, status);
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleGenericException(Exception ex, HttpServletRequest request) {
         return buildResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+    }
+
+    private ResponseEntity<ExceptionResponse> buildResponse(Exception ex, HttpStatus status, String path) {
+        ExceptionResponse response = new ExceptionResponse(status.value(), status.getReasonPhrase(), ex.getMessage(), path, LocalDateTime.now());
+        return new ResponseEntity<>(response, status);
     }
 }
 

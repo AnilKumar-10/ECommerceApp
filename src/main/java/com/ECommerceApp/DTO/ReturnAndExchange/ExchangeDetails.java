@@ -19,19 +19,16 @@ public class ExchangeDetails {
     private double originalPrice;        // Original product price
 
     private double exchangeDifferenceAmount;
-
     private ExchangeType exchangeType;
 
     private String paymentId;
-    private Payment.PaymentMethod paymentMode;               // UPI, COD (if PAYABLE)
-    private Payment.PaymentStatus paymentStatus;           // PENDING, SUCCESS, FAILED (if PAYABLE)
+    private Payment.PaymentMethod paymentMode;     // UPI, COD (if PAYABLE)
+    private Payment.PaymentStatus paymentStatus;   // PENDING, SUCCESS, FAILED (if PAYABLE)
 
     private String refundId;
     private RefundMode refundMode;                 // UPI (if REFUNDABLE)
-    private Refund.RefundStatus refundStatus;             // PENDING, COMPLETED, FAILED (if REFUNDABLE)
-
+    private Refund.RefundStatus refundStatus;      // PENDING, COMPLETED, FAILED (if REFUNDABLE)
     private String reason;                         // Reason for exchange
-
     private Date createdAt;
     private Date updatedAt;
 

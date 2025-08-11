@@ -176,4 +176,8 @@ public class UserService implements UserServiceInterface {
         return usersRepository.findByEmail(email);
     }
 
+    public String getUserName(String userId){
+        return usersRepository.findById(userId).get().getName();
+    }
+
 }

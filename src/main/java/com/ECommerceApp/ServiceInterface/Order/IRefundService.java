@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.ReturnAndExchange.RaiseRefundRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
 import com.ECommerceApp.DTO.ReturnAndExchange.ReturnUpdateRequest;
 import com.ECommerceApp.Model.Order.Order;
+import com.ECommerceApp.Model.Order.OrderItem;
 import com.ECommerceApp.Model.RefundAndExchange.Refund;
 
 import java.util.Date;
@@ -40,4 +41,6 @@ public interface IRefundService {
     Refund refundOverOrderCancellation(Order order);
 
     Refund saveRefund(Refund refund);
+
+    double processRefundForItem(Order order, OrderItem orderItem);
 }

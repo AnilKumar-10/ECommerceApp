@@ -20,4 +20,6 @@ public class ReturnUpdateRequest {
 
     @NotNull(message = "Damage status must be specified")
     private Boolean anyDamage;
+
+    private String damageType; // Damage, Already used, No tags
 }

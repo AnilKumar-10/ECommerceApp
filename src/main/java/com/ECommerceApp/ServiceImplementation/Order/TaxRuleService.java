@@ -50,7 +50,7 @@ public class TaxRuleService implements ITaxRuleService {
 
     // 3. Delete tax rule
     public String deleteTaxRule(String id) {
-        log.warn("deleting the taxrule: "+id);
+        log.warn("deleting the tax rule: {}", id);
         if (!taxRuleRepository.existsById(id)) {
             throw new TaxRuleNotFoundException("TaxRule not found");
         }
@@ -65,7 +65,7 @@ public class TaxRuleService implements ITaxRuleService {
 
     // 5. Get applicable tax rate based on state and category
     public double getApplicableTaxRate(String categoryId , String state) {
-        log.info("getting the applicable tax rules for: "+categoryId+"  in state: "+state);
+        log.info("getting the applicable tax rules for: {}  in state: {}", categoryId, state);
         TaxRule rule = taxRuleRepository.findByStateAndCategoryIdAndIsActiveTrue(state, categoryId)
                 .orElse(null);
         if (rule == null) {

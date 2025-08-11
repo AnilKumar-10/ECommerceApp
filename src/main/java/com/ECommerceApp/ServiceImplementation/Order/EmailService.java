@@ -40,7 +40,7 @@ public class EmailService implements IEmailService {
 
     public void sendOrderConfirmationEmail(String toEmail, String userName, Order order, ShippingDetails shippingDetails) {
         MimeMessage message = mailSender.createMimeMessage();
-        log.info("Sending the order Confirmation mail to :"+toEmail);
+        log.info("Sending the order Confirmation mail to :{}", toEmail);
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(toEmail);
@@ -72,7 +72,7 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("Order Confirmation Email is sent successfully  to: "+toEmail);
+            log.info("Order Confirmation Email is sent successfully  to: {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(order.getBuyerId());
@@ -88,7 +88,7 @@ public class EmailService implements IEmailService {
 
 
     public void sendOrderDeliveredEmail(String toEmail, String userName, Order order) {
-        log.info("Sending the order Delivery completed mail to :"+toEmail);
+        log.info("Sending the order Delivery completed mail to :{}", toEmail);
         try {
             Context context = new Context();
             context.setVariable("userName", userName);
@@ -111,7 +111,7 @@ public class EmailService implements IEmailService {
             helper.setText(body, true);
 
             mailSender.send(mimeMessage);
-            log.info("Order delivery email sent to " + toEmail);
+            log.info("Order delivery email sent to {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(order.getBuyerId());
@@ -119,14 +119,14 @@ public class EmailService implements IEmailService {
             log.setType(NotificationLog.NotificationType.ORDER);
             saveLogDetails(log);
         } catch (Exception e) {
-            log.info("Failed to send delivery email: " + e.getMessage());
+            log.info("Failed to send delivery email: {}", e.getMessage());
             throw new MailSendException("Failed to send Order Delivered Mail.");
         }
     }
 
 
     public void sendReturnRequestedEmail(String toEmail, RefundAndReturnResponse dto) {
-        log.info("Sending the order return request mail to :"+toEmail);
+        log.info("Sending the order return request mail to :{}", toEmail);
         try {
             // Prepare the context for Thymeleaf
             Context context = new Context();
@@ -156,7 +156,7 @@ public class EmailService implements IEmailService {
 
             // Send the mail
             mailSender.send(message);
-            log.info("Return request mail sent successfully to "+toEmail);
+            log.info("Return request mail sent successfully to {}", toEmail);
             NotificationLog log = new NotificationLog();
             log.setUserId(dto.getUserId());
             log.setMessage("Your Return Request for Order #" + dto.getOrderId());
@@ -172,7 +172,7 @@ public class EmailService implements IEmailService {
 
 
     public void sendReturnCompletedEmail(String toEmail, String userName, Order order) {
-        log.info("Sending the return Completed mail to :"+toEmail);
+        log.info("Sending the return Completed mail to :{}", toEmail);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -195,7 +195,7 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("Return Completed mail send to: "+toEmail);
+            log.info("Return Completed mail send to: {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(order.getBuyerId());
@@ -210,7 +210,7 @@ public class EmailService implements IEmailService {
 
 
     public void sendRefundRejectedEmail(String toEmail, String userName, String orderId) {
-        log.info("Sending the return rejected mail to :"+toEmail);
+        log.info("Sending the return rejected mail to :{}", toEmail);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -229,7 +229,7 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("Refund rejected email sent to " + toEmail);
+            log.info("Refund rejected email sent to {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(userName);
@@ -245,7 +245,7 @@ public class EmailService implements IEmailService {
 
 
     public void sendOrderCancellationEmail(Order order, String userName, String toEmail) {
-        log.info("Sending the order cancellation mail to User :"+toEmail);
+        log.info("Sending the order cancellation mail to User :{}", toEmail);
         try {
             Context context = new Context();
             context.setVariable("userName", userName);
@@ -261,7 +261,7 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("Order cancellation Email sent successfully to: "+toEmail);
+            log.info("Order cancellation Email sent successfully to: {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(order.getBuyerId());
@@ -278,7 +278,7 @@ public class EmailService implements IEmailService {
 
     // To notify the deliveryPerson about the new Order.
     public void sendOrderAssignedToDeliveryPerson(String toEmail, DeliveryItems deliveryItem,String deliverPersonName,String deliveryPersonId) {
-        log.info("Sending the order assigned mail to delivery agent :"+toEmail);
+        log.info("Sending the order assigned mail to delivery agent :{}", toEmail);
         try {
             Context context = new Context();
             context.setVariable("deliveryItem", deliveryItem);
@@ -292,7 +292,7 @@ public class EmailService implements IEmailService {
             helper.setSubject("New Order Assigned for Delivery");
             helper.setText(htmlContent, true);
             mailSender.send(mimeMessage);
-            log.info("Order assigned to delivery Email sent successfully to: "+toEmail);
+            log.info("Order assigned to delivery Email sent successfully to: {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(deliveryPersonId);
@@ -307,7 +307,7 @@ public class EmailService implements IEmailService {
 
     // to notify the delivery person about the order cancellation.
     public void sendOrderCancellationToDelivery(String deliveryEmail, DeliveryItems deliveryItem,String deliveryPersonId) {
-        log.info("Sending the order cancellation mail to delivery agent:"+deliveryEmail);
+        log.info("Sending the order cancellation mail to delivery agent:{}", deliveryEmail);
         try {
             Context context = new Context();
             context.setVariable("deliveryItem", deliveryItem);
@@ -322,7 +322,7 @@ public class EmailService implements IEmailService {
             helper.setText(body, true);
 
             mailSender.send(message);
-            log.info("Delivery cancellation Email sent successfully to: "+deliveryEmail);
+            log.info("Delivery cancellation Email sent successfully to: {}", deliveryEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(deliveryPersonId);
@@ -338,7 +338,7 @@ public class EmailService implements IEmailService {
 
 
     public void sendLowStockAlertToSeller(String sellerEmail, StockLog stockLog) {
-        log.info("Sending the Low Stock alert mail to seller :"+sellerEmail);
+        log.info("Sending the Low Stock alert mail to seller :{}", sellerEmail);
         try {
             // Prepare the Thymeleaf context
             Context context = new Context();
@@ -357,7 +357,7 @@ public class EmailService implements IEmailService {
 
             // Send the email
             mailSender.send(message);
-            log.info("Low stock alert email sent to seller: " + sellerEmail);
+            log.info("Low stock alert email sent to seller: {}", sellerEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(stockLog.getSellerId());
@@ -366,16 +366,16 @@ public class EmailService implements IEmailService {
             saveLogDetails(log);
 
         } catch (MessagingException e) {
-            log.info("Failed to send low stock alert: " + e.getMessage());
+            log.info("Failed to send low stock alert: {}", e.getMessage());
             throw new RuntimeException("Failed to send low stock email", e);
         }
     }
 
 
     public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnDetails returnDto, String userId) {
-        log.info("Sending the return order to collect mail to delivery agent :"+toEmail);
+        log.info("Sending the return order to collect mail to delivery agent :{}", toEmail);
         try {
-            System.out.println("INSIDE MAIL SERIVE: "+returnDto);
+            System.out.println("INSIDE MAIL SERVICE: "+returnDto);
             Context context = new Context();
             context.setVariable("deliveryPerson", deliveryPerson);
             context.setVariable("returnDto", returnDto);
@@ -390,7 +390,7 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(mimeMessage);
-            log.info("Return assigned mail to delivery sent successfully: "+toEmail);
+            log.info("Return assigned mail to delivery sent successfully: {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(userId);
@@ -407,7 +407,7 @@ public class EmailService implements IEmailService {
 
     // to send the user otp while resetting the password.
     public void sendOtpEmail(String toEmail, String userName, String otp) {
-        log.info("sending the otp mail to user for password reset : "+toEmail);
+        log.info("sending the otp mail to user for password reset : {}", toEmail);
         try {
             // Prepare the email context
             Context context = new Context();
@@ -426,7 +426,7 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true); // true for HTML content
 
             mailSender.send(mimeMessage);
-            log.info("OTP mail sent successfully to " + toEmail);
+            log.info("OTP mail sent successfully to {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(userName);
@@ -464,7 +464,7 @@ public class EmailService implements IEmailService {
             helper.setText(htmlContent, true); // true = isHtml
 
             mailSender.send(mimeMessage);
-            log.info("Exchange confirmation email sent to " + toEmail);
+            log.info("Exchange confirmation email sent to {}", toEmail);
 
             NotificationLog log = new NotificationLog();
             log.setUserId(exchangeInfo.getOrderId());
@@ -501,7 +501,7 @@ public class EmailService implements IEmailService {
             helper.setText(body, true); // true = HTML
 
             mailSender.send(message);
-            log.info("Exchange assignment mail sent to: " + deliveryPerson.getName());
+            log.info("Exchange assignment mail sent to: {}", deliveryPerson.getName());
 
             NotificationLog log = new NotificationLog();
             log.setUserId(deliveryPerson.getId());

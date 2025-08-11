@@ -1,8 +1,10 @@
 package com.ECommerceApp.ServiceInterface.Order;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryUpdate;
+import com.ECommerceApp.DTO.Order.OrderStatusCount;
 import com.ECommerceApp.DTO.Order.PlaceOrderRequest;
 import com.ECommerceApp.Model.Order.Order;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -35,4 +37,6 @@ public interface IOrderService {
     List<Order> getAllOrders();
 
     List<Order> getAllPendingOrders();
+
+    List<OrderStatusCount> getOrderCountByStatus();
 }

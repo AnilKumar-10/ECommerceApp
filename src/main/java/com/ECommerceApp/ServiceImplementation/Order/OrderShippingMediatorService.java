@@ -15,13 +15,12 @@ public class OrderShippingMediatorService {
 
 
     public Order saveOrder(Order order){
-        Order order1 = orderRepository.save(order);
-        return order1;
+        return orderRepository.save(order);
     }
 
 
     public Order getOrder(String id){
-        log.info("getting the order with id: "+id);
+        log.info("getting the order with id: {}", id);
         return orderRepository.findById(id).orElseThrow(()-> new OrderNotFoundException("There is no order found with id: "+id));
     }
 

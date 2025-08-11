@@ -30,7 +30,7 @@ public class CouponService implements ICouponService {
 
     // 1. Create a new coupon
     public Coupon createCoupon(Coupon coupon) {
-        log.info("inserting the coupon details: "+coupon);
+        log.info("inserting the coupon details: {}", coupon);
         return saveCoupon(coupon);
     }
 
@@ -64,7 +64,7 @@ public class CouponService implements ICouponService {
 
     // 6. Validate coupon entered by customer
     public Coupon validateCoupon(String code, String userId, double orderAmount) {
-        log.info("validating the coupon code: "+code);
+        log.info("validating the coupon code: {}", code);
         Coupon coupon = couponRepository.findByCodeAndIsActiveTrue(code)
                 .orElseThrow(() -> new InValidCouponException("Invalid or inactive coupon code"));
         System.out.println(coupon.getMinOrderValue()+"  :  "+orderAmount);
@@ -75,7 +75,7 @@ public class CouponService implements ICouponService {
         }
 
         if (orderAmount < coupon.getMinOrderValue()) {
-            log.warn("Order value doesnt meet the minimum required amount");
+            log.warn("Order value doesn't meet the minimum required amount");
             throw new InValidCouponException("Order value does not meet minimum required for this coupon");
         }
 

@@ -34,5 +34,7 @@ public interface IDeliveryService {
 
     DeliveryPerson getDeliveryPeronData();
 
-    public DeliveryPerson updateDelivery(DeliveryPerson deliveryPerson);
+    DeliveryPerson updateDelivery(DeliveryPerson deliveryPerson);
+
+    String getNameById(String id);
 }

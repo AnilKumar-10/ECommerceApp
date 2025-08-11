@@ -37,14 +37,6 @@ public class AuthService {
         return userService.saveUser(users);
     }
 
-    public String registerUsers(List<UserRegistrationRequest> users){
-        int c=0;
-        for(UserRegistrationRequest user:users){
-            userService.saveUser(registerUser(user));
-            c++;
-        }
-        return "users registration is done: "+c;
-    }
 
 
     public DeliveryPersonRegistrationResponse register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto){

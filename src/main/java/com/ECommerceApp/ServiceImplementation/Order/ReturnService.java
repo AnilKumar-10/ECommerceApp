@@ -81,10 +81,8 @@ public class ReturnService  implements IReturnService {
         log.info("Adding the products that need to be returned to the delivery agent.");
         for(OrderItem orderItem : order.getOrderItems()){
             if(Objects.equals(orderItem.getStatus(), Order.OrderStatus.REQUESTED_TO_RETURN.name())){
-
                 productReturnDto.getProductsId().add(orderItem.getProductId());
                 productReturnDto.getProductsName().add(orderItem.getName());
-
             }
         }
         deliveryPerson.getToReturnItems().add(productReturnDto);

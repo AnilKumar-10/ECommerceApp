@@ -49,12 +49,12 @@ public class DeliveryService implements IDeliveryService {
             if(person.isActive()){
             for (String area : person.getAssignedAreas()) {
                 if (area.equalsIgnoreCase(address)) {
-                    log.info("The person to deliver is : "+person);
+                    log.info("The person to deliver is : {}", person);
                     return person;
                 }
             }}
         }
-        log.info("There is no delivery agent available for that address: "+deliveryAddress);
+        log.info("There is no delivery agent available for your address: {}", deliveryAddress);
         return null;
     }
 
@@ -71,7 +71,6 @@ public class DeliveryService implements IDeliveryService {
         deliveryItems.setAddress(addressService.getAddressById(order.getAddressId()));
         deliveryItems.setShippingId(order.getShippingId());
         deliveryItems.setOrderId(order.getId());
-
         deliveryItems.setPaymentMode(order.getPaymentMethod().name());
         deliveryItems.setAmountToPay(order.getPaymentMethod() == Payment.PaymentMethod.COD ? order.getFinalAmount() : 0.0);
         deliveryItems.setUserName(userService.getUserById(order.getBuyerId()).getName());
@@ -80,7 +79,7 @@ public class DeliveryService implements IDeliveryService {
         }
         deliveryPerson.getToDeliveryItems().add(deliveryItems);
         // sending the mail to delivery partner about the order is assigned to deliver
-        log.info("sending the mail to the about the Order is assigned to the delivery to : "+deliveryPersonId);
+        log.info("sending the mail to the about the Order is assigned to the delivery to : {}", deliveryPersonId);
         emailService.sendOrderAssignedToDeliveryPerson("iamanil3121@gmail.com",deliveryItems,deliveryPerson.getName(),deliveryPerson.getId());
         return save(deliveryPerson);
     }
@@ -92,7 +91,7 @@ public class DeliveryService implements IDeliveryService {
 
 
     public void removeDeliveredOrderFromToDeliveryItems(String deliveryPersonId, String orderId) {
-        log.info("Removing the delivered orders from the delivery agent: "+deliveryPersonId);
+        log.info("Removing the delivered orders from the delivery agent: {}", deliveryPersonId);
         Query query = new Query(Criteria.where("_id").is(deliveryPersonId));
         Update update = new Update().pull("toDeliveryItems", Query.query(Criteria.where("orderId").is(orderId)));
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
@@ -124,7 +123,7 @@ public class DeliveryService implements IDeliveryService {
         mongoTemplate.updateFirst(query, update, DeliveryPerson.class);
         DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
         deliveryPerson.setDeliveredCount(deliveryPerson.getDeliveredCount()+1);
-        deliveryPerson.setToDeliveryCount(deliveryPerson.getDeliveredCount()-1);
+        deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
         save(deliveryPerson);
     }
 
@@ -139,18 +138,18 @@ public class DeliveryService implements IDeliveryService {
 
 
     public DeliveryPersonResponse getDeliveryPersonByOrderId(String orderId){
-        log.info("Getting the delivery person by order id: "+orderId);
+        log.info("Getting the delivery person by order id: {}", orderId);
         DeliveryPerson deliveryPerson = deliveryRepository.findByOrderId(orderId).get();
         System.out.println(deliveryPerson);
         DeliveryPersonResponse deliveryPersonResponseDto = new DeliveryPersonResponse();
         BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
-        log.info("the delivery man with order: "+orderId+ "  :  "+deliveryPersonResponseDto);
+        log.info("the delivery man with order: {}  :  {}", orderId, deliveryPersonResponseDto);
         return deliveryPersonResponseDto;
     }
 
 
     public void updateDeliveryCountAfterOrderCancellation(String deliveryPersonId){
-        log.info("Updating the delivery Count after the order is cancelled : "+deliveryPersonId);
+        log.info("Updating the delivery Count after the order is cancelled : {}", deliveryPersonId);
         DeliveryPerson deliveryPerson = getDeliveryPerson(deliveryPersonId);
         deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()-1);
         updateDeliveryPerson(deliveryPerson); // updating the delivery counts of the delivered person.
@@ -177,7 +176,6 @@ public class DeliveryService implements IDeliveryService {
     }
 
     public DeliveryPerson getDeliveryPersonByEmail(String email){
-        log.info("inside delver service");
         return deliveryRepository.findByEmail(email).orElseThrow(()-> new DeliveryPersonNotFound("There is no delivery person with mail: "+email));
     }
 
@@ -192,5 +190,10 @@ public class DeliveryService implements IDeliveryService {
         exist.setPassword(deliveryPerson.getPassword());
         exist.setRoles(deliveryPerson.getRoles());
         return updateDeliveryPerson(exist);
+    }
+
+
+    public String getNameById(String id) {
+        return getDeliveryPerson(id).getName();
     }
 }

@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
 import com.ECommerceApp.DTO.ReturnAndExchange.RaiseRefundRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
 import com.ECommerceApp.DTO.ReturnAndExchange.ReturnUpdateRequest;
+import com.ECommerceApp.Exceptions.Order.InValidActionException;
 import com.ECommerceApp.Exceptions.Order.OrderCancellationExpiredException;
 import com.ECommerceApp.Exceptions.ReturnAndRefund.RefundNotFoundException;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
@@ -54,20 +55,16 @@ public class RefundService implements IRefundService {
     private IEmailService emailService;
     @Autowired
     private IDeliveryService deliveryService;
-    @Autowired
-    private IStockLogService stockLogService;
 
-
-
-    //1. Raising the refund request
+    //1. Raising the refund request and return
     public RefundAndReturnResponse requestRefund(RaiseRefundRequest refundRequestDto) {
         log.info("Requesting for the refund on returning the products: {}", refundRequestDto.getProductIds());
         Order order = orderService.getOrder(refundRequestDto.getOrderId());
         if(!(order.getOrderStatus() == Order.OrderStatus.DELIVERED)){
-            throw new RuntimeException("The order must be delivered before the refund..");
+            throw new InValidActionException("The order must be delivered before the refund..");
         }
         List<OrderItem> orderItems = order.getOrderItems();
-        double refundAmount = 0.0, removableTax=0.0;
+        double refundAmount = 0.0;
         for(OrderItem item : orderItems){
             if(refundRequestDto.getProductIds().contains(item.getProductId())){
                 checkProductReturnable(item.getProductId(),order.getShippingId());
@@ -93,10 +90,10 @@ public class RefundService implements IRefundService {
         DeliveryPerson deliveryPerson = returnService.assignReturnProductToDeliveryPerson(shippingDetails,refundRequestDto.getReason());
         // this will assign the delivery person to pick the items
 
-        return returnService. getRefundAndReturnResponce(deliveryPerson,approveRefund(refund1.getRefundId(), Users.Role.ADMIN.name())); // this will return the refund and return details of the product
+        return returnService.getRefundAndReturnResponce(deliveryPerson,approveRefund(refund1.getRefundId(), Users.Role.ADMIN.name())); // this will return the refund and return details of the product
     }
 
-    //2. Approve the refund request (admin) if the reason is genuine
+    //2. Approve the refund request (admin) if the reason is genuine as of now it is approved during the request processing time only
     public Refund approveRefund(String refundId, String adminId) {
         log.info("Approve the refund for: {}", refundId);
         Refund refund = getRefundById(refundId);
@@ -145,7 +142,6 @@ public class RefundService implements IRefundService {
         emailService.sendReturnCompletedEmail("iamanil3121@gmail.com", refund.getUserId(), order1);
         // this will remove the return product details from the delivery persons to return fields.
         deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
-//        returnService.updateStockLogAfterOrderCancellation(order1.getId()); // we have to update the stock log  after the order cancellation.
         return saveRefund(refund);
     }
 
@@ -192,7 +188,7 @@ public class RefundService implements IRefundService {
             log.info("Product is eligible for return.");
         } else {
             log.info("Return period as expired.");
-            throw new RuntimeException(" Return period has expired. ");
+            throw new IllegalStateException(" Return period has expired. ");
         }
 
     }
@@ -243,10 +239,13 @@ public class RefundService implements IRefundService {
         order.setCancelReason(cancelReason);
         order.setCancelled(true);
         order.setCancellationTime(new Date());
-        Order order1 = orderService.saveOrder(order);
         if(order.getPaymentMethod()== Payment.PaymentMethod.UPI){
-            Refund refund = refundOverOrderCancellation(order1);
+            Refund refund = refundOverOrderCancellation(order);
+            order.setRefundId(refund.getRefundId());
+            order.setRefundAmount(refund.getRefundAmount());
+
         }
+        Order order1 = orderService.saveOrder(order);
         DeliveryPersonResponse deliveryPerson =deliveryService.getDeliveryPersonByOrderId(orderId);
         // sends the mail to the delivery person who the order delivery is assigned about the order cancellation.
         emailService.sendOrderCancellationToDelivery("iamanil3121@gmail.com",
@@ -281,10 +280,8 @@ public class RefundService implements IRefundService {
     }
 
 
-
-
     public double processRefundForItem(Order order, OrderItem returnItem) {
-
+        // this method calculates the refundable amount of return product,sets the new tax, new total amount, final amount.
         double itemTotalPrice = returnItem.getPrice() * returnItem.getQuantity();
         double itemTotalTax = returnItem.getTax() * returnItem.getQuantity();
 
@@ -305,7 +302,7 @@ public class RefundService implements IRefundService {
         log.info("   Processed return for item: {}", returnItem.getProductId());
         log.info("   Refund Amount: {}", itemRefundAmount);
         log.info("   Updated Final Amount: {}", updatedFinalAmount);
-        return itemRefundAmount;
+        return Math.round(itemRefundAmount * 100.0) / 100.0;
     }
 
 

@@ -58,4 +58,10 @@ public class OrderController { //user from service classes
         new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(orderService.getAllPendingOrders());
     }
+
+    @PreAuthorize("hasPermission('ORDER', 'READ')")
+    @GetMapping("/getOrdersByStatus")
+    public ResponseEntity<?> getOrdersCountByStatus(){
+        return ResponseEntity.ok(orderService.getOrderCountByStatus());
+    }
 }

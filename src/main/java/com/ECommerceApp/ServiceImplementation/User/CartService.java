@@ -87,7 +87,7 @@ public class CartService implements ICartService {
     }
 
     public void removeOrderedItemsFromCart(Order order) {
-        log.info("removing the ordered items from the cart after the order delivery.");
+        log.info("removing the ordered items from the cart after the order Placed.");
         String userId = order.getBuyerId();
         System.out.println("user id: "+userId);
         List<OrderItem> orderItems = order.getOrderItems();

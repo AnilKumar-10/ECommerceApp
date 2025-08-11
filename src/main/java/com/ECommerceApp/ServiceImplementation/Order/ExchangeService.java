@@ -60,29 +60,24 @@ public class ExchangeService  implements IExchangeService {
     public ExchangeResponse exchangeRequest(ProductExchangeRequest productExchangeDto){
         log.info("Request to exchange.");
         Order order = orderService.getOrder(productExchangeDto.getOrderId());
-        double oldPrice=0;
-        double oldTax=0;
+        double oldProductPrice = 0;
         for(OrderItem orderItem : order.getOrderItems()){
             if(orderItem.getProductId().equalsIgnoreCase(productExchangeDto.getProductIdToReplace())){
                 orderItem.setStatus(Order.OrderStatus.REQUESTED_TO_RETURN.name());
-                oldTax = orderItem.getTax();
-                oldPrice = orderItem.getPrice()+oldTax;
+                oldProductPrice += refundService.processRefundForItem(order,orderItem);
+                // this will get the amount that the customer invested on that product
+                // productPrice + tax - discount and also updates the order's total amount, discount, total tax, final amount
             }
         }
 
         // Adding the replacement product to the order items
         OrderItem item = createNewOrderItem(order,productExchangeDto);
-        double newTax = item.getTax();
-        order.setTax(order.getTax() - oldTax + newTax);
-        order.getOrderItems().add(item);
-        double newPrice = item.getPrice()+newTax;
-        double finalAmount = calculateNewFinalAmount(oldPrice, newPrice, order.getFinalAmount(), order.getTotalAmount(), order.getDiscount());
-        order.setTotalAmount(order.getTotalAmount() - oldPrice + newPrice);
-        order.setFinalAmount(finalAmount - oldTax + newTax);
-        log.info("old price: "+oldPrice+"  , new price; "+newPrice+"  ,new final price: "+finalAmount+ ",  new total price: "+order.getTotalAmount());
-
+        double newProductPrice = item.getPrice() + item.getTax();
+        order.setTotalAmount(order.getTotalAmount() + newProductPrice); // updating with new product values. here the discount is not applicable.
+        order.setFinalAmount(order.getFinalAmount() + newProductPrice);
+        log.info("Old product prices");
         // Updating the exchange details in the order class.
-        ExchangeDetails exchangeDetails = updateExchangeDetails(order, productExchangeDto, newPrice, oldPrice);
+        ExchangeDetails exchangeDetails = updateExchangeDetails(order, productExchangeDto, newProductPrice, oldProductPrice);
         orderService.saveOrder(order);
         // assign the exchange delivery person.
         if (
@@ -128,19 +123,19 @@ public class ExchangeService  implements IExchangeService {
     }
 
     // updating the exchange details in order class
-    public ExchangeDetails updateExchangeDetails(Order order,ProductExchangeRequest productExchangeDto,double newPrice,double oldPrice){
+    public ExchangeDetails updateExchangeDetails(Order order,ProductExchangeRequest productExchangeDto,double newProductPrice,double oldProductPrice){
         log.info("Updating the exchange details in order class");
         ExchangeDetails exchangeDetails = new ExchangeDetails();
         exchangeDetails.setReplacementProductId(productExchangeDto.getNewProductId());
         exchangeDetails.setReason(productExchangeDto.getReasonToReplace());
-        exchangeDetails.setOriginalPrice( oldPrice );
-        exchangeDetails.setReplacementPrice(newPrice);
+        exchangeDetails.setOriginalPrice( oldProductPrice );
+        exchangeDetails.setReplacementPrice(newProductPrice);
         exchangeDetails.setCreatedAt(new Date());
-        ExchangeDetails.ExchangeType payType = oldPrice > newPrice ? ExchangeDetails.ExchangeType.REFUNDABLE : ExchangeDetails.ExchangeType.PAYABLE;
+        ExchangeDetails.ExchangeType payType = oldProductPrice > newProductPrice ? ExchangeDetails.ExchangeType.REFUNDABLE : ExchangeDetails.ExchangeType.PAYABLE;
 
-        log.info("the Exchange is : "+payType);
-        double exchangePrice = oldPrice-newPrice;
-        exchangePrice = Math.abs(exchangePrice);
+        log.info("the Exchange is : {}", payType);
+        double exchangePrice = oldProductPrice - newProductPrice;
+        exchangePrice = Math.round(exchangePrice*100.0)/100.0;
         if(exchangePrice == 0) {
             exchangeDetails.setExchangeType(ExchangeDetails.ExchangeType.NO_DIFFERENCE);
             exchangeDetails.setPaymentStatus(Payment.PaymentStatus.SUCCESS);
@@ -164,7 +159,7 @@ public class ExchangeService  implements IExchangeService {
 
         exchangeDetails.setExchangeDifferenceAmount(exchangePrice);
         order.setExchangeDetails(exchangeDetails);
-        log.info("Exchange method is: "+payType);
+        log.info("Exchange method is: {}", payType);
         return exchangeDetails;
     }
 // change the enums in the exchange details.
@@ -180,7 +175,10 @@ public class ExchangeService  implements IExchangeService {
         item.setColor(productExchangeDto.getColor());
         item.setStatus(Order.OrderStatus.TO_DELIVER.name());
         double tax = (item.getPrice() * taxRate) / 100;
-        item.setTax(tax);
+        item.setTax(tax * item.getQuantity());
+
+        order.setTax(order.getTax() + item.getTax());
+        order.getOrderItems().add(item);
         return item;
     }
 
@@ -190,7 +188,7 @@ public class ExchangeService  implements IExchangeService {
         Product product = productService.getProductById(productId);
         String rootCategoryId = categoryService.getRootCategoryId(product.getCategoryIds());
         double taxRate = taxRuleService.getApplicableTaxRate(rootCategoryId, shippingState);
-        log.info("The tax rate for new product is: "+taxRate);
+        log.info("The tax rate for new product is: {}", taxRate);
         return taxRate;
     }
 
@@ -297,7 +295,7 @@ public class ExchangeService  implements IExchangeService {
         exchangeDeliveryItems.setPaymentMode(order.getPaymentMethod().name());
         deliveryPerson.getToExchangeItems().add(exchangeDeliveryItems);
         deliveryPerson.setToDeliveryCount(deliveryPerson.getToDeliveryCount()+1);
-        log.info("deliveryPerson in assigned: "+deliveryPerson);
+        log.info("deliveryPerson in assigned: {}", deliveryPerson);
         // start with notifying the delivery person about the exchange.
         emailService.sendExchangeAssignmentMailToDeliveryPerson("iamanil3121@gmail.com",deliveryPerson,exchangeDeliveryItems);
         return  deliveryService.updateDeliveryPerson(deliveryPerson);
@@ -305,7 +303,7 @@ public class ExchangeService  implements IExchangeService {
 
 
     public ProductExchangeInfo getExchangeInformation(String orderId){
-        log.info("Getting the Exchange information of order: "+orderId);
+        log.info("Getting the Exchange information of order: {}", orderId);
         Order order = orderService.getOrder(orderId);
         List<OrderItem> orderItems = order.getOrderItems();
         String productToReplace="",productId="";
