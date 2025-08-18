@@ -8,6 +8,7 @@ import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.ServiceInterface.Order.IExchangeService;
 import com.ECommerceApp.ServiceInterface.Order.IOrderService;
 import com.ECommerceApp.ServiceInterface.Payment.IPaymentService;
+import com.ECommerceApp.Util.OwnershipGuard;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ public class ExchangeController {
     @PreAuthorize("hasPermission('EXCHANGE', 'READ')")
     @PostMapping("/getExchangeInfo/{orderId}")
     public ResponseEntity<?> getExchangeInformation(@PathVariable String orderId){
+        new OwnershipGuard().checkSelf(orderService.getOrder(orderId).getBuyerId());
         return ResponseEntity.ok(exchangeService.getExchangeInformation(orderId));
     }
 
@@ -45,7 +47,7 @@ public class ExchangeController {
     @PreAuthorize("hasPermission('EXCHANGE', 'UPDATE')")
     @PostMapping("/updateExchange")
     public ResponseEntity<?> exchangeUpdate(@RequestBody ExchangeUpdateRequest exchangeUpdateRequest){
-        log.info("inside the exchange update: "+exchangeUpdateRequest);
+        log.info("inside the exchange update: {}", exchangeUpdateRequest);
         exchangeService.exchangeUpdate(exchangeUpdateRequest);
         if(exchangeUpdateRequest.getExchanged() && exchangeUpdateRequest.getPaymentStatus() == Payment.PaymentStatus.SUCCESS ){
             return  ResponseEntity.ok(exchangeService.updateExchangeSuccess(exchangeUpdateRequest.getOrderId(),exchangeUpdateRequest.getDeliveryPersonId()));

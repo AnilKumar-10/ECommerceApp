@@ -40,7 +40,7 @@ public class ReturnController {  // buyer
         }
         returnService.updateReturnFailed(returnUpdate.getOrderId());
         Refund refund = refundService.getRefundsByOrderId(returnUpdate.getOrderId());
-        return ResponseEntity.ok(refundService.rejectRefund(refund.getRefundId(), returnUpdate.getDamageType()));
+        return ResponseEntity.ok(refundService.rejectRefund(returnUpdate));
     }
 
     // BUYER: Cancel the order

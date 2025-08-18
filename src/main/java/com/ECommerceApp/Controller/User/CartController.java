@@ -27,8 +27,7 @@ public class  CartController { //buyer
     @PreAuthorize("hasPermission('CART', 'INSERT')")
     @PostMapping("/addToCart")
     public ResponseEntity<?> addToCart(@RequestBody CartItem items){
-        items.setPrice(productService.getProductPrice(items.getProductId())* items.getQuantity());
-        System.out.println(items);
+        items.setPrice(productService.getProductPrice(items.getProductId()) * items.getQuantity());
         String userId = new SecurityUtils().getCurrentUserId();
         return ResponseEntity.ok(cartService.addItemToCart(userId,items));
     }

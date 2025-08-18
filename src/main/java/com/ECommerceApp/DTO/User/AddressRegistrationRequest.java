@@ -39,5 +39,9 @@ public class AddressRegistrationRequest {
     @NotBlank(message = "Type is required")
     @Pattern(regexp = "HOME|WORK", message = "Type must be either HOME or WORK")
     private String type;
+
+    @NotBlank(message = "Phone number is required")
+    @Size(max = 50, message = "Phone number must not exceed 10 characters")
+    private String phoneNo;
 }
 

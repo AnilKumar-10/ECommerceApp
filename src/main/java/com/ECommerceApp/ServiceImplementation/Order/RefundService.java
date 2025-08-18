@@ -107,18 +107,19 @@ public class RefundService implements IRefundService {
     }
 
 //  3. Reject refund if any damages are there (admin)
-    public Refund rejectRefund(String refundId, String reason) {
+    public Refund rejectRefund(ReturnUpdateRequest returnUpdate) {
         String userId = new SecurityUtils().getCurrentUserId();
         log.info("Rejecting the return and refund");
-        Refund refund = getRefundById(refundId);
+        Refund refund = getRefundById(returnUpdate.getOrderId());
         if (!(refund.getStatus()==Refund.RefundStatus.APPROVED)) {
             throw new IllegalStateException("Only APPROVED refunds can be rejected");
         }
         refund.setStatus(Refund.RefundStatus.REJECTED);
         refund.setProcessedAt(new Date());
-        refund.setReason(refund.getReason() + " | Rejected: " + reason);
+        refund.setReason(refund.getReason() + " | Rejected: " + returnUpdate.getDamageType());
         //  sends the mail after the refund request is rejected.
         emailService.sendRefundRejectedEmail("iamanil3121@gmail.com",userId,refund.getOrderId());
+        deliveryService.removeReturnItemFromDeliveryPerson(returnUpdate.getDeliveryPersonId(),returnUpdate.getOrderId());
         return saveRefund(refund);
     }
 

@@ -21,7 +21,7 @@ public class TaxController { //admin
 
     // ADMIN only
     @PreAuthorize("hasPermission('TAX', 'INSERT')")
-    @PostMapping("/createTaxrules")
+    @PostMapping("/createTaxRules")
     public ResponseEntity<?> createTax(@Valid @RequestBody List<TaxRuleCreationRequest> rule) {
         return ResponseEntity.ok(taxRuleService.createMultiTaxRules(rule));
     }

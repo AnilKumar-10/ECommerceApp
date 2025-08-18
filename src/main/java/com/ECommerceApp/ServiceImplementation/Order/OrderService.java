@@ -96,7 +96,7 @@ public class OrderService implements IOrderService {
         order.setPaymentMethod(orderDto.getPayMode());
         order.setOrderDate(new Date());
         order.setUpiId(users.getUpiId());
-        order.setOrderStatus(orderDto.getPayMode() == Payment.PaymentMethod.COD? Order.OrderStatus.PLACED: Order.OrderStatus.PENDING);
+        order.setOrderStatus(orderDto.getPayMode() == Payment.PaymentMethod.COD ? Order.OrderStatus.PLACED: Order.OrderStatus.PENDING);
         order.setPaymentStatus(Payment.PaymentStatus.PENDING); // pending until the payment is successful
         Order order1 = saveOrder(order);
         if(orderDto.getPayMode() == Payment.PaymentMethod.COD){

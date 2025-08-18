@@ -16,7 +16,7 @@ public interface IRefundService {
 
     Refund approveRefund(String refundId, String adminId);
 
-    Refund rejectRefund(String refundId, String reason);
+    Refund rejectRefund(ReturnUpdateRequest returnUpdate);
 
     Refund completeRefund(ReturnUpdateRequest returnUpdate);
 

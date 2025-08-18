@@ -26,7 +26,7 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         String resource = targetDomainObject != null ? targetDomainObject.toString().toUpperCase() : null;
         String action = permission.toString().toUpperCase();
         List<String> roles = getRolesFromAuthentication(authentication);
-        log.info("resource: "+resource+"  action: "+action+"  roles: "+roles);
+        log.info("resource: {}  action: {}  roles: {}", resource, action, roles);
         return hasPermission(roles, resource, action, null, authentication);
     }
 
@@ -38,7 +38,7 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         String action = permission.toString().toUpperCase();
         List<String> roles = getRolesFromAuthentication(authentication);
         String currentUserId = new SecurityUtils().getCurrentUserId();
-        log.info("resource: "+resource+"  action: "+action+"  roles: "+roles);
+        log.info("resource: {}  action: {}  roles: {}", resource, action, roles);
         return hasPermission(roles, resource, action, targetId.toString(), authentication);
     }
 
@@ -46,18 +46,18 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         String currentUserId = new SecurityUtils().getCurrentUserId();
 
         for (String role : roles) {
-            log.info("role is: "+role);
+            log.info("role is: {}", role);
             RolePermission rolePermission = rolePermissionRepository.findByRole(role);
             if (rolePermission == null || rolePermission.getPermissions() == null) continue;
             log.info("after if");
             for (RolePermission.Permission p : rolePermission.getPermissions()) {
-                log.info("permission is: "+p);
+                log.info("permission is: {}", p);
                 boolean resourceMatch = "*".equals(p.getResource()) || p.getResource().equalsIgnoreCase(resource);
                 boolean actionMatch = "*".equals(p.getAction()) || p.getAction().equalsIgnoreCase(action);
-                log.info("in for: "+resourceMatch   +"  "+actionMatch);
+                log.info("in for: {}  {}", resourceMatch, actionMatch);
                 if (resourceMatch && actionMatch) {
                     String scope = p.getScope() != null ? p.getScope().toUpperCase() : "ALL";
-                    log.info("scope: "+scope);
+                    log.info("scope: {}", scope);
                     //  Allow if scope is ALL
                     if ("ALL".equals(scope)) return true;
 

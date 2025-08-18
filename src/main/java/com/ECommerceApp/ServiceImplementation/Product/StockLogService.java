@@ -28,7 +28,7 @@ public class StockLogService implements IStockLogService {
 
     public StockLog modifyStock(StockLogModificationRequest modification) {
         // 1. Find existing stock log or create a new one
-        log.info("updating the stock of : "+modification.getProductId());
+        log.info("updating the stock of : {}", modification.getProductId());
         StockLog stockLog = stockLogRepository.findByProductIdAndSellerId(modification.getProductId(), modification.getSellerId())
                 .orElseGet(() -> {
                     StockLog newLog = new StockLog();
@@ -41,21 +41,7 @@ public class StockLogService implements IStockLogService {
                 });
 
         // 2. Update quantity based on action
-        int change = modification.getQuantityChanged();
-        StockLogModification.ActionType action = modification.getAction();
-
-        if (action == StockLogModification.ActionType.ADD
-                || action == StockLogModification.ActionType.RETURNED
-                || action == StockLogModification.ActionType.CANCELLED) {
-            change = Math.abs(change); // Ensure positive change
-        } else if (action == StockLogModification.ActionType.SOLD) {
-            change = -Math.abs(change); // Ensure negative change
-        } else {
-            throw new IllegalArgumentException("Invalid stock action: " + action);
-        }
-
-        // 3. Apply change
-        int newQuantity = stockLog.getCurrentQuantity() + change;
+        int newQuantity = getQuantity(modification, stockLog);
         stockLog.setCurrentQuantity(newQuantity);
         stockLog.setTimestamp(new Date());
 
@@ -78,6 +64,27 @@ public class StockLogService implements IStockLogService {
         return updatedLog;
     }
 
+    private int getQuantity(StockLogModificationRequest modification, StockLog stockLog) {
+        int change = modification.getQuantityChanged();
+
+        StockLogModification.ActionType action = modification.getAction();
+
+        if (action == StockLogModification.ActionType.ADD
+                || action == StockLogModification.ActionType.RETURNED
+                || action == StockLogModification.ActionType.CANCELLED) {
+            change = Math.abs(change); // Ensure positive change
+        } else if (action == StockLogModification.ActionType.SOLD) {
+            change = -Math.abs(change); // Ensure negative change
+        } else {
+            throw new IllegalArgumentException("Invalid stock action: " + action);
+        }
+
+        // 3. Apply change
+        return stockLog.getCurrentQuantity() + change;
+    }
+
+
+    
     private StockLogModification getModificationLog(StockLogModificationRequest modification) {
 
         StockLogModification modificationLog = new StockLogModification();

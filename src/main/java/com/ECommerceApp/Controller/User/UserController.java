@@ -9,6 +9,7 @@ import com.ECommerceApp.ServiceImplementation.User.AuthService;
 import com.ECommerceApp.ServiceImplementation.User.OtpService;
 import com.ECommerceApp.ServiceInterface.Delivery.IDeliveryService;
 import com.ECommerceApp.ServiceInterface.User.UserServiceInterface;
+import com.ECommerceApp.Util.OwnershipGuard;
 import com.ECommerceApp.Util.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,6 @@ public class UserController {
     private OtpService otpService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
 
     //  SELF (READ) - only logged-in user
     @PreAuthorize("hasPermission('USER', 'READ')")
@@ -104,6 +104,7 @@ public class UserController {
     @PreAuthorize("hasPermission('USER', 'UPDATE')")
     @PutMapping("/addRole")
     public ResponseEntity<?> addRoleToUser(@RequestBody Map<String, String> map) {
+        // here in this case, map contains userId and newRole
         String userId = map.get("userId");
         Users.Role newRole = Users.Role.valueOf(map.get("newRole"));
         return ResponseEntity.ok(userService.addRoleToUser(userId, newRole));
@@ -113,6 +114,7 @@ public class UserController {
     @PreAuthorize("hasPermission('USER', 'READ')")
     @GetMapping("/getSellers")
     public ResponseEntity<?> getAllSellers() {
+        new OwnershipGuard().checkAdmin();
         return ResponseEntity.ok(userService.getAllSellers());
     }
 
@@ -120,6 +122,7 @@ public class UserController {
     @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getDeliveryCount")
     public long getDeliveryAgentCount() {
+        new OwnershipGuard().checkAdmin();
         return deliveryService.totalCount();
     }
 

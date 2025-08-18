@@ -345,7 +345,7 @@ public class EmailService implements IEmailService {
             context.setVariable("stockLog", stockLog);
 
             // Generate the email content from HTML template
-            String htmlContent = templateEngine.process("LowStockModification.html", context);
+            String htmlContent = templateEngine.process("LowStockNotification.html", context);
 
             // Create the email message
             MimeMessage message = mailSender.createMimeMessage();

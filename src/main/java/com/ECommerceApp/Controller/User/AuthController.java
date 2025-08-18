@@ -17,6 +17,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,7 +43,8 @@ public class AuthController {
     private AuthService authService;
     @Autowired
     private OtpService otpService;
-
+    @Autowired
+    private  AuthenticationManager authenticationManager;
 
     //  1. Register USER / SELLER / ADMIN
     @PostMapping("/user/register")
@@ -69,14 +72,18 @@ public class AuthController {
     // 3. Login (for USERS only, not delivery personnel)
     @PostMapping("/user/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequest request) {
-        Users user = userService.getUserByEmail(request.getEmail());
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-        String token = jwtService.generateToken(userDetails);
+//        Users user = userService.getUserByEmail(request.getEmail());
+//        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+//        }
+//        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
+        UserDetails userDetails1 = (UserDetails) authentication.getPrincipal();
+        String token = jwtService.generateToken(userDetails1);
         LoginResponse loginResponse = new LoginResponse();
+        Users user = userService.getUserByEmail(request.getEmail());
         BeanUtils.copyProperties(user,loginResponse);
         loginResponse.setToken(token);
         return ResponseEntity.ok(loginResponse);
@@ -86,7 +93,7 @@ public class AuthController {
 
     @PostMapping("/delivery/login")
     public ResponseEntity<?> deliveryLogin(@Valid @RequestBody UserLoginRequest request) {
-        log.info("inside delver login");
+        log.info("inside deliver login");
         DeliveryPerson deliveryPerson = deliveryService.getDeliveryPersonByEmail(request.getEmail());
         if (!passwordEncoder.matches(request.getPassword(), deliveryPerson.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

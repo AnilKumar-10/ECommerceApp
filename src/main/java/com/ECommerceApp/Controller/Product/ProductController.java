@@ -4,6 +4,7 @@ import com.ECommerceApp.DTO.Product.ProductCreationRequest;
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.ServiceInterface.Product.IProductService;
+import com.ECommerceApp.Util.OwnershipGuard;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ public class ProductController { // admin, seller
     @PreAuthorize("hasPermission('PRODUCT', 'UPDATE')")
     @PutMapping("/updateProduct")
     public ResponseEntity<?> updateProduct(@Valid @RequestBody ProductCreationRequest product) {
+        new OwnershipGuard().checkSelf(product.getSellerId());
         return ResponseEntity.ok(productService.updateProduct(product));
     }
 

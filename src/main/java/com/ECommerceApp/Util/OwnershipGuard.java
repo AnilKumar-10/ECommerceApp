@@ -15,8 +15,8 @@ public class OwnershipGuard {
 
     public void checkSelf(String ownerId) {
         String currentUserId = new SecurityUtils().getCurrentUserId();
-//        checkAdmin();
         if (!currentUserId.equals(ownerId)) {
+            checkAdmin();
             throw new AccessDeniedException("Access denied: not your data.");
         }
     }

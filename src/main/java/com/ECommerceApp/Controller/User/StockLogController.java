@@ -3,6 +3,7 @@ package com.ECommerceApp.Controller.User;
 import com.ECommerceApp.DTO.Product.StockLogModificationRequest;
 import com.ECommerceApp.Model.Product.StockLog;
 import com.ECommerceApp.ServiceInterface.Product.IStockLogService;
+import com.ECommerceApp.Util.OwnershipGuard;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class StockLogController { // admin, seller
     }
 
     //  SELLER — UPDATE
-    @PreAuthorize("hasPermission('STOCK', 'UPDATE')")
+    @PreAuthorize("hasPermission('STOCK', 'INSERT')")
     @PostMapping("/insertStockLogs")
     public ResponseEntity<?> insertStockLogs(@Valid @RequestBody List<@Valid StockLogModificationRequest> stockLogModificationDTOS) {
         List<StockLog> stockLogs = new ArrayList<>();
@@ -42,6 +43,7 @@ public class StockLogController { // admin, seller
     @PreAuthorize("hasPermission('STOCK', 'READ')")
     @GetMapping("/getStockLogByProduct/{productId}")
     public ResponseEntity<?> getStockLogByProduct(@PathVariable String productId) {
+        new OwnershipGuard().checkSelf(stockLogService.getByProductId(productId).getSellerId());
         return ResponseEntity.ok(stockLogService.getByProductId(productId));
     }
 
