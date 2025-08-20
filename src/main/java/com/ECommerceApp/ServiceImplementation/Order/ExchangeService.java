@@ -72,6 +72,7 @@ public class ExchangeService  implements IExchangeService {
 
         // Adding the replacement product to the order items
         OrderItem item = createNewOrderItem(order,productExchangeDto);
+        order.setRefundAmount(null);
         double newProductPrice = item.getPrice() + item.getTax();
         order.setTotalAmount(order.getTotalAmount() + item.getPrice()); // updating with new product values. here the discount is not applicable.
         order.setFinalAmount(order.getFinalAmount() + newProductPrice);
@@ -115,10 +116,10 @@ public class ExchangeService  implements IExchangeService {
         else {
             exchangeInfo.setAmount(exchangeDetails.getExchangeDifferenceAmount());
         }
-        exchangeInfo.setProductIdToReplace(exchangeDetails.getReplacementProductId());
+        exchangeInfo.setProductIdToReplace(productExchangeDto.getNewProductId());
         exchangeInfo.setOrderId(order.getId());
         exchangeInfo.setPaymentMode(order.getPaymentMethod().name());
-        exchangeInfo.setProductIdToPick(productExchangeDto.getNewProductId());
+        exchangeInfo.setProductIdToPick(productExchangeDto.getProductIdToReplace());
         return exchangeInfo;
     }
 
@@ -135,7 +136,7 @@ public class ExchangeService  implements IExchangeService {
         ExchangeDetails.ExchangeType payType = oldProductPrice > newProductPrice ? ExchangeDetails.ExchangeType.REFUNDABLE : ExchangeDetails.ExchangeType.PAYABLE;
 
         log.info("the Exchange is : {}", payType);
-        double exchangePrice = oldProductPrice - newProductPrice;
+        double exchangePrice = Math.abs(oldProductPrice - newProductPrice);
         exchangePrice = Math.round(exchangePrice * 100.0)/100.0;
         if(exchangePrice == 0) {
             exchangeDetails.setExchangeType(ExchangeDetails.ExchangeType.NO_DIFFERENCE);
@@ -175,6 +176,8 @@ public class ExchangeService  implements IExchangeService {
         item.setQuantity(productExchangeDto.getQuantity());
         item.setColor(productExchangeDto.getColor());
         item.setStatus(Order.OrderStatus.TO_DELIVER.name());
+        item.setSize(productExchangeDto.getSize());
+        item.setName(productService.getProductById(productExchangeDto.getNewProductId()).getName());
         double tax = (item.getPrice() * taxRate) / 100;
         item.setTax(tax * item.getQuantity());
 
@@ -282,7 +285,7 @@ public class ExchangeService  implements IExchangeService {
             }
         }
         exchangeDeliveryItems.setAddress(addressService.getAddressById(order.getAddressId()));
-        if(order.getPaymentMethod() == Payment.PaymentMethod.UPI){
+        if(order.getPaymentMethod() == Payment.PaymentMethod.UPI  ||  order.getExchangeDetails().getExchangeType() == ExchangeDetails.ExchangeType.REFUNDABLE){
             exchangeDeliveryItems.setAmount(0.0);
             exchangeDeliveryItems.setPayable(false);
         }else{
@@ -350,18 +353,22 @@ public class ExchangeService  implements IExchangeService {
                 orderItem.setStatus(Order.OrderStatus.EXCHANGE_DELIVERED.name());
             }
         }
+
+        order.getExchangeDetails().setUpdatedAt(new Date());
+        order.setReturned(true);
+        deliveryService.removeExchangeItemFromDeliveryPerson(deliveryPersonId,orderId);
+        if(order.getExchangeDetails().getExchangeType() == ExchangeDetails.ExchangeType.REFUNDABLE){
+            log.info("this exchange is refundable.");
+            completeRefundAfterExchangeSuccess(order.getExchangeDetails().getRefundId()); // update the refund status after the exchange completed.
+            order.getExchangeDetails().setRefundStatus(Refund.RefundStatus.COMPLETED);
+        }
+        order = orderService.saveOrder(order);
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         shippingUpdateDTO.setShippingId(order.getShippingId());
         shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
         shippingUpdateDTO.setNewValue(Order.OrderStatus.EXCHANGED);
         shippingService.updateShippingStatus(shippingUpdateDTO);
-        deliveryService.removeExchangeItemFromDeliveryPerson(deliveryPersonId,orderId);
-        order.getExchangeDetails().setUpdatedAt(new Date());
-        order.setReturned(true);
-        if(order.getExchangeDetails().getExchangeType() == ExchangeDetails.ExchangeType.REFUNDABLE){
-            completeRefundAfterExchangeSuccess(order.getExchangeDetails().getRefundId()); // update the refund status after the exchange completed.
-        }
-        return orderService.saveOrder(order);
+        return order; // returning the order with updated status.
     }
 
     // here we update the stock of product replaced
@@ -387,6 +394,7 @@ public class ExchangeService  implements IExchangeService {
 
 
     public void completeRefundAfterExchangeSuccess(String refundId){
+        log.info("updating the refund status after exchange success");
         Refund refund = refundService.getRefundById(refundId);
         refund.setProcessedAt(new Date());
         refund.setStatus(Refund.RefundStatus.COMPLETED);

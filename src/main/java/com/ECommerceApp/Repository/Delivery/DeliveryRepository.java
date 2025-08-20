@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DeliveryRepository extends MongoRepository<DeliveryPerson,String> {
@@ -26,4 +27,6 @@ public interface DeliveryRepository extends MongoRepository<DeliveryPerson,Strin
     boolean existsByEmail(@Email(message = "Invalid email") @NotBlank(message = "Email is required") String email);
 
     Optional<DeliveryPerson> findByEmail(String email);
+
+    List<DeliveryPerson> findByIsActiveTrue();
 }

@@ -44,13 +44,17 @@ public class ReturnController {  // buyer
     }
 
     // BUYER: Cancel the order
-    @PreAuthorize("hasPermission('ORDER', 'UPDATE')")
+    @PreAuthorize("hasPermission('ORDER', 'INSERT')")
     @PutMapping("/cancelOrder")
     public ResponseEntity<?> cancelOrder(@RequestBody CancelOrderRequest cancelOrderRequest){
         refundService.cancelOrder(cancelOrderRequest.getOrderId(), cancelOrderRequest.getReason());
         return ResponseEntity.ok("Order is cancelled.");
     }
 
-
+    @PreAuthorize("hasPermission('RETURN', 'READ')")
+    @GetMapping("/getRefundDetails/{orderId}")
+    public ResponseEntity<?> getRefundDetails(@PathVariable String orderId){
+        return ResponseEntity.ok(refundService.getRefundsByOrderId(orderId));
+    }
 
 }

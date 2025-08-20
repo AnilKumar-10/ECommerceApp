@@ -20,4 +20,6 @@ public interface IAddressService {
     String deleteAddress(String id);
 
     List<Address> getAllAddresses();
+
+    Address getAddressBy
 }

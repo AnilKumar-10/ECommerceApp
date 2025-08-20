@@ -1,6 +1,7 @@
 package com.ECommerceApp.ServiceImplementation.Order;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
+import com.ECommerceApp.DTO.Order.ShippingUpdateRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.RaiseRefundRequest;
 import com.ECommerceApp.DTO.ReturnAndExchange.RefundAndReturnResponse;
 import com.ECommerceApp.DTO.ReturnAndExchange.ReturnUpdateRequest;
@@ -256,6 +257,11 @@ public class RefundService implements IRefundService {
         // sends the mail about the order cancellation to user
         emailService.sendOrderCancellationEmail(order1,userId,"iamanil3121@gmail.com");
         returnService.updateStockLogAfterOrderCancellation(orderId); // this will update the stock after the order is cancelled.
+        ShippingUpdateRequest shippingUpdateRequest = new ShippingUpdateRequest();
+        shippingUpdateRequest.setShippingId(order.getShippingId());
+        shippingUpdateRequest.setUpdateBy(Users.Role.ADMIN.name());
+        shippingUpdateRequest.setNewValue(Order.OrderStatus.CANCELLED);
+        shippingService.updateShippingStatus(shippingUpdateRequest);
         return order1;
     }
 
@@ -264,6 +270,7 @@ public class RefundService implements IRefundService {
     public Refund refundOverOrderCancellation(Order order){
         log.info("The payment mode is UPI the order cancellation amount is created back");
         Refund refund = new Refund();
+        refund.setRefundId(String.valueOf(sequenceGeneratorService.getNextSequence("refundId")));
         refund.setOrderId(order.getId());
         refund.setRefundAmount(order.getFinalAmount());
         refund.setStatus(Refund.RefundStatus.APPROVED);

@@ -30,11 +30,11 @@ public class PaymentService implements IPaymentService {
     // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
     public Payment initiatePayment(InitiatePaymentRequest initiatePaymentDto) {
         log.info("Initiating the online payment for order ");
-        Payment payment = new Payment();
         Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
         if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
             throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
         }
+        Payment payment = new Payment();
         long nextId = sequenceGeneratorService.getNextSequence("paymentId");
         payment.setId(String.valueOf(nextId)); // If id is String
         payment.setOrderId(initiatePaymentDto.getOrderId());

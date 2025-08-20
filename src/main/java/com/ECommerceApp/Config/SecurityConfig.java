@@ -79,4 +79,5 @@ public class SecurityConfig {
     }
 
 }
+// use request Context. for getting the current user details
 

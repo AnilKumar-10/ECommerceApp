@@ -28,7 +28,7 @@ public class Product {
     private List<String> sizes;
     private List<String> images;
 
-    private double rating; // Average rating (computed from reviews collection)
+    private double rating = 0; // Average rating (computed from reviews collection)
     private boolean isAvailable;
     private Date addedOn;
 

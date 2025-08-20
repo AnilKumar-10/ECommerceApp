@@ -69,7 +69,7 @@ public class PaymentController { //user
 
     //  BUYER / DELIVERY → complete exchange payment
     @PreAuthorize("hasPermission('PAYMENT', 'INSERT')")
-    @PostMapping("/payExchange")
+        @PostMapping("/payExchange")
     public ResponseEntity<?> upiPayExchangeAmount(@RequestBody PaymentRequest paymentDto) {
         if (paymentDto.getStatus() == Payment.PaymentStatus.SUCCESS) {
             Payment payment = paymentService.confirmUPIPaymentForExchange(paymentDto);

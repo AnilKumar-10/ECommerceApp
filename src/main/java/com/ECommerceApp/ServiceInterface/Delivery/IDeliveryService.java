@@ -4,6 +4,8 @@ import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Order.Order;
 
+import java.util.List;
+
 public interface IDeliveryService {
 
     DeliveryPerson assignDeliveryPerson(String deliveryAddress);
@@ -37,4 +39,6 @@ public interface IDeliveryService {
     DeliveryPerson updateDelivery(DeliveryPerson deliveryPerson);
 
     String getNameById(String id);
+
+    public List<DeliveryPerson> getAllActiveDeliveryPerson();
 }

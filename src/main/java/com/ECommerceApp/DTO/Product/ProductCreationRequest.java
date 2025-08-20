@@ -32,7 +32,7 @@ public class ProductCreationRequest {
     @NotBlank(message = "Return policy must be provided")
     private String returnPolicy;
 
-    @NotBlank(message = "Category ID is required")
+//    @NotBlank(message = "Category ID is required")
     private List<String> categoryIds;
 
     @NotBlank(message = "Seller ID is required")

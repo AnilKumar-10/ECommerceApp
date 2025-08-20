@@ -92,6 +92,7 @@ public class ShippingService implements IShippingService {
             log.setUpdatedBy(shippingUpdateDTO.getUpdateBy());
             log.setOldValue(oldStatus);
             log.setNewValue(newStatus);
+            log.setField("STATUS");
             addLog(shipping,log);
         }
         mediatorService.saveOrder(order);

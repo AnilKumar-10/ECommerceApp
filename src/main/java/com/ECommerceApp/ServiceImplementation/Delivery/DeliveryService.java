@@ -21,10 +21,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,18 +41,28 @@ public class DeliveryService implements IDeliveryService {
     // Assign delivery person by address match
     public DeliveryPerson assignDeliveryPerson(String deliveryAddress) {
         log.info("Assigning the delivery Person to delivery the Order");
-        List<DeliveryPerson> allPersons = deliveryRepository.findAll();
+//        List<DeliveryPerson> allPersons = getAllActiveDeliveryPerson();
+//        String address = addressService.getAddressById(deliveryAddress).getCity();
+//        for (DeliveryPerson person : allPersons) {
+//            for (String area : person.getAssignedAreas()) {
+//                if (area.equalsIgnoreCase(address)) {
+//                    log.info("The person to deliver is : {}", person);
+//                    return person;
+//                }
+//            }
+//        }
+
         String address = addressService.getAddressById(deliveryAddress).getCity();
-        for (DeliveryPerson person : allPersons) {
-            if(person.isActive()){
-            for (String area : person.getAssignedAreas()) {
-                if (area.equalsIgnoreCase(address)) {
-                    log.info("The person to deliver is : {}", person);
-                    return person;
-                }
-            }}
+        Map<String, DeliveryPerson> areaToPerson = getAllActiveDeliveryPerson().stream()
+                .flatMap(person -> person.getAssignedAreas().stream()
+                        .map(area -> Map.entry(area.toLowerCase(), person)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (p1, p2) -> p1));
+        DeliveryPerson person = areaToPerson.get(address.toLowerCase());
+        if (person != null) {
+            log.info("The person to deliver is : {}", person);
+            return person;
         }
-        log.info("There is no delivery agent available for your address: {}", deliveryAddress);
+        log.info("There is no delivery agent available for your address: {}", address);
         return null;
     }
 
@@ -195,5 +203,10 @@ public class DeliveryService implements IDeliveryService {
 
     public String getNameById(String id) {
         return getDeliveryPerson(id).getName();
+    }
+
+
+    public List<DeliveryPerson> getAllActiveDeliveryPerson(){
+        return deliveryRepository.findByIsActiveTrue();
     }
 }
