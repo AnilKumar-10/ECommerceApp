@@ -8,6 +8,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -21,13 +22,13 @@ public class DeliveryPerson {
     private String email;
     private String password;
     private List<Users.Role> roles;
-    private boolean isActive;
+    private boolean isActive = true;
     private Date passwordChangedAt;
-    private int deliveredCount;
-    private int toDeliveryCount;
-    private List<String> assignedAreas; // Areas/zones they deliver to
-    private List<DeliveryItems> toDeliveryItems;
-    private List<ProductReturnDetails> toReturnItems;
-    private List<ExchangeDeliveryItems> toExchangeItems;
+    private int deliveredCount =0;
+    private int toDeliveryCount=0;
+    private List<String> assignedAreas = new ArrayList<>(); // Areas/zones they deliver to
+    private List<DeliveryItems> toDeliveryItems = new ArrayList<>();
+    private List<ProductReturnDetails> toReturnItems = new ArrayList<>();
+    private List<ExchangeDeliveryItems> toExchangeItems = new ArrayList<>();
 }
 

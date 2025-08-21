@@ -27,36 +27,36 @@ public class  CategoryService implements ICategoryService {
             categoryRepository.save(category);
             c++;
         }
-        if(c==categories.size()){
+        if(c == categories.size()){
             return "All "+c+" Categories objects inserted successfully";
         }
         return "Something went wrong.";
     }
 
-    // 2. Get all categories
+    //  Get all categories
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
-    // 3. Get category by ID
+    // Get category by ID
     public Category getCategoryById(String id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + id + " not found."));
     }
 
-    // 4. Get subcategories of a parent
+    // Get subcategories of a parent
     public List<Category> getSubCategories(String parentId) {
         List<Category> categories = categoryRepository.findByParentId(parentId);
         log.info("The subCategories of: "+parentId+" are: "+categories);
         return categories;
     }
 
-    // 5. Get root categories (parentId = null)
+    //  Get root categories (parentId = null)
     public List<Category> getRootCategories() {
         return categoryRepository.findByParentId(null);
     }
 
-    // 6. Update category name or parent
+    //  Update category name or parent
     public Category updateCategory(Category updatedCategory) {
         Category existing = getCategoryById(updatedCategory.getId());
         existing.setName(updatedCategory.getName());
@@ -64,7 +64,7 @@ public class  CategoryService implements ICategoryService {
         return categoryRepository.save(existing);
     }
 
-    // 7. Delete category by ID (and optionally all subcategories recursively)
+    //  Delete category by ID (and optionally all subcategories recursively)
     public String  deleteCategory(String id) {
         log.warn("deleting the category: "+id);
         Category category = getCategoryById(id);
@@ -82,12 +82,12 @@ public class  CategoryService implements ICategoryService {
         }
     }
 
-    // 8. Check if a category is a leaf category (no children)
+    //  Check if a category is a leaf category (no children)
     public boolean isLeafCategory(String id) {
         return getSubCategories(id).isEmpty();
     }
 
-    // 9. Get full hierarchy path of a category (bottom to top)
+    // Get full hierarchy path of a category (bottom to top)
     public List<Category> getCategoryHierarchy(String categoryId) {
         List<Category> hierarchy = new ArrayList<>();
         Category current = getCategoryById(categoryId);
@@ -101,7 +101,7 @@ public class  CategoryService implements ICategoryService {
         return hierarchy;
     }
 
-    // 10. Get all descendant category IDs (used in filtering products under nested categories)
+    //  Get all descendant category IDs (used in filtering products under nested categories)
     public Set<String> getAllDescendantCategoryIds(String categoryId) {
         Set<String> ids = new HashSet<>();
         getAllDescendantsRecursive(categoryId, ids);
@@ -135,7 +135,6 @@ public class  CategoryService implements ICategoryService {
             }
             if (cat != null) return cat.getId();
         }
-
         throw new RootCategoryNotFoundException("No valid root category found for product");
     }
 
@@ -149,7 +148,6 @@ public class  CategoryService implements ICategoryService {
         List<String> result = new ArrayList<>();
         Queue<String> queue = new LinkedList<>();
         queue.add(rootId);
-
         while (!queue.isEmpty()) {
             String currentId = queue.poll();
             result.add(currentId);
@@ -158,7 +156,7 @@ public class  CategoryService implements ICategoryService {
                 queue.add(sub.getId());
             }
         }
-        log.info("All sub categories of the root : "+rootId+" is :"+result);
+        log.info("All sub categories of the root : {} is :{}", rootId, result);
         return result;
     }
 

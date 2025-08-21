@@ -30,10 +30,8 @@ public class ReviewService implements IReviewService {
     @Autowired
     private IProductService productService;
 
-
-
     public Review addReview(ReviewCreationRequest review) {
-        log.info("adding the new review to the product: "+review.getProductId());
+        log.info("adding the new review to the product: {}", review.getProductId());
         if(reviewRepository.existsByUserId(review.getUserId())){
             throw new ReviewAlreadyExistsException("User have already posted the review");
         }
@@ -47,9 +45,7 @@ public class ReviewService implements IReviewService {
             throw new UnknowUserReviewException("User is not verified ");
         }
         Review saved = reviewRepository.save(review1);
-
         updateProductRating(review.getProductId()); //  updates average rating of that product.
-
         return saved;
     }
 
@@ -60,14 +56,14 @@ public class ReviewService implements IReviewService {
 
 
     public Review getReviewById(String id) {
-        log.info("Getting the review with is: "+id);
+        log.info("Getting the review with is: {}", id);
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFountException("Review not found with ID: " + id));
     }
 
 
     public Review updateReview( ReviewCreationRequest updatedReview) {
-        log.info("updating the review : "+updatedReview.getProductId());
+        log.info("updating the review : {}", updatedReview.getProductId());
         Review existing = getReviewByUserId(updatedReview.getProductId(), updatedReview.getUserId());
         existing.setRating(updatedReview.getRating());
         existing.setComment(updatedReview.getComment());
@@ -84,7 +80,7 @@ public class ReviewService implements IReviewService {
 
 
     public String deleteReview(String id) {
-        log.warn("deleting the review: "+id);
+        log.warn("deleting the review: {}", id);
         if (!reviewRepository.existsById(id)) {
             throw new ReviewNotFountException("Review not found with ID: " + id);
         }
@@ -117,7 +113,7 @@ public class ReviewService implements IReviewService {
 
 
     public String deleteReviewByUserId(ReviewDeletion reviewDeletion) {
-        log.warn("Deleting the review by the user: "+reviewDeletion.getUserId());
+        log.warn("Deleting the review by the user: {}", reviewDeletion.getUserId());
         if(!reviewRepository.existsByUserId(reviewDeletion.getUserId())){
             throw new ReviewNotFountException("The user didn't posted any review yet.");
         }

@@ -4,17 +4,17 @@ import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationResponse;
 import com.ECommerceApp.DTO.User.PasswordUpdate;
 import com.ECommerceApp.DTO.User.UserRegistrationRequest;
+import com.ECommerceApp.Mappers.DeliveryPMapper;
+import com.ECommerceApp.Mappers.UserMapper;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.ServiceImplementation.Delivery.DeliveryService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+
 @Slf4j
 @Service
 public class AuthService {
@@ -24,12 +24,15 @@ public class AuthService {
     private DeliveryService deliveryService;
     @Autowired
     private OtpService otpService;
-
+    @Autowired
+    private DeliveryPMapper deliveryPersonMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     public Users registerUser(UserRegistrationRequest registerRequest) {
 
-        Users users = new Users();
-        BeanUtils.copyProperties(registerRequest,users);
+        Users users = userMapper.toUser(registerRequest);
+//        BeanUtils.copyProperties(registerRequest,users);
         userService.validateUserForRoles(users);
         users.setActive(true);
         users.setCreatedAt(new Date());
@@ -37,23 +40,21 @@ public class AuthService {
         return userService.saveUser(users);
     }
 
-
-
     public DeliveryPersonRegistrationResponse register(DeliveryPersonRegistrationRequest deliveryPersonRegistrationDto){
-        DeliveryPerson deliveryPerson  = new DeliveryPerson();
-        BeanUtils.copyProperties(deliveryPersonRegistrationDto,deliveryPerson);
-        deliveryPerson.setToReturnItems(new ArrayList<>());
-        deliveryPerson.setToDeliveryItems(new ArrayList<>());
-        deliveryPerson.setToExchangeItems(new ArrayList<>());
-        deliveryPerson.setToDeliveryCount(0);
-        deliveryPerson.setDeliveredCount(0);
-        deliveryPerson.setActive(true);
+        System.out.println("deliveryRequest: "+deliveryPersonRegistrationDto);
+        DeliveryPerson deliveryPerson  = deliveryPersonMapper.toDeliveryPerson(deliveryPersonRegistrationDto);
+//        BeanUtils.copyProperties(deliveryPersonRegistrationDto,deliveryPerson);
+//        deliveryPerson.setToReturnItems(new ArrayList<>());
+//        deliveryPerson.setToDeliveryItems(new ArrayList<>());
+//        deliveryPerson.setToExchangeItems(new ArrayList<>());
+//        deliveryPerson.setToDeliveryCount(0);
+//        deliveryPerson.setDeliveredCount(0);
+//        deliveryPerson.setActive(true);
         deliveryPerson.setPasswordChangedAt(new Date());
+        deliveryPerson = deliveryService.save(deliveryPerson);
         log.info("Delivery person registration is success: {}", deliveryPerson);
-        DeliveryPerson deliveryPerson1 =deliveryService.save(deliveryPerson);
-        DeliveryPersonRegistrationResponse deliveryPersonRegistrationResponse = new DeliveryPersonRegistrationResponse();
-        BeanUtils.copyProperties(deliveryPerson1,deliveryPersonRegistrationResponse);
-        return deliveryPersonRegistrationResponse;
+        //BeanUtils.copyProperties(deliveryPerson,deliveryPersonRegistrationResponse);
+        return deliveryPersonMapper.toDeliveryPersonRegistrationResponse(deliveryPerson);
     }
 
 

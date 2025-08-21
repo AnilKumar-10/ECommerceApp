@@ -42,15 +42,15 @@ public class ReviewController { // buyer
     //  BUYER: Delete own review
     @PreAuthorize("hasPermission('REVIEW', 'DELETE')")
     @DeleteMapping("/deleteUsersReview")
-    public String deleteUserPostedReview(@RequestBody ReviewDeletion reviewDeletion) {
-        return reviewService.deleteReviewByUserId(reviewDeletion);
+    public ResponseEntity<?> deleteUserPostedReview(@RequestBody ReviewDeletion reviewDeletion) {
+        return ResponseEntity.ok(reviewService.deleteReviewByUserId(reviewDeletion));
     }
 
     //  ADMIN: Delete any review
     @PreAuthorize("hasPermission('REVIEW', 'DELETE')")
     @DeleteMapping("/deleteReview/{reviewId}")
-    public String deleteReview(@PathVariable String reviewId) {
-        return reviewService.deleteReview(reviewId);
+    public ResponseEntity<?> deleteReview(@PathVariable String reviewId) {
+        return ResponseEntity.ok(reviewService.deleteReview(reviewId));
     }
 
     //  ALL: View all reviews by a specific user

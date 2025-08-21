@@ -257,11 +257,7 @@ public class RefundService implements IRefundService {
         // sends the mail about the order cancellation to user
         emailService.sendOrderCancellationEmail(order1,userId,"iamanil3121@gmail.com");
         returnService.updateStockLogAfterOrderCancellation(orderId); // this will update the stock after the order is cancelled.
-        ShippingUpdateRequest shippingUpdateRequest = new ShippingUpdateRequest();
-        shippingUpdateRequest.setShippingId(order.getShippingId());
-        shippingUpdateRequest.setUpdateBy(Users.Role.ADMIN.name());
-        shippingUpdateRequest.setNewValue(Order.OrderStatus.CANCELLED);
-        shippingService.updateShippingStatus(shippingUpdateRequest);
+        shippingService.ShippingStatusUpdates(order.getShippingId(),Order.OrderStatus.CANCELLED,Users.Role.ADMIN.name());
         return order1;
     }
 

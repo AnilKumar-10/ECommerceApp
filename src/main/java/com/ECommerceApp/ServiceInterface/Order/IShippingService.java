@@ -26,5 +26,7 @@ public interface IShippingService {
     Order updateOrderItemsDeliveredStatus(ShippingUpdateRequest shippingUpdateDTO);
 
     String getCourierName();
+
+    ShippingDetails ShippingStatusUpdates(String shippingId, Order.OrderStatus shippingStatus, String updateBy);
 }
 

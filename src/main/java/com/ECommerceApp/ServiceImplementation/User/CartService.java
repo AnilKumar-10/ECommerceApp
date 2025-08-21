@@ -89,7 +89,6 @@ public class CartService implements ICartService {
     public void removeOrderedItemsFromCart(Order order) {
         log.info("removing the ordered items from the cart after the order Placed.");
         String userId = order.getBuyerId();
-        System.out.println("user id: "+userId);
         List<OrderItem> orderItems = order.getOrderItems();
         // Get the Cart
         Cart cart = getCartByBuyerId(userId);
@@ -137,7 +136,7 @@ public class CartService implements ICartService {
 
     // moving the cart items to orderItems
     public List<OrderItem> checkOutForOrder(List<Integer> itemIds, String userId){
-        log.info("adding the cart items: "+itemIds+"  to the order items list");
+        log.info("adding the cart items: {}  to the order items list", itemIds);
         List<OrderItem> items = new ArrayList<>();
         for(CartItem item : getCartByBuyerId(userId).getItems()){
             if(itemIds.contains((int)item.getItemId())){
@@ -146,7 +145,7 @@ public class CartService implements ICartService {
                 items.add(orderItem);
             }
         }
-        log.info("order items after adding the cart items : "+items);
+        log.info("order items after adding the cart items : {}", items);
         return items;
     }
 

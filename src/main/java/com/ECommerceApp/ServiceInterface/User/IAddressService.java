@@ -21,5 +21,5 @@ public interface IAddressService {
 
     List<Address> getAllAddresses();
 
-    Address getAddressBy
+
 }

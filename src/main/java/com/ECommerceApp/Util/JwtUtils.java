@@ -20,7 +20,6 @@ public class JwtUtils {
     private final long EXPIRATION = 1000 * 60 * 60; //valid for 1 hour
 
     private Key getSignInKey() {
-        log.info("inside the getSignKey()");
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
@@ -50,7 +49,6 @@ public class JwtUtils {
 
 
     private <T> T extractClaims(String token, Function<Claims,T> resolver) {
-        log.info("inside the ExtractClaims()");
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
@@ -60,13 +58,11 @@ public class JwtUtils {
     }
 
     public String extractUsername(String token){
-        log.info("inside the ExtractUsername");
         return extractClaims(token, Claims::getSubject);
     }
 
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        log.info("inside the isTokenValid()");
         String username = extractUsername(token);
         Long pwdChangedAtToken = extractClaims(token, claims -> claims.get("pwdChangedAt", Long.class)); // this is present in token
 
@@ -82,7 +78,6 @@ public class JwtUtils {
 
 
     private boolean isTokenExpired(String token) {
-        log.info("inside the isTokenExpired()");
         return extractClaims(token, Claims::getExpiration).before(new Date());
     }
 

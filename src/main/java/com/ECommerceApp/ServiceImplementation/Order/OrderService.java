@@ -98,19 +98,19 @@ public class OrderService implements IOrderService {
         order.setUpiId(users.getUpiId());
         order.setOrderStatus(orderDto.getPayMode() == Payment.PaymentMethod.COD ? Order.OrderStatus.PLACED: Order.OrderStatus.PENDING);
         order.setPaymentStatus(Payment.PaymentStatus.PENDING); // pending until the payment is successful
-        Order order1 = saveOrder(order);
+        order = saveOrder(order);
         if(orderDto.getPayMode() == Payment.PaymentMethod.COD){
             // if the pay mode is UPI then the shipping details must be generated after the payment.
             log.info("The payment mode is COD so process the shipping.");
-            ShippingDetails shippingDetails = shippingService.createShippingDetails(order1);
-            updateStockLogAfterOrderConfirmed(order1.getId()); // this will update the product stock.
-            cartService.removeOrderedItemsFromCart(order1); // here the order is confirmed without the payment.
-            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com",userService.getUserName(userId), order1, shippingDetails);
+            ShippingDetails shippingDetails = shippingService.createShippingDetails(order);
+            updateStockLogAfterOrderConfirmed(order.getId()); // this will update the product stock.
+            cartService.removeOrderedItemsFromCart(order); // here the order is confirmed without the payment.
+            emailService.sendOrderConfirmationEmail("iamanil3121@gmail.com",userService.getUserName(userId), order, shippingDetails);
         }
         else{
             log.info("The payment mode is UPI/ONLINE so shipping is processes after the payment.");
         }
-        return order1; // flow goes to the initiating payment is the pay mode is upi
+        return order; // flow goes to the initiating payment is the pay mode is upi
     }
 
 

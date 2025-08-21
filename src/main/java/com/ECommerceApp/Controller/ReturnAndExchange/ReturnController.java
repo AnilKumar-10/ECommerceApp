@@ -26,7 +26,7 @@ public class ReturnController {  // buyer
     // BUYER: Raise refund request
     @PreAuthorize("hasPermission('RETURN', 'INSERT')")
     @PostMapping("/requestRefund")
-    public ResponseEntity<?> raiseRefundReq(@RequestBody RaiseRefundRequest refundRequestDto){
+    public ResponseEntity<?> raiseRefundRequest(@RequestBody RaiseRefundRequest refundRequestDto){
         return ResponseEntity.ok(refundService.requestRefund(refundRequestDto));
     }
 

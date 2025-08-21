@@ -27,7 +27,7 @@ public class StockLogService implements IStockLogService {
     private IEmailService emailService;
 
     public StockLog modifyStock(StockLogModificationRequest modification) {
-        // 1. Find existing stock log or create a new one
+        //  Find existing stock log or create a new one
         log.info("updating the stock of : {}", modification.getProductId());
         StockLog stockLog = stockLogRepository.findByProductIdAndSellerId(modification.getProductId(), modification.getSellerId())
                 .orElseGet(() -> {
@@ -40,17 +40,17 @@ public class StockLogService implements IStockLogService {
                     return newLog;
                 });
 
-        // 2. Update quantity based on action
+        //  Update quantity based on action
         int newQuantity = getQuantity(modification, stockLog);
         stockLog.setCurrentQuantity(newQuantity);
         stockLog.setTimestamp(new Date());
 
-        // 4. Append log entry
+        //  Append log entry
         modification.setModifiedAt(new Date());
         stockLog.getLogModification().add(getModificationLog(modification));
         StockLog updatedLog = stockLogRepository.save(stockLog);
 
-        // 5. Update product stock as well
+        //  Update product stock as well
         Product product = productRepository.findById(modification.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
         product.setStock(newQuantity);
@@ -66,9 +66,7 @@ public class StockLogService implements IStockLogService {
 
     private int getQuantity(StockLogModificationRequest modification, StockLog stockLog) {
         int change = modification.getQuantityChanged();
-
         StockLogModification.ActionType action = modification.getAction();
-
         if (action == StockLogModification.ActionType.ADD
                 || action == StockLogModification.ActionType.RETURNED
                 || action == StockLogModification.ActionType.CANCELLED) {
@@ -78,8 +76,7 @@ public class StockLogService implements IStockLogService {
         } else {
             throw new IllegalArgumentException("Invalid stock action: " + action);
         }
-
-        // 3. Apply change
+        //  Apply change
         return stockLog.getCurrentQuantity() + change;
     }
 

@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ProductSearchResponse {
 
-    private String Name;
+    private String name;
     private String description;
     private double price;
     private String brand;

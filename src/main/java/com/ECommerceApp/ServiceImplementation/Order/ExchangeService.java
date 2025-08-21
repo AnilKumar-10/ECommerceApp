@@ -95,13 +95,8 @@ public class ExchangeService  implements IExchangeService {
             // 2. if the pay type is COD then we have to proceed the exchange process and collect amount after delivery.
         }
 
-        // updating the shipping status.
-        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
-        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
-        shippingUpdateDTO.setNewValue(Order.OrderStatus.REQUESTED_TO_RETURN);
-        shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingService.updateShippingStatus(shippingUpdateDTO); // this updates the shipping status for exchange.
-
+        // this updates the shipping status for exchange.
+        shippingService.ShippingStatusUpdates(order.getShippingId(),Order.OrderStatus.REQUESTED_TO_RETURN,Users.Role.ADMIN.name());
         return getExchangeInfo(productExchangeDto, exchangeDetails, order);
     }
 
@@ -198,7 +193,6 @@ public class ExchangeService  implements IExchangeService {
 
 
     public double calculateNewFinalAmount(double oldPrice, double newPrice, double finalOrderAmount, double totalOriginalPrice, double totalDiscount) {
-
         double discountOnOldProduct = (oldPrice / totalOriginalPrice) * totalDiscount;
         double oldProductFinalAmount = oldPrice - discountOnOldProduct;
         double newFinalAmount = finalOrderAmount - oldProductFinalAmount + newPrice;

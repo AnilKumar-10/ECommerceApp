@@ -33,7 +33,6 @@ public class DeliveryHistoryService implements IDeliveryHistoryService {
 
     }
 
-
     public List<DeliveryHistory> getDeliveryHistoryByDeliveryPersonId(String deliveryPersonId){
         return deliveryHistoryRepository.findByDeliveryPersonId(deliveryPersonId);
     }

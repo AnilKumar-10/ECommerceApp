@@ -2,6 +2,7 @@ package com.ECommerceApp.Controller.Product;
 
 import com.ECommerceApp.DTO.Product.ProductCreationRequest;
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
+import com.ECommerceApp.Mappers.ProductMapper;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.ServiceInterface.Product.IProductService;
 import com.ECommerceApp.Util.OwnershipGuard;
@@ -20,6 +21,8 @@ public class ProductController { // admin, seller
 
     @Autowired
     private IProductService productService;
+    @Autowired
+    private ProductMapper productMapper;
 
     //  SELLER
     @PreAuthorize("hasPermission('PRODUCT', 'INSERT')")
@@ -40,8 +43,8 @@ public class ProductController { // admin, seller
     @GetMapping("/getProduct/{id}")
     public ProductSearchResponse getProduct(@PathVariable String id) {
         Product product = productService.getProductById(id);
-        ProductSearchResponse dto = new ProductSearchResponse();
-        BeanUtils.copyProperties(product, dto);
+        ProductSearchResponse dto = productMapper.toProductSearchResponse(product);
+//        BeanUtils.copyProperties(product, dto);
         return dto;
     }
 

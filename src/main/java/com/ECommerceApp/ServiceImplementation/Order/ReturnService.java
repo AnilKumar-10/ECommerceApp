@@ -62,10 +62,7 @@ public class ReturnService  implements IReturnService {
         log.info("Updating the shipping details of the returning product");
         ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         Order order = orderService.getOrder(orderId);
-        shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
-        shippingUpdateDTO.setNewValue(Order.OrderStatus.REQUESTED_TO_RETURN);
-        return shippingService.updateShippingStatus(shippingUpdateDTO);
+        return shippingService.ShippingStatusUpdates(order.getShippingId(),Order.OrderStatus.REQUESTED_TO_RETURN,Users.Role.ADMIN.name());
     }
 
     public DeliveryPerson assignReturnProductToDeliveryPerson(ShippingDetails shippingDetails, String reason){
@@ -114,11 +111,12 @@ public class ReturnService  implements IReturnService {
         log.info("Updating the return status after the product picked safely.");
         Order order = orderService.getOrder(orderId);
         updateOrderItemsForReturnSuccess(order);
-        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
-        shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
-        shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURNED);
-        shippingService.updateShippingStatus(shippingUpdateDTO);
+//        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
+//        shippingUpdateDTO.setShippingId(order.getShippingId());
+//        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
+//        shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURNED);
+//        shippingService.updateShippingStatus(shippingUpdateDTO);
+        shippingService.ShippingStatusUpdates(order.getShippingId(), Order.OrderStatus.RETURNED, Users.Role.ADMIN.name()); // updating the shipping status to returned.
         updateStockLogAfterReturn(orderId); // updating the stock log after order returned.
 
     }
@@ -139,14 +137,15 @@ public class ReturnService  implements IReturnService {
 
     public void updateReturnFailed(String orderId){
         log.info("Updating the return failed.");
-        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
         Order order = orderService.getOrder(orderId);
         order.setReturned(false);
         orderService.saveOrder(order);
-        shippingUpdateDTO.setShippingId(order.getShippingId());
-        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
-        shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURN_FAILED);
-        shippingService.updateShippingStatus(shippingUpdateDTO);
+//        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
+//        shippingUpdateDTO.setShippingId(order.getShippingId());
+//        shippingUpdateDTO.setUpdateBy(Users.Role.ADMIN.name());
+//        shippingUpdateDTO.setNewValue(Order.OrderStatus.RETURN_FAILED);
+//        shippingService.updateShippingStatus(shippingUpdateDTO);
+        shippingService.ShippingStatusUpdates(order.getShippingId(), Order.OrderStatus.RETURN_FAILED, Users.Role.ADMIN.name()); // updating the shipping status to return failed.
     }
 
 

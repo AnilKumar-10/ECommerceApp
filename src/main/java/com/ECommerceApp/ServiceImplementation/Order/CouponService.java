@@ -67,7 +67,6 @@ public class CouponService implements ICouponService {
         log.info("validating the coupon code: {}", code);
         Coupon coupon = couponRepository.findByCodeAndIsActiveTrue(code)
                 .orElseThrow(() -> new InValidCouponException("Invalid or inactive coupon code"));
-        System.out.println(coupon.getMinOrderValue()+"  :  "+orderAmount);
         Date now = new Date();
         if (now.before(coupon.getValidFrom()) || now.after(coupon.getValidTo())) {
             log.warn("The coupon is expired");

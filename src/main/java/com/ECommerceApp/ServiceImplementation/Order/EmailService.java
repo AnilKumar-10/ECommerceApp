@@ -11,10 +11,8 @@ import com.ECommerceApp.Model.Delivery.ShippingDetails;
 import com.ECommerceApp.Model.Order.Order;
 import com.ECommerceApp.Model.Product.StockLog;
 import com.ECommerceApp.Model.RefundAndExchange.NotificationLog;
-import com.ECommerceApp.Model.User.Address;
 import com.ECommerceApp.ServiceInterface.User.IEmailService;
 import com.ECommerceApp.ServiceInterface.User.INotificationLogService;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -25,7 +23,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
@@ -39,480 +36,305 @@ public class EmailService implements IEmailService {
     private INotificationLogService notificationLogService;
 
     public void sendOrderConfirmationEmail(String toEmail, String userName, Order order, ShippingDetails shippingDetails) {
-        MimeMessage message = mailSender.createMimeMessage();
-        log.info("Sending the order Confirmation mail to :{}", toEmail);
-        try {
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(toEmail);
-            helper.setSubject("Your Order #" + order.getId() + " is Confirmed");
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("orderId", order.getId());
+        context.setVariable("items", order.getOrderItems());
+        context.setVariable("totalAmount", order.getTotalAmount());
+        context.setVariable("discount", order.getDiscount());
+        context.setVariable("couponId", order.getCouponId());
+        context.setVariable("tax", order.getTax());
+        context.setVariable("finalAmount", order.getFinalAmount());
+        context.setVariable("paymentMethod", order.getPaymentMethod());
+        context.setVariable("paymentStatus", order.getPaymentStatus());
+        context.setVariable("paymentId", order.getPaymentId());
+        context.setVariable("courierName", shippingDetails.getCourierName());
+        context.setVariable("trackingId", shippingDetails.getTrackingId());
+        context.setVariable("expectedDate", shippingDetails.getExpectedDate());
+        context.setVariable("address", shippingDetails.getDeliveryAddress());
 
-            Context context = new Context();
-            context.setVariable("userName", userName);
-            context.setVariable("orderId", order.getId());
-            context.setVariable("items", order.getOrderItems());
-            context.setVariable("totalAmount", order.getTotalAmount());
-            context.setVariable("discount", order.getDiscount());
-            context.setVariable("couponId", order.getCouponId());
-            context.setVariable("tax", order.getTax());
-            context.setVariable("finalAmount", order.getFinalAmount());
-            context.setVariable("paymentMethod", order.getPaymentMethod());
-            context.setVariable("paymentStatus", order.getPaymentStatus());
-            context.setVariable("paymentId", order.getPaymentId());
-
-            // Shipping info
-            context.setVariable("courierName", shippingDetails.getCourierName());
-            context.setVariable("trackingId", shippingDetails.getTrackingId());
-            context.setVariable("expectedDate", shippingDetails.getExpectedDate());
-
-            // Address
-            Address address = shippingDetails.getDeliveryAddress();
-            context.setVariable("address", address);
-
-            String htmlContent = templateEngine.process("Order_Confirmed.html", context);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Order Confirmation Email is sent successfully  to: {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(order.getBuyerId());
-            log.setMessage("Your Order #" + order.getId() + " is Confirmed");
-            log.setType(NotificationLog.NotificationType.ORDER);
-            saveLogDetails(log);
-
-        } catch (MessagingException e) {
-            throw new MailSendException("Failed to send Order Confirmation Mail.");
-        }
+        sendEmail(
+                toEmail,
+                "Your Order #" + order.getId() + " is Confirmed",
+                "Order_Confirmed.html",
+                context,
+                order.getBuyerId(),
+                "Your Order #" + order.getId() + " is Confirmed",
+                NotificationLog.NotificationType.ORDER
+        );
     }
+
 
 
 
     public void sendOrderDeliveredEmail(String toEmail, String userName, Order order) {
         log.info("Sending the order Delivery completed mail to :{}", toEmail);
-        try {
-            Context context = new Context();
-            context.setVariable("userName", userName);
-            context.setVariable("orderId", order.getId());
-            context.setVariable("items", order.getOrderItems());
-            context.setVariable("totalAmount", order.getTotalAmount());
-            context.setVariable("discount", order.getDiscount());
-            context.setVariable("couponId", order.getCouponId());
-            context.setVariable("tax", order.getTax());
-            context.setVariable("finalAmount", order.getFinalAmount());
-            context.setVariable("paymentMethod", order.getPaymentMethod());
 
-            String body = templateEngine.process("Order_Delivered.html", context);
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("orderId", order.getId());
+        context.setVariable("items", order.getOrderItems());
+        context.setVariable("totalAmount", order.getTotalAmount());
+        context.setVariable("discount", order.getDiscount());
+        context.setVariable("couponId", order.getCouponId());
+        context.setVariable("tax", order.getTax());
+        context.setVariable("finalAmount", order.getFinalAmount());
+        context.setVariable("paymentMethod", order.getPaymentMethod());
 
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-
-            helper.setTo(toEmail);
-            helper.setSubject("Order Delivered - #" + order.getId());
-            helper.setText(body, true);
-
-            mailSender.send(mimeMessage);
-            log.info("Order delivery email sent to {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(order.getBuyerId());
-            log.setMessage("Order Delivered - #" + order.getId());
-            log.setType(NotificationLog.NotificationType.ORDER);
-            saveLogDetails(log);
-        } catch (Exception e) {
-            log.info("Failed to send delivery email: {}", e.getMessage());
-            throw new MailSendException("Failed to send Order Delivered Mail.");
-        }
+        sendEmail(
+                toEmail,
+                "Order Delivered - #" + order.getId(),
+                "Order_Delivered.html",
+                context,
+                order.getBuyerId(),
+                "Order Delivered - #" + order.getId(),
+                NotificationLog.NotificationType.ORDER
+        );
     }
+
 
 
     public void sendReturnRequestedEmail(String toEmail, RefundAndReturnResponse dto) {
         log.info("Sending the order return request mail to :{}", toEmail);
-        try {
-            // Prepare the context for Thymeleaf
-            Context context = new Context();
-            context.setVariable("refundId", dto.getRefundId());
-            context.setVariable("userId", dto.getUserId());
-            context.setVariable("orderId", dto.getOrderId());
-            context.setVariable("paymentId", dto.getPaymentId());
-            context.setVariable("refundAmount", dto.getRefundAmount());
-            context.setVariable("reason", dto.getReason());
-            context.setVariable("status", dto.getStatus());
-            context.setVariable("requestedAt", dto.getRequestedAt());
-            context.setVariable("processedAt", dto.getProcessedAt());
-            context.setVariable("deliveryPersonName", dto.getDeliveryPersonName());
-            context.setVariable("expectedPickUpDate", dto.getExpectedPickUpDate());
-            context.setVariable("productPicked", dto.isProductPicked());
+        Context context = new Context();
+        context.setVariable("refundId", dto.getRefundId());
+        context.setVariable("userId", dto.getUserId());
+        context.setVariable("orderId", dto.getOrderId());
+        context.setVariable("paymentId", dto.getPaymentId());
+        context.setVariable("refundAmount", dto.getRefundAmount());
+        context.setVariable("reason", dto.getReason());
+        context.setVariable("status", dto.getStatus());
+        context.setVariable("requestedAt", dto.getRequestedAt());
+        context.setVariable("processedAt", dto.getProcessedAt());
+        context.setVariable("deliveryPersonName", dto.getDeliveryPersonName());
+        context.setVariable("expectedPickUpDate", dto.getExpectedPickUpDate());
+        context.setVariable("productPicked", dto.isProductPicked());
 
-            // Generate the HTML body from the template
-            String htmlContent = templateEngine.process("ReturnRequest.html", context);
-
-            // Create the email
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
-
-            helper.setTo(toEmail);
-            helper.setSubject("Your Return Request for Order #" + dto.getOrderId());
-            helper.setText(htmlContent, true);
-
-            // Send the mail
-            mailSender.send(message);
-            log.info("Return request mail sent successfully to {}", toEmail);
-            NotificationLog log = new NotificationLog();
-            log.setUserId(dto.getUserId());
-            log.setMessage("Your Return Request for Order #" + dto.getOrderId());
-            log.setType(NotificationLog.NotificationType.REFUND);
-            saveLogDetails(log);
-
-        } catch (Exception e) {
-            throw new MailSendException("Failed to send Return Request Mail.");
-
-        }
+        sendEmail(
+                toEmail,
+                "Your Return Request for Order #" + dto.getOrderId(),
+                "ReturnRequest.html",
+                context,
+                dto.getUserId(),
+                "Your Return Request for Order #" + dto.getOrderId(),
+                NotificationLog.NotificationType.REFUND
+        );
     }
 
 
 
     public void sendReturnCompletedEmail(String toEmail, String userName, Order order) {
         log.info("Sending the return Completed mail to :{}", toEmail);
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(toEmail);
-            helper.setSubject("Your Return is Completed – Refund Processing");
-
-            // Prepare Thymeleaf context
-            Context context = new Context();
-            context.setVariable("userName", userName);
-            context.setVariable("orderId", order.getId());
-            context.setVariable("refundId", order.getRefundId());
-            context.setVariable("paymentId", order.getPaymentId());
-            context.setVariable("refundAmount", order.getRefundAmount());
-            context.setVariable("status", "Successful");
-
-            // Process template
-            String htmlContent = templateEngine.process("ReturnCompleted.html", context);
-
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Return Completed mail send to: {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(order.getBuyerId());
-            log.setMessage("Your Return is Completed – Refund Processing");
-            log.setType(NotificationLog.NotificationType.REFUND);
-            saveLogDetails(log);
-
-        } catch (MessagingException e) {
-            throw new MailSendException("Failed to send Return Completion Mail.");
-        }
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("orderId", order.getId());
+        context.setVariable("refundId", order.getRefundId());
+        context.setVariable("paymentId", order.getPaymentId());
+        context.setVariable("refundAmount", order.getRefundAmount());
+        context.setVariable("status", "Successful");
+        sendEmail(
+                toEmail,
+                "Your Return is Completed – Refund Processing",
+                "ReturnCompleted.html",
+                context,
+                order.getBuyerId(),
+                "Your Return is Completed – Refund Processing",
+                NotificationLog.NotificationType.REFUND
+        );
     }
+
 
 
     public void sendRefundRejectedEmail(String toEmail, String userName, String orderId) {
-        log.info("Sending the return rejected mail to :{}", toEmail);
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        log.info("Sending the refund rejected mail to :{}", toEmail);
 
-            // Set subject and recipient
-            helper.setTo(toEmail);
-            helper.setSubject("Refund Request Rejected for Order #" + orderId);
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("orderId", orderId);
 
-            // Prepare Thymeleaf context
-            Context context = new Context();
-            context.setVariable("userName", userName);
-            context.setVariable("orderId", orderId);
-//            context.setVariable("reason", reason);
-
-            String htmlContent = templateEngine.process("ReturnRejected.html", context);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Refund rejected email sent to {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(userName);
-            log.setMessage("Refund Request Rejected for Order #" + orderId);
-            log.setType(NotificationLog.NotificationType.REFUND);
-            saveLogDetails(log);
-
-
-        } catch (MessagingException e) {
-            throw  new MailSendException("Failed to send Refund Rejection mail.");
-        }
+        sendEmail(
+                toEmail,
+                "Refund Request Rejected for Order #" + orderId,
+                "ReturnRejected.html",
+                context,
+                userName, // careful: here you passed userName as userId before
+                "Refund Request Rejected for Order #" + orderId,
+                NotificationLog.NotificationType.REFUND
+        );
     }
+
 
 
     public void sendOrderCancellationEmail(Order order, String userName, String toEmail) {
         log.info("Sending the order cancellation mail to User :{}", toEmail);
-        try {
-            Context context = new Context();
-            context.setVariable("userName", userName);
-            context.setVariable("order", order);
 
-            String htmlContent = templateEngine.process("OrderCancellation.html", context);
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("order", order);
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setTo(toEmail);
-            helper.setSubject("Order Cancellation - " + order.getId());
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Order cancellation Email sent successfully to: {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(order.getBuyerId());
-            log.setMessage("Order Cancellation - " + order.getId());
-            log.setType(NotificationLog.NotificationType.CANCEL);
-            saveLogDetails(log);
-
-        } catch (MessagingException e) {
-            throw new MailSendException("Failed to send order cancellation email to " + toEmail);
-        }
+        sendEmail(
+                toEmail,
+                "Order Cancellation - " + order.getId(),
+                "OrderCancellation.html",
+                context,
+                order.getBuyerId(),
+                "Order Cancellation - " + order.getId(),
+                NotificationLog.NotificationType.CANCEL
+        );
     }
 
 
 
     // To notify the deliveryPerson about the new Order.
-    public void sendOrderAssignedToDeliveryPerson(String toEmail, DeliveryItems deliveryItem,String deliverPersonName,String deliveryPersonId) {
+    public void sendOrderAssignedToDeliveryPerson(String toEmail, DeliveryItems deliveryItem, String deliverPersonName, String deliveryPersonId) {
         log.info("Sending the order assigned mail to delivery agent :{}", toEmail);
-        try {
-            Context context = new Context();
-            context.setVariable("deliveryItem", deliveryItem);
-            context.setVariable("ReceiverName",deliverPersonName);
-            String htmlContent = templateEngine.process("OrderAssignedToDelivery.html", context);
 
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+        Context context = new Context();
+        context.setVariable("deliveryItem", deliveryItem);
+        context.setVariable("ReceiverName", deliverPersonName);
 
-            helper.setTo(toEmail);
-            helper.setSubject("New Order Assigned for Delivery");
-            helper.setText(htmlContent, true);
-            mailSender.send(mimeMessage);
-            log.info("Order assigned to delivery Email sent successfully to: {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(deliveryPersonId);
-            log.setMessage("New Order Assigned for Delivery"+deliveryItem.getOrderId());
-            log.setType(NotificationLog.NotificationType.DELIVERY);
-            saveLogDetails(log);
-
-        } catch (Exception e) {
-            throw new MailSendException("Failed to send delivery assignment email"+e);
-        }
+        sendEmail(
+                toEmail,
+                "New Order Assigned for Delivery",
+                "OrderAssignedToDelivery.html",
+                context,
+                deliveryPersonId,
+                "New Order Assigned for Delivery " + deliveryItem.getOrderId(),
+                NotificationLog.NotificationType.DELIVERY
+        );
     }
+
 
     // to notify the delivery person about the order cancellation.
-    public void sendOrderCancellationToDelivery(String deliveryEmail, DeliveryItems deliveryItem,String deliveryPersonId) {
+    public void sendOrderCancellationToDelivery(String deliveryEmail, DeliveryItems deliveryItem, String deliveryPersonId) {
         log.info("Sending the order cancellation mail to delivery agent:{}", deliveryEmail);
-        try {
-            Context context = new Context();
-            context.setVariable("deliveryItem", deliveryItem);
 
-            String body = templateEngine.process("OrderToDeliveryIsCancelled.html", context);
+        Context context = new Context();
+        context.setVariable("deliveryItem", deliveryItem);
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(deliveryEmail);
-            helper.setSubject("Order Cancelled – No Delivery Required for Order: " + deliveryItem.getOrderId());
-            helper.setText(body, true);
-
-            mailSender.send(message);
-            log.info("Delivery cancellation Email sent successfully to: {}", deliveryEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(deliveryPersonId);
-            log.setMessage("Order Cancelled – No Delivery Required for Order: " + deliveryItem.getOrderId());
-            log.setType(NotificationLog.NotificationType.DELIVERY);
-            saveLogDetails(log);
-
-        } catch (MessagingException e) {
-            throw new MailSendException("Failed to send order cancellation email to delivery person"+e);
-        }
+        sendEmail(
+                deliveryEmail,
+                "Order Cancelled – No Delivery Required for Order: " + deliveryItem.getOrderId(),
+                "OrderToDeliveryIsCancelled.html",
+                context,
+                deliveryPersonId,
+                "Order Cancelled – No Delivery Required for Order: " + deliveryItem.getOrderId(),
+                NotificationLog.NotificationType.DELIVERY
+        );
     }
+
 
 
 
     public void sendLowStockAlertToSeller(String sellerEmail, StockLog stockLog) {
         log.info("Sending the Low Stock alert mail to seller :{}", sellerEmail);
-        try {
-            // Prepare the Thymeleaf context
-            Context context = new Context();
-            context.setVariable("stockLog", stockLog);
 
-            // Generate the email content from HTML template
-            String htmlContent = templateEngine.process("LowStockNotification.html", context);
+        Context context = new Context();
+        context.setVariable("stockLog", stockLog);
 
-            // Create the email message
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(sellerEmail);
-            helper.setSubject("Low Stock Alert for Product: " + stockLog.getProductId());
-            helper.setText(htmlContent, true);
-
-            // Send the email
-            mailSender.send(message);
-            log.info("Low stock alert email sent to seller: {}", sellerEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(stockLog.getSellerId());
-            log.setMessage("Low Stock Alert for Product: "+stockLog.getProductId());
-            log.setType(NotificationLog.NotificationType.ALERT);
-            saveLogDetails(log);
-
-        } catch (MessagingException e) {
-            log.info("Failed to send low stock alert: {}", e.getMessage());
-            throw new RuntimeException("Failed to send low stock email", e);
-        }
+        sendEmail(
+                sellerEmail,
+                "Low Stock Alert for Product: " + stockLog.getProductId(),
+                "LowStockNotification.html",
+                context,
+                stockLog.getSellerId(),
+                "Low Stock Alert for Product: " + stockLog.getProductId(),
+                NotificationLog.NotificationType.ALERT
+        );
     }
 
 
-    public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson, ProductReturnDetails returnDto, String userId) {
-        log.info("Sending the return order to collect mail to delivery agent :{}", toEmail);
-        try {
-            System.out.println("INSIDE MAIL SERVICE: "+returnDto);
-            Context context = new Context();
-            context.setVariable("deliveryPerson", deliveryPerson);
-            context.setVariable("returnDto", returnDto);
 
-            String htmlContent = templateEngine.process("ReturnOrderDelivery", context);
+    public void sendReturnProductNotificationMail(String toEmail, DeliveryPerson deliveryPerson,ProductReturnDetails returnDto, String userId) {
+        log.info("Sending the return order to collect mail to delivery agent : {}", toEmail);
 
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+        Context context = new Context();
+        context.setVariable("deliveryPerson", deliveryPerson);
+        context.setVariable("returnDto", returnDto);
 
-            helper.setTo(toEmail);
-            helper.setSubject("Return Pickup Assigned - Order " + returnDto.getOrderId());
-            helper.setText(htmlContent, true);
-
-            mailSender.send(mimeMessage);
-            log.info("Return assigned mail to delivery sent successfully: {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(userId);
-            log.setMessage("Return Pickup Assigned - Order " + returnDto.getOrderId());
-            log.setType(NotificationLog.NotificationType.REFUND);
-            saveLogDetails(log);
-
-
-
-        } catch (MessagingException e) {
-            throw new MailSendException("Failed to send return pickup notification to delivery person"+e);
-        }
+        sendEmail(
+                toEmail,
+                "Return Pickup Assigned - Order " + returnDto.getOrderId(),
+                "ReturnOrderDelivery",   // Thymeleaf template
+                context,
+                userId,
+                "Return Pickup Assigned - Order " + returnDto.getOrderId(),
+                NotificationLog.NotificationType.REFUND
+        );
     }
+
 
     // to send the user otp while resetting the password.
     public void sendOtpEmail(String toEmail, String userName, String otp) {
-        log.info("sending the otp mail to user for password reset : {}", toEmail);
-        try {
-            // Prepare the email context
-            Context context = new Context();
-            context.setVariable("userName", userName);
-            context.setVariable("otp", otp);
+        log.info("Sending the OTP mail to user for password reset: {}", toEmail);
 
-            // Process the Thymeleaf template
-            String htmlContent = templateEngine.process("OtpMail.html", context);
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("otp", otp);
 
-            // Build the email
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
-            helper.setTo(toEmail);
-            helper.setSubject("Your OTP to Reset Password");
-            helper.setText(htmlContent, true); // true for HTML content
-
-            mailSender.send(mimeMessage);
-            log.info("OTP mail sent successfully to {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(userName);
-            log.setMessage("Your OTP to Reset Password");
-            log.setType(NotificationLog.NotificationType.ORDER);
-            saveLogDetails(log);
-        } catch (MessagingException e) {
-            throw new MailSendException("Failed to send OTP email: " + e.getMessage());
-            // Handle/log exception or throw custom exception
-        }
+        sendEmail(
+                toEmail,
+                "Your OTP to Reset Password",
+                "OtpMail.html",
+                context,
+                userName,  // Using userName as userId in log
+                "Your OTP to Reset Password",
+                NotificationLog.NotificationType.ORDER
+        );
     }
+
 
     // Sends the exchange information mail to the customer.
     public void sendExchangeConfirmationEmail(String toEmail, ProductExchangeInfo exchangeInfo, String upiId) {
-        log.info("Sending the exchange confirmation mail to the customer ");
-        try {
-            Context context = new Context();
-            context.setVariable("orderId", exchangeInfo.getOrderId());
-            context.setVariable("productIdToPick", exchangeInfo.getProductIdToPick());
-            context.setVariable("productIdToReplace", exchangeInfo.getProductIdToReplace());
-            context.setVariable("amount", exchangeInfo.getAmount());
-            context.setVariable("amountPayType", exchangeInfo.getAmountPayType());
-            context.setVariable("paymentStatus", exchangeInfo.getPaymentStatus());
-            context.setVariable("deliveryPersonName", exchangeInfo.getDeliveryPersonName());
-            context.setVariable("expectedReturnDate", exchangeInfo.getExpectedReturnDate());
-            context.setVariable("orderPaymentType", exchangeInfo.getOrderPaymentType());
-            context.setVariable("upi",upiId);
-            String htmlContent = templateEngine.process("ExchangeRequestConfirmation.html", context);
+        log.info("Sending the exchange confirmation mail to the customer: {}", toEmail);
 
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        Context context = new Context();
+        context.setVariable("orderId", exchangeInfo.getOrderId());
+        context.setVariable("productIdToPick", exchangeInfo.getProductIdToPick());
+        context.setVariable("productIdToReplace", exchangeInfo.getProductIdToReplace());
+        context.setVariable("amount", exchangeInfo.getAmount());
+        context.setVariable("amountPayType", exchangeInfo.getAmountPayType());
+        context.setVariable("paymentStatus", exchangeInfo.getPaymentStatus());
+        context.setVariable("deliveryPersonName", exchangeInfo.getDeliveryPersonName());
+        context.setVariable("expectedReturnDate", exchangeInfo.getExpectedReturnDate());
+        context.setVariable("orderPaymentType", exchangeInfo.getOrderPaymentType());
+        context.setVariable("upi", upiId);
 
-            helper.setTo(toEmail);
-            helper.setSubject("Your Exchange Request has been Accepted!");
-            helper.setText(htmlContent, true); // true = isHtml
-
-            mailSender.send(mimeMessage);
-            log.info("Exchange confirmation email sent to {}", toEmail);
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(exchangeInfo.getOrderId());
-            log.setMessage("Your Exchange Request has been Accepted!"+exchangeInfo.getOrderId());
-            log.setType(NotificationLog.NotificationType.EXCHANGE);
-            saveLogDetails(log);
-        } catch (Exception e) {
-            throw new MailSendException("Failed to send exchange email: " + e.getMessage());
-
-        }
+        sendEmail(
+                toEmail,
+                "Your Exchange Request has been Accepted!",
+                "ExchangeRequestConfirmation.html",
+                context,
+                exchangeInfo.getOrderId(),
+                "Your Exchange Request has been Accepted! " + exchangeInfo.getOrderId(),
+                NotificationLog.NotificationType.EXCHANGE
+        );
     }
 
 
-    public void sendExchangeAssignmentMailToDeliveryPerson(String toEmail ,DeliveryPerson deliveryPerson, ExchangeDeliveryItems item) {
-        log.info("Sending the exchange order assigned mail to delivery agent");
-        try {
-            Context context = new Context();
-            context.setVariable("deliveryPersonName", deliveryPerson.getName());
-            context.setVariable("orderId", item.getOrderId());
-            context.setVariable("userName", item.getUserName());
-            context.setVariable("productIdToPick", item.getProductIdToPick());
-            context.setVariable("productIdToReplace", item.getProductIdToReplace());
-            context.setVariable("amount", item.getAmount());
-            context.setVariable("paymentMode", item.getPaymentMode());
-            context.setVariable("address", item.getAddress());
 
-            String body = templateEngine.process("ExchangeAssignedToDeliver.html", context);
+    public void sendExchangeAssignmentMailToDeliveryPerson(String toEmail, DeliveryPerson deliveryPerson, ExchangeDeliveryItems item) {
+        log.info("Sending the exchange order assigned mail to delivery agent: {}", deliveryPerson.getName());
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        Context context = new Context();
+        context.setVariable("deliveryPersonName", deliveryPerson.getName());
+        context.setVariable("orderId", item.getOrderId());
+        context.setVariable("userName", item.getUserName());
+        context.setVariable("productIdToPick", item.getProductIdToPick());
+        context.setVariable("productIdToReplace", item.getProductIdToReplace());
+        context.setVariable("amount", item.getAmount());
+        context.setVariable("paymentMode", item.getPaymentMode());
+        context.setVariable("address", item.getAddress());
 
-            helper.setTo(toEmail);  // You can update this method as per your logic
-            helper.setSubject("New Exchange Delivery Assignment - Order ID: " + item.getOrderId());
-            helper.setText(body, true); // true = HTML
-
-            mailSender.send(message);
-            log.info("Exchange assignment mail sent to: {}", deliveryPerson.getName());
-
-            NotificationLog log = new NotificationLog();
-            log.setUserId(deliveryPerson.getId());
-            log.setMessage("New Exchange Delivery Assignment - Order ID: " + item.getOrderId());
-            log.setType(NotificationLog.NotificationType.EXCHANGE);
-            saveLogDetails(log);
-
-
-        } catch (Exception e) {
-            throw new MailSendException("Failed to send exchange delivery mail: " + e.getMessage());
-        }
+        sendEmail(
+                toEmail,
+                "New Exchange Delivery Assignment - Order ID: " + item.getOrderId(),
+                "ExchangeAssignedToDeliver.html",
+                context,
+                deliveryPerson.getId(),
+                "New Exchange Delivery Assignment - Order ID: " + item.getOrderId(),
+                NotificationLog.NotificationType.EXCHANGE
+        );
     }
 
     // storing all the email log details.
@@ -520,4 +342,42 @@ public class EmailService implements IEmailService {
         log.info("Saving all the Notification logs into db");
         notificationLogService.saveNotification(notificationLog);
     }
+
+    private void sendEmail(
+            String toEmail,
+            String subject,
+            String templateName,
+            Context context,
+            String userId,
+            String notificationMessage,
+            NotificationLog.NotificationType type) {
+
+        try {
+            // Generate HTML body from template
+            String htmlContent = templateEngine.process(templateName, context);
+
+            // Create email
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            // Send email
+            mailSender.send(message);
+            log.info("{} email sent to {}", type, toEmail);
+
+            // Save log
+            NotificationLog logEntity = new NotificationLog();
+            logEntity.setUserId(userId);
+            logEntity.setMessage(notificationMessage);
+            logEntity.setType(type);
+            saveLogDetails(logEntity);
+
+        } catch (Exception e) {
+            log.error("Failed to send {} email to {}: {}", type, toEmail, e.getMessage());
+            throw new MailSendException("Failed to send " + type + " email.");
+        }
+    }
+
 }

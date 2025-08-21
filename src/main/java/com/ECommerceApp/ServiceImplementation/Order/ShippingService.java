@@ -8,6 +8,7 @@ import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.Delivery.ModificationLog;
 import com.ECommerceApp.Model.Delivery.ShippingDetails;
 import com.ECommerceApp.Model.Order.*;
+import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.Order.ShippingRepository;
 import com.ECommerceApp.ServiceInterface.Delivery.IDeliveryHistoryService;
 import com.ECommerceApp.ServiceInterface.Delivery.IDeliveryService;
@@ -77,7 +78,7 @@ public class ShippingService implements IShippingService {
         return shippingDetails;
     }
 
-    // 2. Update shipping status
+    //  Update shipping status
     public ShippingDetails updateShippingStatus(ShippingUpdateRequest shippingUpdateDTO) {
         log.info("Updating the shipping status on every stage, present new status is: {}", shippingUpdateDTO.getNewValue());
         ShippingDetails shipping = getByShippingId(shippingUpdateDTO.getShippingId());
@@ -100,19 +101,19 @@ public class ShippingService implements IShippingService {
     }
 
 
-    // 5. Get shipping by order ID
+    //  Get shipping by order ID
     public ShippingDetails getShippingByOrderId(String orderId) {
         log.info("getting the shipping details with order: {}", orderId);
         return shippingRepo.findByOrderId(orderId)
                 .orElseThrow(() -> new ShippingDetailsNotFoundException("Shipping not found for order ID"));
     }
 
-    // 6. Get all shipping records for a delivery person
+    //  Get all shipping records for a delivery person
     public List<ShippingDetails> getByDeliveryPersonId(String deliveryPersonId) {
         return shippingRepo.findByDeliveryPersonId(deliveryPersonId);
     }
 
-    // 7. Private: Add a flat modification log entry
+    //  Private: Add a flat modification log entry
     // trace all the changes of the order after placing the order.
     private void addLog(ShippingDetails shipping,ModificationLog modificationLog) {
 
@@ -125,7 +126,7 @@ public class ShippingService implements IShippingService {
     }
 
 
-    // 9. Private: Calculate expected delivery date (+5 days)
+    //  Private: Calculate expected delivery date (+5 days)
     private Date calculateExpectedDate() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 5);
@@ -187,6 +188,15 @@ public class ShippingService implements IShippingService {
                 "XpressBees"
         );
         return courierNames.get(ThreadLocalRandom.current().nextInt(courierNames.size()));
+    }
+
+    @Override
+    public ShippingDetails ShippingStatusUpdates(String shippingId, Order.OrderStatus shippingStatus, String updateBy) {
+        ShippingUpdateRequest shippingUpdateDTO = new ShippingUpdateRequest();
+        shippingUpdateDTO.setUpdateBy(updateBy);
+        shippingUpdateDTO.setNewValue(shippingStatus);
+        shippingUpdateDTO.setShippingId(shippingId);
+        return  updateShippingStatus(shippingUpdateDTO);
     }
 
 

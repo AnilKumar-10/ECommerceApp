@@ -1,5 +1,6 @@
 package com.ECommerceApp.ServiceImplementation.Delivery;
 import com.ECommerceApp.Exceptions.Delivery.DeliveryPersonNotFound;
+import com.ECommerceApp.Mappers.DeliveryPMapper;
 import com.ECommerceApp.Model.Payment.Payment;
 import com.ECommerceApp.DTO.Delivery.DeliveryItems;
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonResponse;
@@ -13,7 +14,6 @@ import com.ECommerceApp.ServiceInterface.User.IEmailService;
 import com.ECommerceApp.ServiceInterface.User.UserServiceInterface;
 import com.ECommerceApp.Util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -37,6 +37,8 @@ public class DeliveryService implements IDeliveryService {
     private MongoTemplate mongoTemplate;
     @Autowired
     private IEmailService emailService;
+    @Autowired
+    private DeliveryPMapper deliveryPersonsMapper;
 
     // Assign delivery person by address match
     public DeliveryPerson assignDeliveryPerson(String deliveryAddress) {
@@ -148,9 +150,8 @@ public class DeliveryService implements IDeliveryService {
     public DeliveryPersonResponse getDeliveryPersonByOrderId(String orderId){
         log.info("Getting the delivery person by order id: {}", orderId);
         DeliveryPerson deliveryPerson = deliveryRepository.findByOrderId(orderId).get();
-        System.out.println(deliveryPerson);
-        DeliveryPersonResponse deliveryPersonResponseDto = new DeliveryPersonResponse();
-        BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
+        DeliveryPersonResponse deliveryPersonResponseDto = deliveryPersonsMapper.toDeliveryPersonResponse(deliveryPerson);
+//        BeanUtils.copyProperties(deliveryPerson,deliveryPersonResponseDto);
         log.info("the delivery man with order: {}  :  {}", orderId, deliveryPersonResponseDto);
         return deliveryPersonResponseDto;
     }
@@ -173,7 +174,7 @@ public class DeliveryService implements IDeliveryService {
     }
 
     @Override
-    public DeliveryPerson getDeliveryPeronData() {
+    public DeliveryPerson getDeliveryPersonData() {
         String email = new SecurityUtils().getCurrentUserMail();
         return deliveryRepository.findByEmail(email).get();
     }

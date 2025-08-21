@@ -2,6 +2,7 @@ package com.ECommerceApp.ServiceImplementation.User;
 
 import com.ECommerceApp.DTO.User.*;
 import com.ECommerceApp.Exceptions.User.UserNotFoundException;
+import com.ECommerceApp.Mappers.UserMapper;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.Repository.User.UsersRepository;
 import com.ECommerceApp.ServiceInterface.User.UserServiceInterface;
@@ -17,9 +18,10 @@ import java.util.*;
 public class UserService implements UserServiceInterface {
     @Autowired
     private UsersRepository  usersRepository;
+    @Autowired
+    private UserMapper userMapper;
 
-
-    // 2. Update user profile based on roles
+    //  Update user profile based on roles
     public Users updateUser(String userId, UserRegistrationRequest updatedData) {
         Users existing = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -42,7 +44,7 @@ public class UserService implements UserServiceInterface {
         return usersRepository.save(existing);
     }
 
-    // 3. Deactivate user
+    //  Deactivate user
     public Users deactivateUser(String userId) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -50,19 +52,19 @@ public class UserService implements UserServiceInterface {
         return usersRepository.save(user);
     }
 
-    // 4. Get user by ID
+    //  Get user by ID
     public Users getUserById(String id) {
         return usersRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    // 5. Get user by email
+    //  Get user by email
     public Users getUserByEmail(String email) {
         return usersRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    // 6. Get all users with a specific role
+    //  Get all users with a specific role
     public List<UserRegistrationResponse> getUsersByRole(String role) {
         List<Users> users = usersRepository.findByRolesContaining(role.toUpperCase());
         List<UserRegistrationResponse> userResponses  = new ArrayList<>();
@@ -74,7 +76,7 @@ public class UserService implements UserServiceInterface {
         return userResponses;
     }
 
-    // 7. Add new role to existing user (e.g., buyer becomes seller), This can be done my only ADMIN
+    //  Add new role to existing user (e.g., buyer becomes seller), This can be done my only ADMIN
     public UserRegistrationResponse addRoleToUser(String userId, Users.Role newRole) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -89,8 +91,8 @@ public class UserService implements UserServiceInterface {
             validateSellerFields(user);
         }
         Users users =usersRepository.save(user);
-        UserRegistrationResponse userResponse = new UserRegistrationResponse();
-        BeanUtils.copyProperties(users,userResponse);
+        UserRegistrationResponse userResponse = userMapper.toRegistrationResponse(users);
+//        BeanUtils.copyProperties(users,userResponse);
         return userResponse;
     }
 
@@ -131,8 +133,8 @@ public class UserService implements UserServiceInterface {
         List<Users> users = usersRepository.findAll();
         List<UserRegistrationResponse> userResponses  = new ArrayList<>();
         for(Users user : users){
-            UserRegistrationResponse userResponse = new UserRegistrationResponse();
-            BeanUtils.copyProperties(user,userResponse);
+            UserRegistrationResponse userResponse = userMapper.toRegistrationResponse(user);
+//            BeanUtils.copyProperties(user,userResponse);
             userResponses.add(userResponse);
         }
         return userResponses;
@@ -144,8 +146,8 @@ public class UserService implements UserServiceInterface {
         List<Users> users = usersRepository.findByRolesContainingSellerRole();
         List<SellerResponse> sellerResponses  = new ArrayList<>();
         for(Users user : users){
-            SellerResponse sellerResponse = new SellerResponse();
-            BeanUtils.copyProperties(user,sellerResponse );
+            SellerResponse sellerResponse = userMapper.toSellerResponse(user);
+//            BeanUtils.copyProperties(user,sellerResponse );
             sellerResponses.add(sellerResponse);
         }
         return sellerResponses;

@@ -2,6 +2,8 @@ package com.ECommerceApp.Controller.User;
 
 import com.ECommerceApp.DTO.Delivery.DeliveryPersonRegistrationRequest;
 import com.ECommerceApp.DTO.User.*;
+import com.ECommerceApp.Mappers.DeliveryPMapper;
+import com.ECommerceApp.Mappers.UserMapper;
 import com.ECommerceApp.Model.Delivery.DeliveryPerson;
 import com.ECommerceApp.Model.User.Users;
 import com.ECommerceApp.ServiceImplementation.Delivery.DeliveryService;
@@ -45,21 +47,27 @@ public class AuthController {
     private OtpService otpService;
     @Autowired
     private  AuthenticationManager authenticationManager;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private DeliveryPMapper deliveryPMapper;
 
-    //  1. Register USER / SELLER / ADMIN
+
+    //   Register USER / SELLER / ADMIN
     @PostMapping("/user/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
         if (userService.existsByMail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
         }
-        UserRegistrationResponse userResponse = new UserRegistrationResponse();
         request.setPassword(passwordEncoder.encode(request.getPassword()));
         Users user = authService.registerUser(request);
-        BeanUtils.copyProperties(user,userResponse);
+//        UserRegistrationResponse userResponse = new UserRegistrationResponse();
+//        BeanUtils.copyProperties(user,userResponse);
+        UserRegistrationResponse userResponse = userMapper.toRegistrationResponse(user);
         return ResponseEntity.ok(userResponse);
     }
 
-    //  2. Register DELIVERY_PERSON
+    //   Register DELIVERY_PERSON
     @PostMapping("/delivery/register")
     public ResponseEntity<?> registerDeliveryPerson(@Valid @RequestBody DeliveryPersonRegistrationRequest request) {
         if (deliveryService.existsByMail(request.getEmail())) {
@@ -69,22 +77,18 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
-    // 3. Login (for USERS only, not delivery personnel)
+    //  Login (for USERS only, not delivery personnel)
     @PostMapping("/user/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequest request) {
-//        Users user = userService.getUserByEmail(request.getEmail());
-//        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-//        }
-//        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         UserDetails userDetails1 = (UserDetails) authentication.getPrincipal();
         String token = jwtService.generateToken(userDetails1);
-        LoginResponse loginResponse = new LoginResponse();
         Users user = userService.getUserByEmail(request.getEmail());
-        BeanUtils.copyProperties(user,loginResponse);
+//        LoginResponse loginResponse = new LoginResponse();
+//        BeanUtils.copyProperties(user,loginResponse);
+        LoginResponse loginResponse =userMapper.toLoginResponse(user);
         loginResponse.setToken(token);
         return ResponseEntity.ok(loginResponse);
 
@@ -101,8 +105,8 @@ public class AuthController {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(deliveryPerson.getEmail());
         String token = jwtService.generateToken(userDetails);
-        LoginResponse loginResponse = new LoginResponse();
-        BeanUtils.copyProperties(deliveryPerson,loginResponse);
+        LoginResponse loginResponse = deliveryPMapper.toLoginResponse(deliveryPerson);
+//        BeanUtils.copyProperties(deliveryPerson,loginResponse);
         loginResponse.setToken(token);
         return ResponseEntity.ok(loginResponse);
 

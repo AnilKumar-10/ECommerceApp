@@ -107,7 +107,7 @@ public class  DeliveryController { // admin, delivery person
     @PreAuthorize("hasPermission('DELIVERY', 'READ')")
     @GetMapping("/getData")
     public ResponseEntity<?> getDeliveryPersonData() {
-        return ResponseEntity.ok(deliveryService.getDeliveryPeronData()); // current user ID from JWT internally
+        return ResponseEntity.ok(deliveryService.getDeliveryPersonData()); // current user ID from JWT internally
     }
 
     @PutMapping("/update")//update the delivery person.

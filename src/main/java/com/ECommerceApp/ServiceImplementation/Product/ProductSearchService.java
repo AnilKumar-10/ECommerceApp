@@ -2,6 +2,7 @@ package com.ECommerceApp.ServiceImplementation.Product;
 
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Exceptions.Product.ProductNotFoundException;
+import com.ECommerceApp.Mappers.ProductMapper;
 import com.ECommerceApp.Model.Product.Category;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.ServiceInterface.Product.IProductSearchService;
@@ -32,17 +33,18 @@ public class ProductSearchService implements IProductSearchService {
     private ICategoryService categoryService;
     @Autowired
     private IWishListService wishListService;
+    @Autowired
+    private ProductMapper productMapper;
 
     // this will return the products that contain the category name.
     public List<Product> getProductsByCategoryName(String categoryName) {
-        log.info("getting the product based on the category: "+categoryName);
+        log.info("getting the product based on the category: {}", categoryName);
         List<Category> rootCategory = categoryService.getCategoryByNameIgnoreCase(categoryName);
         if (rootCategory == null) return Collections.emptyList();
         Set<String> allCategoryIds = new HashSet<>();
         for (Category category : rootCategory) {
             allCategoryIds.addAll(categoryService.getAllSubCategoryIds(category.getId()));
         }
-        System.out.println("all categories id list: "+allCategoryIds);
         return productService.getProductContainsAnyCategory(new ArrayList<>(allCategoryIds));
     }
 
@@ -50,7 +52,7 @@ public class ProductSearchService implements IProductSearchService {
     // this method gets all categories ids based on the names.
     // this will return the categories id groups based on the names.
     public List<List<String>> resolveCategoryIdGroups(List<String> inputNames) {
-        log.info("getting the all categories of the input categories: "+inputNames);
+        log.info("getting the all categories of the input categories: {}", inputNames);
         List<Category> matchedCategories = new ArrayList<>();
         for (String name : inputNames) {
             matchedCategories.addAll(categoryService.getCategoryByNameIgnoreCase(name));
@@ -78,7 +80,7 @@ public class ProductSearchService implements IProductSearchService {
                 idGroups.add(fullPathIds); // one group of required categoryIds
             }
         }
-        log.info("The id groups are: "+idGroups);
+        log.info("The id groups are: {}", idGroups);
         return idGroups;
     }
 
@@ -87,12 +89,11 @@ public class ProductSearchService implements IProductSearchService {
         log.info("Searching the product based on the category name and the brand");
         List<List<String>> requiredIdGroups = resolveCategoryIdGroups(inputNames);
         // If no matching groups found, return empty
-        if (requiredIdGroups.isEmpty())  throw
-                new ProductNotFoundException("The product you are trying is not present try to search categories like Clothes, Footwear, Electronics etc");
+        if (requiredIdGroups.isEmpty())
+            throw new ProductNotFoundException("The product you are trying is not present try to search categories like Clothes, Footwear, Electronics etc");
 
         List<Product> allMatchingProducts = new ArrayList<>();
         for (List<String> requiredIds : requiredIdGroups) {
-
             if (brand != null && !brand.isBlank()) {
                 allMatchingProducts.addAll(productService.getProductsByCategoryAndBrand(requiredIds, brand));
             } else {
@@ -116,8 +117,8 @@ public class ProductSearchService implements IProductSearchService {
         Page<Product> productPage = productService.getAllProducts(pageable);
         List<ProductSearchResponse> dtoList = new ArrayList<>();
         for (Product product : productPage.getContent()) {
-            ProductSearchResponse dto = new ProductSearchResponse();
-            BeanUtils.copyProperties(product, dto);
+            ProductSearchResponse dto = productMapper.toProductSearchResponse(product);
+//            BeanUtils.copyProperties(product, dto);
             dtoList.add(dto);
         }
 
@@ -136,8 +137,8 @@ public class ProductSearchService implements IProductSearchService {
         List<Product>  products = productService.getProductContainsAnyCategory(rootIds);
         List<ProductSearchResponse> productSearchResponses = new ArrayList<>();
         for(Product product : products ){
-            ProductSearchResponse productSearchResponse = new ProductSearchResponse();
-            BeanUtils.copyProperties(product,productSearchResponse);
+            ProductSearchResponse productSearchResponse = productMapper.toProductSearchResponse(product);
+//            BeanUtils.copyProperties(product,productSearchResponse);
             productSearchResponses.add(productSearchResponse);
         }
         return productSearchResponses;
@@ -149,8 +150,8 @@ public class ProductSearchService implements IProductSearchService {
         List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
         List<Product> products = searchProductsByCategoryNames(categories, brand);
         for (Product product : products) {
-            ProductSearchResponse dto = new ProductSearchResponse();
-            BeanUtils.copyProperties(product, dto);
+            ProductSearchResponse dto = productMapper.toProductSearchResponse(product);
+//            BeanUtils.copyProperties(product, dto);
             productSearchDtos.add(dto);
         }
 

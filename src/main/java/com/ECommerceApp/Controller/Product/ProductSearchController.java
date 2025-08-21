@@ -1,6 +1,7 @@
 package com.ECommerceApp.Controller.Product;
 
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
+import com.ECommerceApp.Mappers.ProductMapper;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.ServiceInterface.Product.IProductSearchService;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +18,8 @@ public class ProductSearchController { // everyone
 
     @Autowired
     private IProductSearchService productSearchService;
+    @Autowired
+    private ProductMapper productMapper;
 
 
     @GetMapping("/product/{name}")
@@ -24,8 +27,8 @@ public class ProductSearchController { // everyone
         List<Product> products = productSearchService.getProductsByCategoryName(name);
         List<ProductSearchResponse> productSearchDtos = new ArrayList<>();
         for (Product product : products) {
-            ProductSearchResponse dto = new ProductSearchResponse();
-            BeanUtils.copyProperties(product, dto);
+            ProductSearchResponse dto = productMapper.toProductSearchResponse(product);
+//            BeanUtils.copyProperties(product, dto);
             productSearchDtos.add(dto);
         }
         return ResponseEntity.ok(productSearchDtos);

@@ -34,7 +34,7 @@ public interface IDeliveryService {
 
     long totalCount();
 
-    DeliveryPerson getDeliveryPeronData();
+    DeliveryPerson getDeliveryPersonData();
 
     DeliveryPerson updateDelivery(DeliveryPerson deliveryPerson);
 

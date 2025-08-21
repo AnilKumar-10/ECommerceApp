@@ -27,24 +27,60 @@ public class PaymentService implements IPaymentService {
     @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
 
-    // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
-    public Payment initiatePayment(InitiatePaymentRequest initiatePaymentDto) {
-        log.info("Initiating the online payment for order ");
-        Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
-        if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
-            throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
-        }
-        Payment payment = new Payment();
-        long nextId = sequenceGeneratorService.getNextSequence("paymentId");
-        payment.setId(String.valueOf(nextId)); // If id is String
-        payment.setOrderId(initiatePaymentDto.getOrderId());
-        payment.setUserId(initiatePaymentDto.getUserId());
-        payment.setAmountPaid(initiatePaymentDto.getAmount());
-        payment.setPaymentMethod(initiatePaymentDto.getMethod());
-        payment.setStatus(Payment.PaymentStatus.SUCCESS);// because we don't know whether the payment will be done or not
-        payment.setTransactionTime(new Date());
-        return savePayment(payment);
+
+    public Payment initiatePayment(InitiatePaymentRequest request) {
+        log.info("Initiating the online payment for order: {}", request.getOrderId());
+        Order order = orderService.getOrder(request.getOrderId());
+        double expectedAmount = order.getFinalAmount();
+        return initiatePaymentInternal(request, expectedAmount);
     }
+
+    public Payment initiateExchangePayment(InitiatePaymentRequest request) {
+        log.info("Initializing the exchange online payment for order: {}", request.getOrderId());
+        Order order = orderService.getOrder(request.getOrderId());
+        double expectedAmount = order.getExchangeDetails().getExchangeDifferenceAmount();
+        return initiatePaymentInternal(request, expectedAmount);
+    }
+
+
+    // this logs the user initiation of payment(online), that may or may not be success. in case any failure occurs this stores that also
+//    public Payment initiatePayment(InitiatePaymentRequest initiatePaymentDto) {
+//        log.info("Initiating the online payment for order ");
+//        Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
+//        if(order.getFinalAmount() != initiatePaymentDto.getAmount()){
+//            throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
+//        }
+//        Payment payment = new Payment();
+//        long nextId = sequenceGeneratorService.getNextSequence("paymentId");
+//        payment.setId(String.valueOf(nextId)); // If id is String
+//        payment.setOrderId(initiatePaymentDto.getOrderId());
+//        payment.setUserId(initiatePaymentDto.getUserId());
+//        payment.setAmountPaid(initiatePaymentDto.getAmount());
+//        payment.setPaymentMethod(initiatePaymentDto.getMethod());
+//        payment.setStatus(Payment.PaymentStatus.PENDING);// because we don't know whether the payment will be done or not
+//        payment.setTransactionTime(new Date());
+//        return savePayment(payment);
+//    }
+
+    // for exchange payment.
+//    public Payment initiateExchangePayment(InitiatePaymentRequest initiatePaymentDto) {
+//        log.info("Initialize the exchange online payment for order: "+initiatePaymentDto.getOrderId());
+//        Payment payment = new Payment();
+//        Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
+//        if(order.getExchangeDetails().getExchangeDifferenceAmount()!=initiatePaymentDto.getAmount()){
+//            throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
+//        }
+//        long nextId = sequenceGeneratorService.getNextSequence("paymentId");
+//        payment.setId(String.valueOf(nextId));
+//        payment.setOrderId(initiatePaymentDto.getOrderId());
+//        payment.setUserId(initiatePaymentDto.getUserId());
+//        payment.setAmountPaid(initiatePaymentDto.getAmount());
+//        payment.setPaymentMethod(initiatePaymentDto.getMethod());
+//        payment.setStatus(Payment.PaymentStatus.PENDING);// because we don't know whether the payment will be done or not
+//        payment.setTransactionTime(new Date());
+//        return savePayment(payment);
+//    }
+
 
     // Update payment on success
     public Payment confirmUPIPayment(PaymentRequest paymentDto) {
@@ -68,7 +104,6 @@ public class PaymentService implements IPaymentService {
         payment.setStatus(Payment.PaymentStatus.FAILED);
         payment.setTransactionTime(new Date());
         savePayment(payment);
-        // Mark order as failed
         orderService.markOrderAsPaymentFailed(payment.getOrderId());
         return payment;
     }
@@ -99,26 +134,6 @@ public class PaymentService implements IPaymentService {
 
 
 
-    // for exchange payment.
-    public Payment initiateExchangePayment(InitiatePaymentRequest initiatePaymentDto) {
-        log.info("Initialize the exchange online payment for order: "+initiatePaymentDto.getOrderId());
-        Payment payment = new Payment();
-        Order order = orderService.getOrder(initiatePaymentDto.getOrderId());
-        if(order.getExchangeDetails().getExchangeDifferenceAmount()!=initiatePaymentDto.getAmount()){
-            throw new PaymentAmountMissMatchException("Amount to be paid is not matched");
-        }
-        long nextId = sequenceGeneratorService.getNextSequence("paymentId");
-        payment.setId(String.valueOf(nextId));
-        payment.setOrderId(initiatePaymentDto.getOrderId());
-        payment.setUserId(initiatePaymentDto.getUserId());
-        payment.setAmountPaid(initiatePaymentDto.getAmount());
-        payment.setPaymentMethod(initiatePaymentDto.getMethod());
-        payment.setStatus(Payment.PaymentStatus.PENDING);// because we don't know whether the payment will be done or not
-        payment.setTransactionTime(new Date());
-        return savePayment(payment);
-    }
-
-
     public Payment confirmUPIPaymentForExchange(PaymentRequest paymentDto) {
         log.info( " Confirm the exchange COD payment for order: ");
         Payment payment = paymentRepository.findById(paymentDto.getPaymentId())
@@ -131,6 +146,21 @@ public class PaymentService implements IPaymentService {
     }
 
 
+    private Payment initiatePaymentInternal(InitiatePaymentRequest request, double expectedAmount) {
+        if (expectedAmount != request.getAmount()) {
+            throw new PaymentAmountMissMatchException("Amount to be paid is not matched for payment");
+        }
+        long nextId = sequenceGeneratorService.getNextSequence("paymentId");
+        Payment payment = new Payment();
+        payment.setId(String.valueOf(nextId));
+        payment.setOrderId(request.getOrderId());
+        payment.setUserId(request.getUserId());
+        payment.setAmountPaid(request.getAmount());
+        payment.setPaymentMethod(request.getMethod());
+        payment.setStatus(Payment.PaymentStatus.PENDING); // initially pending
+        payment.setTransactionTime(new Date());
 
+        return savePayment(payment);
+    }
 
 }

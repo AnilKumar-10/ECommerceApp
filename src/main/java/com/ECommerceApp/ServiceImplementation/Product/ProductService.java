@@ -3,6 +3,7 @@ package com.ECommerceApp.ServiceImplementation.Product;
 import com.ECommerceApp.DTO.Product.ProductCreationRequest;
 import com.ECommerceApp.DTO.Product.ProductSearchResponse;
 import com.ECommerceApp.Exceptions.Product.ProductNotFoundException;
+import com.ECommerceApp.Mappers.ProductMapper;
 import com.ECommerceApp.Model.Product.Product;
 import com.ECommerceApp.Repository.Product.ProductRepository;
 import com.ECommerceApp.ServiceInterface.Product.IProductService;
@@ -23,18 +24,17 @@ public class ProductService implements IProductService {
 
     @Autowired
     private ProductRepository productRepository;
-
     @Autowired
     private IStockLogService stockLogService;
+    @Autowired
+    private ProductMapper productMapper;
 
     public Product createProduct(ProductCreationRequest request) {
 //        Product product = mapToEntity(request);
         log.info("Creating the new product");
-        Product product = new Product();
-        BeanUtils.copyProperties(request,product);
+        Product product = productMapper.toProduct(request);
+//        BeanUtils.copyProperties(request,product);
         product.setAddedOn(new Date());
-        product.setAvailable(true);
-        product.setRating(0.0);
         stockLogService.getByProductId(request.getId());
         return saveProduct(product);
     }
@@ -43,12 +43,12 @@ public class ProductService implements IProductService {
         int count = 0;
 
         for(ProductCreationRequest product : products){
-            Product p = new Product();
-            BeanUtils.copyProperties(product,p);
+            Product p = productMapper.toProduct(product);
+//            BeanUtils.copyProperties(product,p);
             saveProduct(p);
             count++;
         }
-        if(count==products.size()){
+        if(count == products.size()){
             return "Products are inserted successfully!  "+count;
         }
         return "Something went wrong";
@@ -60,26 +60,26 @@ public class ProductService implements IProductService {
     }
 
     public Product getProductById(String id) {
-        log.info("Getting the product by id: "+id);
+        log.info("Getting the product by id: {}", id);
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + id));
     }
 
     public Product updateProduct(ProductCreationRequest request) {
-        log.info("Updating the product by id: "+request.getId());
+        log.info("Updating the product by id: {}", request.getId());
         Product existing = getProductById(request.getId());
         BeanUtils.copyProperties(request,existing);
         return saveProduct(existing);
     }
 
     public String  deleteProduct(String id) {
-        log.warn("Deleting the product with id: "+id);
+        log.warn("Deleting the product with id: {}", id);
         if (!productRepository.existsById(id)) {
-            log.warn("There is no product present with id: "+id);
+            log.warn("There is no product present with id: {}", id);
             throw new ProductNotFoundException("Product not found with ID: " + id);
         }
         productRepository.deleteById(id);
-        log.warn("Deleting the product with id: "+id);
+        log.warn("Deleting the product with id: {}", id);
         return "Product deleted Successfully";
     }
 

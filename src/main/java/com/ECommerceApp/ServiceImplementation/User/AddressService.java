@@ -2,6 +2,7 @@ package com.ECommerceApp.ServiceImplementation.User;
 
 import com.ECommerceApp.DTO.User.AddressRegistrationRequest;
 import com.ECommerceApp.Exceptions.User.AddressNotFoundException;
+import com.ECommerceApp.Mappers.AddressMapper;
 import com.ECommerceApp.Model.User.Address;
 import com.ECommerceApp.Repository.AddressRepository;
 import com.ECommerceApp.ServiceInterface.User.IAddressService;
@@ -15,11 +16,12 @@ import java.util.List;
 public class AddressService implements IAddressService {
     @Autowired
     private AddressRepository addressRepository;
-
+    @Autowired
+    private AddressMapper addressMapper;
     // inserting the new address
     public Address createAddress(AddressRegistrationRequest addressRequest) {
-        Address address = new Address();
-        BeanUtils.copyProperties(addressRequest,address);
+        Address address = addressMapper.toAddress(addressRequest);
+//        BeanUtils.copyProperties(addressRequest,address);
         return saveAddress(address);
     }
 
